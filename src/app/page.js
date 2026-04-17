@@ -42,8 +42,12 @@ export default async function Home() {
   const familySlug = settings?.family_slug || "";
 
   // Summary stats
+  const currentDayShort = new Date().toLocaleDateString("en-US", { weekday: "short" });
   const totalChildren = safeProfiles.length;
-  const totalModulesToday = safeProfiles.reduce((acc, p) => acc + (planMap[p.id]?.length || 0), 0);
+  const totalModulesToday = safeProfiles.reduce((acc, p) => {
+    const mods = planMap[p.id] || [];
+    return acc + mods.filter(m => !m.active_days || m.active_days.includes(currentDayShort)).length;
+  }, 0);
   const streakTop = Math.max(0, ...safeProfiles.map(p => p.current_streak || 0));
 
   return (

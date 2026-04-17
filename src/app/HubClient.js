@@ -207,11 +207,18 @@ export default function HubClient({ safeProfiles, planMap, totalChildren, totalM
                   <div className="flex flex-wrap gap-2 flex-1">
                     {modules.length === 0 ? (
                       <span className="text-xs text-slate-300 font-medium italic">No plan set</span>
-                    ) : modules.map((m, i) => (
-                      <span key={i} className={`text-xs font-bold px-3 py-1 rounded-lg ${MODULE_COLORS[m.type] || "bg-slate-100 text-slate-600"}`}>
-                        {m.type}
-                      </span>
-                    ))}
+                    ) : (() => {
+                      const currentDayShort = new Date().toLocaleDateString("en-US", { weekday: "short" });
+                      const activeModules = modules.filter(m => !m.active_days || m.active_days.includes(currentDayShort));
+                      
+                      return activeModules.length === 0 ? (
+                        <span className="text-xs text-slate-300 font-medium italic">Rest day</span>
+                      ) : activeModules.map((m, i) => (
+                        <span key={i} className={`text-xs font-bold px-3 py-1 rounded-lg ${MODULE_COLORS[m.type] || "bg-slate-100 text-slate-600"}`}>
+                          {m.type}
+                        </span>
+                      ));
+                    })()}
                   </div>
 
                       {/* Launch button */}

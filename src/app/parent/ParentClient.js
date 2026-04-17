@@ -25,7 +25,7 @@ const ICON_MAP = {
 };
 
 // ── Sortable module row ───────────────────────────────────────────────────────
-function SortableModule({ module, idx, onRemove }) {
+function SortableModule({ module, idx, onRemove, childSchoolDays, onToggleDay }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: module.id });
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -50,7 +50,24 @@ function SortableModule({ module, idx, onRemove }) {
       </div>
       <div className="flex-1">
         <h3 className="font-bold text-slate-800">{module.type}</h3>
-        <p className="text-xs text-slate-500">Standard progression</p>
+        <div className="flex flex-wrap gap-1 mt-1.5" onPointerDown={e => e.stopPropagation()}>
+          {childSchoolDays.map(day => {
+            const isActive = !module.active_days || module.active_days.includes(day);
+            return (
+              <button
+                key={day}
+                onClick={() => onToggleDay && onToggleDay(module.id, day)}
+                className={`text-[10px] font-bold px-2 py-0.5 rounded-full border transition-colors ${
+                  isActive 
+                    ? 'bg-slate-800 text-white border-slate-800 hover:bg-slate-700' 
+                    : 'bg-white text-slate-400 border-slate-200 hover:border-slate-300 hover:text-slate-500'
+                }`}
+              >
+                {day}
+              </button>
+            );
+          })}
+        </div>
       </div>
       <button
         onPointerDown={e => e.stopPropagation()} // prevent drag activating on X button
@@ -252,6 +269,27 @@ export default function ParentClient({ profiles, initialPlans = [] }) {
         addToast("💾 Plan updated!", "save");
       } catch {
         addToast("Couldn't save — try again", "error");
+      }
+    }
+  };
+
+  const handleToggleDay = async (moduleId, day) => {
+    const updated = todaysPlan.map(mod => {
+      if (mod.id !== moduleId) return mod;
+      const currentDays = mod.active_days || activeChild.school_days || ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+      const newDays = currentDays.includes(day)
+        ? currentDays.filter(d => d !== day)
+        : [...currentDays, day];
+      return { ...mod, active_days: newDays };
+    });
+    setTodaysPlan(updated);
+    
+    if (activeChild) {
+      const todayStr = new Date().toISOString().split('T')[0];
+      try {
+        await publishPlan({ profileId: activeChild.id, modules: updated, targetDate: todayStr });
+      } catch {
+        // Silent failure for inline toggles to prevent toast spam
       }
     }
   };
@@ -823,6 +861,8 @@ export default function ParentClient({ profiles, initialPlans = [] }) {
                             module={module}
                             idx={idx}
                             onRemove={handleRemoveModule}
+                            childSchoolDays={activeChild.school_days || ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']}
+                            onToggleDay={handleToggleDay}
                           />
                         ))}
                       </div>
