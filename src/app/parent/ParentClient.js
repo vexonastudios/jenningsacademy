@@ -223,8 +223,19 @@ export default function ParentClient({ profiles, initialPlans = [] }) {
     setTodaysPlan([...todaysPlan, { ...mod, id: `p${Date.now()}` }]);
   };
 
-  const handleRemoveModule = (id) => {
-    setTodaysPlan(todaysPlan.filter(p => p.id !== id));
+  const handleRemoveModule = async (id) => {
+    const updated = todaysPlan.filter(p => p.id !== id);
+    setTodaysPlan(updated);
+    // Autosave removal immediately
+    if (activeChild) {
+      const todayStr = new Date().toISOString().split('T')[0];
+      try {
+        await publishPlan({ profileId: activeChild.id, modules: updated, targetDate: todayStr });
+        addToast("💾 Plan updated!", "save");
+      } catch {
+        addToast("Couldn't save — try again", "error");
+      }
+    }
   };
 
   // DnD-kit: support both mouse (PointerSensor) and touch/iPad (TouchSensor)
@@ -248,7 +259,7 @@ export default function ParentClient({ profiles, initialPlans = [] }) {
       const todayStr = new Date().toISOString().split('T')[0];
       try {
         await publishPlan({ profileId: activeChild.id, modules: reordered, targetDate: todayStr });
-        addToast("💾 Order saved!");
+        addToast("💾 Order saved!", "save");
       } catch {
         addToast("Couldn't save order — try again", "error");
       }
@@ -516,12 +527,15 @@ export default function ParentClient({ profiles, initialPlans = [] }) {
             key={toast.id}
             className={`flex items-center gap-3 px-5 py-4 rounded-2xl shadow-xl border text-sm font-semibold
               pointer-events-auto animate-[slideIn_0.3s_ease]
-              ${toast.type === "error"
-                ? "bg-rose-50 border-rose-200 text-rose-700 shadow-rose-200/50"
+              ${
+                toast.type === "error" ? "bg-rose-50 border-rose-200 text-rose-700 shadow-rose-200/50"
+                : toast.type === "save"  ? "bg-emerald-500 border-emerald-600 text-white shadow-emerald-500/40"
                 : "bg-white border-slate-100 text-slate-700 shadow-slate-200/60"
               }`}
           >
-            <span className="text-lg leading-none">{toast.type === "error" ? "⚠️" : "✓"}</span>
+            <span className="text-lg leading-none">
+              {toast.type === "error" ? "⚠️" : toast.type === "save" ? "✓" : "✓"}
+            </span>
             <span>{toast.message}</span>
           </div>
         ))}
