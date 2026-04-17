@@ -352,9 +352,11 @@ export default function ParentClient({ profiles }) {
       {/* Edit Child Modal */}
       {editingChild && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 px-4">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg p-8 relative max-h-[90vh] overflow-y-auto">
-            <button onClick={() => { setEditingChild(null); setEditAvatarUrl(null); }} className="absolute top-6 right-6 text-slate-400"><X className="w-6 h-6" /></button>
-            <h2 className="text-2xl font-bold text-slate-800 mb-6">Edit {editingChild.name}</h2>
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg relative max-h-[90vh] flex flex-col">
+            <button onClick={() => { setEditingChild(null); setEditAvatarUrl(null); }} className="absolute top-6 right-6 text-slate-400 z-10"><X className="w-6 h-6" /></button>
+            <h2 className="text-2xl font-bold text-slate-800 px-8 pt-8 pb-2 shrink-0">Edit {editingChild.name}</h2>
+            {/* Scrollable body */}
+            <div className="overflow-y-auto flex-1 px-8 pb-4">
 
             {/* ── Avatar Picker ── */}
             <div className="flex flex-col items-center mb-6">
@@ -365,7 +367,9 @@ export default function ParentClient({ profiles }) {
                 <Avatar
                   name={editingChild.name}
                   avatarUrl={editAvatarUrl ?? editingChild.avatar_url}
+                  profileId={editingChild.id}
                   className="w-24 h-24 rounded-full text-3xl"
+                  textClass="text-3xl font-bold"
                 />
                 <div className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                   {avatarUploading
@@ -384,7 +388,7 @@ export default function ParentClient({ profiles }) {
               />
             </div>
 
-            <form onSubmit={handleSubmitEditChild} className="space-y-4">
+            <form id="editChildForm" onSubmit={handleSubmitEditChild} className="space-y-4">
               <div><label className="block text-sm font-semibold text-slate-600 mb-1">First Name</label>
                 <input name="ename" required type="text" defaultValue={editingChild.name} className="w-full border border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" /></div>
               <div className="grid grid-cols-2 gap-4">
@@ -445,8 +449,12 @@ export default function ParentClient({ profiles }) {
                   <p className="text-xs text-slate-400 mt-1">This is different from the child's PIN — only the parent uses it to exit Focus Mode.</p>
                 </div>
               </div>
-              <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 rounded-xl transition-[colors,transform,shadow] shadow-md">Save Changes</button>
             </form>
+            </div>{/* end scrollable */}
+            {/* Sticky save button always visible */}
+            <div className="px-8 py-4 bg-white border-t border-slate-100 rounded-b-3xl shrink-0">
+              <button form="editChildForm" type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 rounded-xl transition-[colors,transform,shadow] shadow-md shadow-indigo-500/20">Save Changes</button>
+            </div>
           </div>
         </div>
       )}
@@ -625,7 +633,7 @@ export default function ParentClient({ profiles }) {
                   return (
                     <li key={child.id} onClick={() => setActiveChildId(child.id)} className={`flex items-center justify-between p-3 rounded-2xl cursor-pointer transition-[colors,transform,shadow] duration-300 ${isActive ? "bg-indigo-50 border border-indigo-100 ring-1 ring-indigo-200 shadow-sm" : "hover:bg-slate-50 border border-transparent"}`}>
                       <div className="flex items-center gap-3">
-                        <Avatar name={child.name} avatarUrl={child.avatar_url} className="w-11 h-11 rounded-full" textClass="text-base font-bold" />
+                        <Avatar name={child.name} avatarUrl={child.avatar_url} profileId={child.id} className="w-11 h-11 rounded-full" textClass="text-base font-bold" />
                         <div>
                           <p className="font-semibold text-slate-800 text-sm">{child.name}</p>
                           <p className="text-xs text-slate-500 font-medium">Grade {child.grade_level}</p>
@@ -915,7 +923,7 @@ export default function ParentClient({ profiles }) {
                   const chipIcons = { done: "✓", active: "▶", pending: "○", missed: "!" };
                   return (
                     <div key={child.id} className="flex items-center gap-6 py-4 first:pt-0 last:pb-0 hover:bg-indigo-50/30 px-3 -mx-3 rounded-2xl transition-colors cursor-pointer" onClick={() => setActiveChildId(child.id)}>
-                      <Avatar name={child.name} avatarUrl={child.avatar_url} className="w-11 h-11 rounded-full shrink-0" textClass="text-base font-bold" />
+                      <Avatar name={child.name} avatarUrl={child.avatar_url} profileId={child.id} className="w-11 h-11 rounded-full shrink-0" textClass="text-base font-bold" />
                       <div className="w-36 shrink-0">
                         <p className="font-bold text-slate-800 text-sm">{child.name}</p>
                         <div className="flex items-center gap-2 mt-1">
@@ -962,7 +970,7 @@ export default function ParentClient({ profiles }) {
                         <tr key={child.id} className="hover:bg-indigo-50/20 transition-colors cursor-pointer group" onClick={() => setActiveChildId(child.id)}>
                           <td className="py-3 pr-6">
                             <div className="flex items-center gap-3">
-                              <Avatar name={child.name} avatarUrl={child.avatar_url} className="w-8 h-8 rounded-full shrink-0" textClass="text-sm font-bold" />
+                              <Avatar name={child.name} avatarUrl={child.avatar_url} profileId={child.id} className="w-8 h-8 rounded-full shrink-0" textClass="text-sm font-bold" />
                               <span className="font-semibold text-slate-700 text-xs">{child.name}</span>
                             </div>
                           </td>

@@ -176,6 +176,7 @@ export default function ChildPath() {
               <Avatar
                 name={profile.name}
                 avatarUrl={profile.avatar_url}
+                profileId={profile.id}
                 className="w-10 h-10 rounded-full"
                 textClass="text-base font-bold"
               />
