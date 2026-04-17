@@ -44,15 +44,14 @@ export async function POST(request) {
     return NextResponse.json({ error: uploadError.message }, { status: 500 });
   }
 
-  // Get the public URL
-  const { data: { publicUrl } } = supabase.storage
-    .from("child-avatars")
-    .getPublicUrl(storagePath);
+  // Use a proxy URL so the browser fetches via our own domain,
+  // not the raw Supabase storage domain (which can be blocked by DNS filters).
+  const proxyUrl = `/api/avatar/${profileId}`;
 
-  // Persist URL to profiles.avatar_url (this replaces the CSS colour class)
+  // Persist the proxy URL to profiles.avatar_url
   const { error: updateError } = await supabase
     .from("profiles")
-    .update({ avatar_url: publicUrl })
+    .update({ avatar_url: proxyUrl })
     .eq("id", profileId)
     .eq("parent_id", userId);
 
@@ -60,5 +59,5 @@ export async function POST(request) {
     return NextResponse.json({ error: updateError.message }, { status: 500 });
   }
 
-  return NextResponse.json({ url: publicUrl });
+  return NextResponse.json({ url: proxyUrl });
 }

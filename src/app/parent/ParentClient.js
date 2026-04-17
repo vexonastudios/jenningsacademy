@@ -159,8 +159,6 @@ export default function ParentClient({ profiles }) {
 
       if (!res.ok) throw new Error(data.error || "Upload failed");
 
-      console.log("Avatar Uploaded URL:", data.url);
-
       // Update the live editingChild reference so roster re-renders
       setEditingChild(prev => ({ ...prev, avatar_url: data.url }));
       setEditAvatarUrl(data.url);

@@ -13,7 +13,7 @@
  *  textClass string   — text size class (default "text-lg")
  */
 export default function Avatar({ name, avatarUrl, className = "", textClass = "text-base" }) {
-  const isPhoto = avatarUrl?.startsWith("http");
+  const isPhoto = avatarUrl?.startsWith("http") || avatarUrl?.startsWith("/api/avatar");
   const letter  = name?.charAt(0).toUpperCase() || "?";
 
   if (isPhoto) {
