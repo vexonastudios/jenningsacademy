@@ -1,0 +1,26 @@
+const grade7 = {
+  grade: 7, roundSize: 14,
+  pool: [
+    { word: "aberration",       hint: "A departure from what is normal" },
+    { word: "acquiesce",        hint: "Accept something reluctantly but without protest" },
+    { word: "ambivalence",      hint: "Having mixed feelings about something" },
+    { word: "anachronism",      hint: "Something out of its proper time period" },
+    { word: "cacophony",        hint: "A harsh, discordant mixture of sounds" },
+    { word: "consternation",    hint: "Feelings of anxiety or dismay" },
+    { word: "corroborate",      hint: "Confirm or support with evidence" },
+    { word: "denounce",         hint: "Publicly declare to be wrong or evil" },
+    { word: "desolate",         hint: "Deserted; lacking inhabitants; bleak" },
+    { word: "ephemeral",        hint: "Lasting for a very short time" },
+    { word: "exacerbate",       hint: "Make a problem or situation worse" },
+    { word: "fortitude",        hint: "Courage in pain or adversity" },
+    { word: "gregarious",       hint: "Fond of company; sociable" },
+    { word: "hypocritical",     hint: "Claiming beliefs one does not have" },
+    { word: "inconsequential",  hint: "Not important or significant" },
+    { word: "nomenclature",     hint: "A system of names used in a field" },
+    { word: "ostentatious",     hint: "Designed to impress; showy" },
+    { word: "precarious",       hint: "Not securely held; risky" },
+    { word: "superfluous",      hint: "Unnecessary; more than enough" },
+    { word: "vacillate",        hint: "Waver between different opinions" },
+  ],
+};
+export default grade7;

@@ -1,0 +1,26 @@
+const grade8 = {
+  grade: 8, roundSize: 15,
+  pool: [
+    { word: "abstinence",       hint: "Self-restraint from indulging a desire" },
+    { word: "acrimony",         hint: "Bitterness or ill feeling" },
+    { word: "anomalous",        hint: "Deviating from what is standard" },
+    { word: "apprehension",     hint: "Anxiety or fear about a future event" },
+    { word: "bellicose",        hint: "Demonstrating aggression; eager to fight" },
+    { word: "circumspect",      hint: "Wary and unwilling to take risks" },
+    { word: "cogent",           hint: "Clear, logical, and convincing" },
+    { word: "complacency",      hint: "Smug and uncritical self-satisfaction" },
+    { word: "conscientious",    hint: "Wishing to do one's work thoroughly and well" },
+    { word: "disingenuous",     hint: "Not candid or sincere; insincere" },
+    { word: "frivolous",        hint: "Not having any serious purpose" },
+    { word: "idiosyncratic",    hint: "Peculiar to the individual; quirky" },
+    { word: "immutable",        hint: "Unchanging over time or impossible to change" },
+    { word: "indignation",      hint: "Anger at something unjust or unfair" },
+    { word: "malfeasance",      hint: "Wrongdoing, especially by a public official" },
+    { word: "meticulous",       hint: "Showing great attention to detail" },
+    { word: "pedantic",         hint: "Overly concerned with minor, trivial details" },
+    { word: "prerogative",      hint: "A right or privilege belonging to a person" },
+    { word: "truculent",        hint: "Eager or quick to argue or fight" },
+    { word: "ubiquitous",       hint: "Present, appearing, or found everywhere" },
+  ],
+};
+export default grade8;

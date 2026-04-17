@@ -1,0 +1,26 @@
+const grade6 = {
+  grade: 6, roundSize: 14,
+  pool: [
+    { word: "acknowledge",    hint: "Accept or admit the truth of something" },
+    { word: "ambiguous",      hint: "Open to more than one interpretation" },
+    { word: "assertive",      hint: "Confident and direct in manner" },
+    { word: "benevolent",     hint: "Well-meaning and kind" },
+    { word: "chronological",  hint: "Arranged in order of time" },
+    { word: "controversial",  hint: "Causing strong disagreement" },
+    { word: "deteriorate",    hint: "Become progressively worse" },
+    { word: "diligent",       hint: "Having steady, careful effort" },
+    { word: "discrepancy",    hint: "A difference between things that should match" },
+    { word: "eloquent",       hint: "Fluent or persuasive in speech" },
+    { word: "equilibrium",    hint: "A state of balance" },
+    { word: "hypothesis",     hint: "A proposed explanation to be tested" },
+    { word: "impartial",      hint: "Treating all equally; unbiased" },
+    { word: "inevitable",     hint: "Certain to happen; unavoidable" },
+    { word: "magnificent",    hint: "Impressively beautiful or elaborate" },
+    { word: "melancholy",     hint: "A deep feeling of sadness" },
+    { word: "perseverance",   hint: "Continued effort despite difficulty" },
+    { word: "preliminary",    hint: "Preceding or done before the main thing" },
+    { word: "relinquish",     hint: "Voluntarily give up something" },
+    { word: "unprecedented",  hint: "Never done or known before" },
+  ],
+};
+export default grade6;

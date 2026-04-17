@@ -1,0 +1,26 @@
+const grade3 = {
+  grade: 3, roundSize: 10,
+  pool: [
+    { word: "accept",    hint: "Agree to receive something" },
+    { word: "answer",    hint: "A reply to a question" },
+    { word: "believe",   hint: "Think something is true" },
+    { word: "breathe",   hint: "Take air in and out" },
+    { word: "center",    hint: "The middle point" },
+    { word: "change",    hint: "Become different" },
+    { word: "complete",  hint: "Finish entirely; whole" },
+    { word: "danger",    hint: "Risk of harm" },
+    { word: "decide",    hint: "Make a choice" },
+    { word: "different", hint: "Not the same as others" },
+    { word: "enough",    hint: "A sufficient amount" },
+    { word: "explain",   hint: "Make something clear" },
+    { word: "famous",    hint: "Known by many people" },
+    { word: "finally",   hint: "At the end; at last" },
+    { word: "forward",   hint: "In the direction ahead" },
+    { word: "friend",    hint: "Someone you like and trust" },
+    { word: "important", hint: "Of great value or significance" },
+    { word: "pretty",    hint: "Attractive to look at" },
+    { word: "remember",  hint: "Bring back to mind" },
+    { word: "surprise",  hint: "Something unexpected" },
+  ],
+};
+export default grade3;

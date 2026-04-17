@@ -1,0 +1,26 @@
+const grade5 = {
+  grade: 5, roundSize: 12,
+  pool: [
+    { word: "abundance",      hint: "A very large amount of something" },
+    { word: "accomplishment",  hint: "A completed achievement" },
+    { word: "anonymous",       hint: "Without a known name" },
+    { word: "approximately",   hint: "Close to; roughly" },
+    { word: "circumstance",    hint: "A condition that affects a situation" },
+    { word: "collaboration",   hint: "Working together with others" },
+    { word: "commemorate",     hint: "Honor the memory of something" },
+    { word: "communicate",     hint: "Share information with others" },
+    { word: "comparison",      hint: "Examining similarities and differences" },
+    { word: "consequence",     hint: "A result of an action" },
+    { word: "curiosity",       hint: "Desire to know or learn" },
+    { word: "definitely",      hint: "Without any doubt" },
+    { word: "demonstrate",     hint: "Show how something works" },
+    { word: "determination",   hint: "Firmly decided; persistence" },
+    { word: "exaggerate",      hint: "Make something seem bigger than it is" },
+    { word: "fascinate",       hint: "Hold someone's interest strongly" },
+    { word: "knowledge",       hint: "Facts and understanding gained" },
+    { word: "punctuation",     hint: "Marks used in writing like commas and periods" },
+    { word: "significant",     hint: "Important or meaningful" },
+    { word: "transparent",     hint: "Able to be seen through; open" },
+  ],
+};
+export default grade5;

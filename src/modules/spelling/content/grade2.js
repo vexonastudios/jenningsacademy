@@ -1,0 +1,27 @@
+const grade2 = {
+  grade: 2,
+  roundSize: 10,
+  pool: [
+    { word: "about",   hint: "On the subject of something" },
+    { word: "again",   hint: "One more time" },
+    { word: "always",  hint: "Every single time" },
+    { word: "around",  hint: "In a circle or nearby" },
+    { word: "because", hint: "Used to give a reason" },
+    { word: "before",  hint: "Earlier in time" },
+    { word: "bring",   hint: "Carry something to a place" },
+    { word: "carry",   hint: "Hold and move something" },
+    { word: "clean",   hint: "Not dirty" },
+    { word: "drink",   hint: "Take liquid into your mouth" },
+    { word: "eight",   hint: "The number after seven" },
+    { word: "every",   hint: "Each one without exception" },
+    { word: "found",   hint: "Past tense of find" },
+    { word: "funny",   hint: "Makes you laugh" },
+    { word: "green",   hint: "The color of grass" },
+    { word: "jump",    hint: "Spring off the ground" },
+    { word: "know",    hint: "Have information about" },
+    { word: "light",   hint: "Illumination; also not heavy" },
+    { word: "money",   hint: "Coins and bills you use to buy things" },
+    { word: "never",   hint: "At no time" },
+  ],
+};
+export default grade2;

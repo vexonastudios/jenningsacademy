@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import { UserButton } from "@clerk/nextjs";
 import { PlusCircle, CalendarSync, Settings, TrendingUp, GripVertical, Settings2, Sparkles, BookOpen, Calculator, Type, Gamepad2, X, Link, Clock, Medal, ChevronRight, ChevronLeft, Play, Volume2, Lock, Pencil, Trash2, FileDown, Save, Flame, Camera } from "lucide-react";
 import { addChild, updateChild, deleteChild, publishPlan, savePlanAsTemplate } from "../actions";
+import { getModulesForGrade } from "@/modules/_shared/moduleTypes";
 import Avatar from "@/components/Avatar";
 import {
   DndContext, closestCenter,
@@ -234,15 +235,18 @@ export default function ParentClient({ profiles, initialPlans = [] }) {
     return child.avatar_url;
   };
 
-  const libraryModules = [
-    { type: "Math",         iconCode: "Calculator", color: "text-blue-600 bg-blue-100",    desc: "Adaptive arithmetic" },
-    { type: "Spelling",     iconCode: "Type",       color: "text-purple-600 bg-purple-100", desc: "Weekly word lists" },
-    { type: "Audiobook",    iconCode: "BookOpen",   color: "text-amber-600 bg-amber-100",  desc: "Comprehension focus" },
-    { type: "Logic",        iconCode: "Settings",   color: "text-rose-600 bg-rose-100",    desc: "Critical thinking" },
-    { type: "Reward Unlock", iconCode: "Gamepad2",  color: "text-emerald-600 bg-emerald-100", desc: "Free playtime reward" },
-  ];
-
   const activeChild = profiles.find(p => p.id === activeChildId) || profiles[0];
+
+  // Grade-filtered library — only show modules valid for the active child's grade
+  const childGrade = activeChild?.grade_level ?? 1;
+  const libraryModules = getModulesForGrade(childGrade).map((m) => ({
+    type: m.id,
+    iconCode: m.iconCode,
+    color: m.color,
+    desc: m.description,
+    estimatedMinutes: m.estimatedMinutes,
+    minimumPassScore: m.minimumPassScore,
+  }));
 
   const handleAddModule = async (mod) => {
     const updated = [...todaysPlan, { ...mod, id: `p${Date.now()}` }];

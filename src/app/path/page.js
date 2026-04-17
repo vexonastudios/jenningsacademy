@@ -1,13 +1,15 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { Check, Lock, Play, Volume2, Flame, Loader2, X } from "lucide-react";
+import { useState, useEffect, useCallback, Suspense } from "react";
+import { Check, Lock, Play, Volume2, Flame, Loader2 } from "lucide-react";
 import PinGate from "./PinGate";
 import CelebrationOverlay from "@/components/CelebrationOverlay";
 import LockOverlay from "@/components/LockOverlay";
 import Avatar from "@/components/Avatar";
 import { useLockMode } from "@/hooks/useLockMode";
 import { fetchTodayPlan, recordSession } from "@/app/actions";
+import { getModuleByType } from "@/modules/_shared/moduleTypes";
+import ModuleShell from "@/modules/_shared/ModuleShell";
 
 // Pull profileId from URL query e.g. /path?profile=abc-123
 function getProfileIdFromUrl() {
@@ -62,9 +64,9 @@ export default function ChildPath() {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [lockUnlocked, setLockUnlocked] = useState(false);
   
-  // Module Simulator State
-  const [activeModuleSim, setActiveModuleSim] = useState(null);
-  const [simLoading, setSimLoading] = useState(false);
+  // Active module: { mod (plan entry), registryEntry, Component (lazy-loaded) }
+  const [activeModule, setActiveModule] = useState(null);
+  const [loadingModule, setLoadingModule] = useState(false);
 
   // Pull profileId from URL on mount
   useEffect(() => {
@@ -109,32 +111,42 @@ export default function ChildPath() {
     }
   }, [profile?.voice_id, isSpeaking]);
 
-  const handleStartModule = (mod) => {
-    setActiveModuleSim(mod);
+  const handleStartModule = async (mod) => {
     speakGuide(`Starting ${mod.type}! Do your best!`);
+    const registryEntry = getModuleByType(mod.type);
+    if (!registryEntry) return;
+    setLoadingModule(true);
+    try {
+      const { default: Component } = await registryEntry.component();
+      setActiveModule({ mod, registryEntry, Component });
+    } catch (err) {
+      console.error("Module load failed:", err);
+    } finally {
+      setLoadingModule(false);
+    }
   };
 
-  const handleCompleteSimulator = async () => {
-    if (!activeModuleSim || !plan) return;
-    setSimLoading(true);
+  const handleModuleComplete = async (results) => {
+    if (!activeModule || !plan) return;
     try {
       await recordSession({
         profileId: profile.id,
         planId: plan.id,
-        moduleType: activeModuleSim.type,
-        score: Math.floor(Math.random() * 20) + 80, // Mock score 80-100
-        timeSpent: 600 // Mock 10 minutes
+        moduleType: activeModule.mod.type,
+        score: results.score ?? 0,
+        timeSpent: results.timeSpentSeconds ?? 0,
       });
-      setCompletedModules(prev => [...prev, activeModuleSim.type]);
-      setCelebration({ message: `You finished ${activeModuleSim.type}! 🎉` });
-      speakGuide(`Amazing work on ${activeModuleSim.type}! You are a superstar!`);
+      setCompletedModules(prev => [...prev, activeModule.mod.type]);
+      setCelebration({ message: `You finished ${activeModule.mod.type}! 🎉` });
+      speakGuide(`Amazing work on ${activeModule.mod.type}! You are a superstar!`);
     } catch (e) {
-      alert("Error saving session");
+      console.error("Error saving session", e);
     } finally {
-      setSimLoading(false);
-      setActiveModuleSim(null);
+      setActiveModule(null);
     }
   };
+
+  const handleModuleExit = () => setActiveModule(null);
 
   // ── PIN Gate ──────────────────────────────────────────────────────────────────
   if (!profile) {
@@ -185,29 +197,35 @@ export default function ChildPath() {
         </>
       )}
 
-      {/* Celebration & Simulator Overlays */}
+      {/* Celebration Overlay */}
       {celebration && <CelebrationOverlay message={celebration.message} onDone={() => setCelebration(null)} />}
-      
-      {activeModuleSim && !celebration && (
-        <div className="fixed inset-0 z-[9999] bg-slate-900 text-white flex flex-col items-center justify-center">
-          <div className="absolute top-6 right-6">
-            <button onClick={() => setActiveModuleSim(null)} className="p-3 bg-white/10 hover:bg-white/20 rounded-full transition-colors">
-              <X className="w-8 h-8" />
-            </button>
-          </div>
-          <h2 className="text-6xl font-black mb-8 opacity-50">[{activeModuleSim.type} Module Engine]</h2>
-          <p className="text-xl text-slate-400 mb-12 max-w-lg text-center">
-            This simulates launching into the actual standalone module. In full production, this would be an iframe or a dedicated route for the {activeModuleSim.type} app.
-          </p>
-          <button 
-            onClick={handleCompleteSimulator}
-            disabled={simLoading}
-            className="bg-emerald-500 hover:bg-emerald-400 disabled:bg-emerald-800 disabled:opacity-50 text-white px-12 py-6 rounded-[2rem] text-3xl font-black shadow-[0_0_40px_rgba(16,185,129,0.4)] hover:shadow-[0_0_60px_rgba(16,185,129,0.6)] transition-all hover:-translate-y-2 flex items-center gap-4"
-          >
-            {simLoading ? <Loader2 className="w-8 h-8 animate-spin" /> : <Check className="w-10 h-10" />}
-            {simLoading ? "Saving Results..." : "Finish Module"}
-          </button>
+
+      {/* Module Loading Spinner */}
+      {loadingModule && (
+        <div className="fixed inset-0 z-[9999] bg-slate-950/90 flex items-center justify-center">
+          <Loader2 className="w-14 h-14 text-indigo-400 animate-spin" />
         </div>
+      )}
+
+      {/* Real Module Engine — renders the loaded module inside ModuleShell */}
+      {activeModule && !celebration && (
+        <ModuleShell
+          moduleType={activeModule.mod.type}
+          minimumPassScore={activeModule.registryEntry.minimumPassScore}
+          timeLimitSeconds={activeModule.registryEntry.timeLimitSeconds}
+          onComplete={handleModuleComplete}
+          onExit={handleModuleExit}
+        >
+          {({ onRoundComplete, attempt }) => (
+            <Suspense fallback={<div className="flex-1 flex items-center justify-center"><Loader2 className="w-10 h-10 text-slate-500 animate-spin" /></div>}>
+              <activeModule.Component
+                grade={profile?.grade_level ?? 1}
+                attempt={attempt}
+                onRoundComplete={onRoundComplete}
+              />
+            </Suspense>
+          )}
+        </ModuleShell>
       )}
 
       {/* Nav */}

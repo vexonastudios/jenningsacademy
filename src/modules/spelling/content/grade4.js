@@ -1,0 +1,26 @@
+const grade4 = {
+  grade: 4, roundSize: 12,
+  pool: [
+    { word: "achievement",  hint: "Something accomplished through effort" },
+    { word: "calendar",     hint: "Tool for tracking dates" },
+    { word: "conscience",   hint: "Inner sense of right and wrong" },
+    { word: "convenience",  hint: "Something that saves time or effort" },
+    { word: "describe",     hint: "Give details about something" },
+    { word: "disappear",    hint: "Vanish from sight" },
+    { word: "environment",  hint: "The natural world around us" },
+    { word: "exercise",     hint: "Physical activity for health" },
+    { word: "experience",   hint: "Knowledge gained from doing things" },
+    { word: "foreign",      hint: "From another country" },
+    { word: "government",   hint: "Group that rules a country" },
+    { word: "grateful",     hint: "Feeling thankful" },
+    { word: "guarantee",    hint: "A promise that something will happen" },
+    { word: "independent",  hint: "Not relying on others" },
+    { word: "necessary",    hint: "Cannot be done without" },
+    { word: "occasion",     hint: "A special event or time" },
+    { word: "particular",   hint: "Specific; detailed" },
+    { word: "permanent",    hint: "Lasting forever" },
+    { word: "privilege",    hint: "A special right or benefit" },
+    { word: "strength",     hint: "The quality of being strong" },
+  ],
+};
+export default grade4;
