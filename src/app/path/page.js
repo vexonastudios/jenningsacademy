@@ -1,18 +1,47 @@
-import { Check, Lock, Play, Volume2 } from "lucide-react";
+"use client";
+
+import { useState } from "react";
+import { Check, Lock, Play, Volume2, CalendarDays, AlertCircle } from "lucide-react";
 import { UserButton } from "@clerk/nextjs";
 
 export default function ChildPath() {
-  const steps = [
-    { title: "Math", isCompleted: true, isCurrent: false, time: "15 min" },
-    { title: "Spelling", isCompleted: false, isCurrent: true, time: "10 min" },
-    { title: "Audiobook", isCompleted: false, isCurrent: false, time: "20 min" },
-    { title: "Word Runner", isCompleted: false, isCurrent: false, time: "Reward" },
-  ];
+  const [activeDate, setActiveDate] = useState("Oct 14");
+
+  // Mocking out a week of data
+  const weeklyData = {
+    "Oct 10": { dayName: "Mon", status: "completed", steps: [
+      { title: "Math", isCompleted: true, isCurrent: false, time: "15 min" },
+      { title: "Audiobook", isCompleted: true, isCurrent: false, time: "20 min" },
+    ]},
+    "Oct 11": { dayName: "Tue", status: "completed", steps: [
+      { title: "Spelling", isCompleted: true, isCurrent: false, time: "10 min" },
+      { title: "Logic Puzzles", isCompleted: true, isCurrent: false, time: "15 min" },
+    ]},
+    "Oct 12": { dayName: "Wed", status: "missed", steps: [
+      { title: "Math", isCompleted: true, isCurrent: false, time: "15 min" },
+      { title: "Audiobook", isCompleted: false, isCurrent: true, time: "20 min" },
+      { title: "Word Runner", isCompleted: false, isCurrent: false, time: "Reward" },
+    ]},
+    "Oct 13": { dayName: "Thu", status: "missed", steps: [
+      { title: "Spelling", isCompleted: false, isCurrent: true, time: "10 min" },
+      { title: "Math", isCompleted: false, isCurrent: false, time: "15 min" },
+    ]},
+    "Oct 14": { dayName: "Fri", status: "current", steps: [
+      { title: "Math", isCompleted: true, isCurrent: false, time: "15 min" },
+      { title: "Spelling", isCompleted: false, isCurrent: true, time: "10 min" },
+      { title: "Audiobook", isCompleted: false, isCurrent: false, time: "20 min" },
+      { title: "Word Runner", isCompleted: false, isCurrent: false, time: "Reward" },
+    ]},
+  };
+
+  const dates = Object.keys(weeklyData);
+  const activeSteps = weeklyData[activeDate].steps;
+  const isPastNotFinished = weeklyData[activeDate].status === "missed";
 
   return (
-    <div className="min-h-screen bg-sky-50 font-[family-name:var(--font-geist-sans)] selection:bg-indigo-500/30 overflow-hidden relative">
+    <div className="min-h-screen bg-sky-50 font-[family-name:var(--font-geist-sans)] selection:bg-indigo-500/30 overflow-hidden relative pb-32">
       
-      {/* Background Orbs / Premium Light Aesthetic */}
+      {/* Background Orbs */}
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-white/60 rounded-full blur-[80px] pointer-events-none" />
       <div className="absolute bottom-0 right-1/4 w-[30rem] h-[30rem] bg-indigo-100/50 rounded-full blur-[100px] pointer-events-none" />
 
@@ -24,7 +53,9 @@ export default function ChildPath() {
           </button>
           <div>
             <p className="text-slate-400 text-xs font-semibold uppercase tracking-wider">Voice Guide</p>
-            <p className="text-slate-700 font-bold text-sm">"Great job on Math! Ready for spelling?"</p>
+            <p className="text-slate-700 font-bold text-sm">
+              {isPastNotFinished ? "Let's finish up what we missed!" : "Great job! Ready for the next one?"}
+            </p>
           </div>
         </div>
         
@@ -35,23 +66,67 @@ export default function ChildPath() {
         </div>
       </nav>
 
+      {/* Horizontal Calendar Strip Tracker */}
+      <section className="relative z-10 max-w-4xl mx-auto mt-8 px-6">
+        <div className="bg-white/60 backdrop-blur-md border border-white p-4 rounded-3xl shadow-sm flex items-center justify-between overflow-x-auto gap-4">
+          <div className="flex items-center gap-2 px-4 text-indigo-400 font-bold border-r border-slate-200">
+            <CalendarDays className="w-6 h-6" />
+            <span className="uppercase tracking-widest text-xs hidden sm:block">Timeline</span>
+          </div>
+
+          <div className="flex flex-1 justify-around gap-2 min-w-[500px]">
+            {dates.map((date) => {
+              const dayObj = weeklyData[date];
+              const isActive = activeDate === date;
+              return (
+                <button 
+                  key={date} 
+                  onClick={() => setActiveDate(date)}
+                  className={`flex flex-col items-center p-3 rounded-2xl min-w-[80px] transition-all
+                    ${isActive ? "bg-white shadow-md border border-indigo-100 scale-110" : "hover:bg-white/50 border border-transparent"}
+                  `}
+                >
+                  <p className={`text-xs font-bold uppercase mb-1 ${isActive ? "text-indigo-400" : "text-slate-400"}`}>
+                    {dayObj.dayName}
+                  </p>
+                  <p className={`text-xl font-black mb-2 ${isActive ? "text-slate-800" : "text-slate-600"}`}>
+                    {date.split(" ")[1]}
+                  </p>
+                  {/* Status Indicator Bubble */}
+                  <div className="relative">
+                    {dayObj.status === "completed" && <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" />}
+                    {dayObj.status === "missed" && <div className="w-2.5 h-2.5 rounded-full bg-rose-400 shadow-[0_0_8px_rgba(251,113,133,0.8)]" />}
+                    {dayObj.status === "current" && <div className="w-2.5 h-2.5 rounded-full bg-indigo-500 animate-pulse shadow-[0_0_8px_rgba(99,102,241,0.8)]" />}
+                  </div>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      </section>
+
       {/* Stepping Stones UI */}
-      <main className="relative z-10 max-w-3xl mx-auto mt-16 px-6 pb-32">
-        <div className="text-center mb-16">
-          <h1 className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-indigo-900 to-slate-700 mb-4">
-            Today's Path
+      <main className="relative z-10 max-w-3xl mx-auto mt-16 px-6">
+        <div className="text-center mb-16 flex flex-col items-center">
+          {isPastNotFinished && (
+            <div className="bg-rose-100 text-rose-600 font-bold px-4 py-1.5 rounded-full text-sm inline-flex items-center gap-2 mb-4 border border-rose-200">
+               <AlertCircle className="w-4 h-4" /> Making up missed work
+            </div>
+          )}
+          <h1 className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-indigo-900 to-slate-700 mb-4 tracking-tight">
+            {isPastNotFinished ? "Catch-Up Path" : "Today's Path"}
           </h1>
-          <p className="text-slate-500 font-medium text-lg bg-white/50 backdrop-blur-md inline-block px-4 py-1.5 rounded-full border border-white">
-            Friday, October 14th
+          <p className="text-slate-500 font-medium text-lg bg-white/50 backdrop-blur-md inline-block px-5 py-2 rounded-full border border-white shadow-sm">
+            {weeklyData[activeDate].dayName}, {activeDate}
           </p>
         </div>
 
         <div className="relative">
           {/* Vertical Track Line */}
-          <div className="absolute left-[39px] top-4 bottom-4 w-2 bg-gradient-to-b from-emerald-200 via-indigo-200 to-white/50 rounded-full" />
+          <div className="absolute left-[39px] top-4 bottom-4 w-2 bg-gradient-to-b from-emerald-200 via-indigo-200 to-white/80 rounded-full" />
           
           <div className="space-y-12">
-            {steps.map((step, idx) => (
+            {activeSteps.map((step, idx) => (
               <div 
                 key={idx} 
                 className={`flex items-center gap-8 group ${!step.isCompleted && !step.isCurrent ? 'opacity-70 saturate-50' : 'opacity-100'}`}
@@ -89,7 +164,7 @@ export default function ChildPath() {
                       <p className={`text-sm font-bold uppercase tracking-wider mb-1 ${step.isCompleted ? 'text-emerald-500' : step.isCurrent ? 'text-indigo-500' : 'text-slate-400'}`}>
                         Step {idx + 1}
                       </p>
-                      <h2 className={`text-2xl font-bold ${step.isCompleted ? 'text-slate-500' : step.isCurrent ? 'text-slate-800' : 'text-slate-400'}`}>
+                      <h2 className={`text-2xl font-bold tracking-tight ${step.isCompleted ? 'text-slate-500' : step.isCurrent ? 'text-slate-800' : 'text-slate-400'}`}>
                         {step.title}
                       </h2>
                     </div>
