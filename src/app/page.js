@@ -61,6 +61,19 @@ export default async function Home() {
     rawSessions = data || [];
   }
 
+  // Spelling mastery history — all time (not just 30 days) for the progress chart
+  let spellingHistory = [];
+  if (safeProfiles.length > 0) {
+    const { data } = await supabase
+      .from("sessions")
+      .select("profile_id, score, metadata")
+      .in("profile_id", safeProfiles.map(p => p.id))
+      .eq("module_type", "Spelling")
+      .eq("completed", true)
+      .order("created_at", { ascending: true });
+    spellingHistory = data || [];
+  }
+
   const completedSessions = rawSessions;
 
   // Summary stats
@@ -96,6 +109,7 @@ export default async function Home() {
         streakTop={streakTop} 
         familySlug={familySlug}
         completedSessions={completedSessions}
+        spellingHistory={spellingHistory}
       />
     </div>
   );

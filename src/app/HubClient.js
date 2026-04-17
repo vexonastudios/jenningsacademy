@@ -1,11 +1,151 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import Link from "next/link";
 import { 
   CalendarSync, Settings2, TrendingUp, Flame, ChevronRight, BookOpen, 
-  ChevronLeft, Copy, Check 
+  ChevronLeft, Copy, Check, X, Printer, Mail, Type
 } from "lucide-react";
+
+// ─── Spelling Mastery Chart ───────────────────────────────────────────────────
+function SpellingMasteryChart({ profile, spellingHistory }) {
+  const sessions = (spellingHistory || []).filter(s => s.profile_id === profile.id);
+  if (sessions.length === 0) return <span className="text-xs text-slate-300 italic">No sessions yet</span>;
+
+  // Group by setIndex — for each set, check if any session passed (score >= 80)
+  const bySet = {};
+  sessions.forEach(s => {
+    const idx = s.metadata?.setIndex ?? 0;
+    if (!bySet[idx]) bySet[idx] = [];
+    bySet[idx].push(s);
+  });
+  const maxSet = Math.max(0, ...Object.keys(bySet).map(Number));
+  // Show all attempted sets plus the next locked one
+  const totalSlots = maxSet + 2;
+
+  return (
+    <div className="flex items-center gap-1.5 flex-wrap">
+      {Array.from({ length: totalSlots }, (_, i) => {
+        const attempts = bySet[i] || [];
+        const mastered = attempts.some(s => (s.score ?? 0) >= 80 || s.metadata?.passed === true);
+        const attempted = attempts.length > 0;
+        const bestScore = attempted ? Math.max(...attempts.map(s => s.score ?? 0)) : null;
+        const title = attempted
+          ? `Set ${i + 1}: best score ${bestScore}% ${mastered ? '✓ mastered' : '— not yet mastered'}`
+          : `Set ${i + 1}: locked`;
+        return (
+          <div key={i} title={title}
+            className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-black transition-all
+              ${mastered ? 'bg-emerald-500 text-white shadow-sm shadow-emerald-300'
+                : attempted ? 'bg-amber-400 text-white'
+                : 'bg-slate-100 text-slate-400 border border-slate-200'}`}>
+            {i + 1}
+          </div>
+        );
+      })}
+      <span className="text-xs text-slate-400 ml-1">
+        {Object.values(bySet).filter(arr => arr.some(s => (s.score ?? 0) >= 80)).length} set{Object.values(bySet).filter(arr => arr.some(s => (s.score ?? 0) >= 80)).length !== 1 ? 's' : ''} mastered
+      </span>
+    </div>
+  );
+}
+
+// ─── Word List Modal ─────────────────────────────────────────────────────────
+function WordListModal({ profile, onClose }) {
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState(null);
+  const [error, setError] = useState(null);
+
+  // Fetch on mount
+  useState(() => {
+    fetch(`/api/spelling-words?profileId=${profile.id}`)
+      .then(r => r.json())
+      .then(d => { setData(d); setLoading(false); })
+      .catch(() => { setError("Could not load word list."); setLoading(false); });
+  });
+
+  const handlePrint = () => window.print();
+
+  const buildMailtoBody = () => {
+    if (!data) return "";
+    const lines = [
+      `Spelling Word List — ${data.childName} (Grade ${data.grade}, Set ${data.setNumber})`,
+      "",
+      ...data.words.map((w, i) =>
+        `${i + 1}. ${w.word.toUpperCase()}\n   Definition: ${w.hint}\n   In a sentence: "${w.sentence}"`
+      ),
+      "",
+      "Practice these words out loud before the next session!",
+    ];
+    return encodeURIComponent(lines.join("\n"));
+  };
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50" onClick={onClose} />
+      {/* Modal */}
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div id="spelling-word-list-modal" className="bg-white rounded-3xl shadow-2xl w-full max-w-xl max-h-[85vh] flex flex-col">
+          {/* Header */}
+          <div className="flex items-center justify-between px-7 py-5 border-b border-slate-100">
+            <div>
+              <h3 className="font-black text-slate-800 text-lg flex items-center gap-2">
+                <Type className="w-5 h-5 text-purple-500" /> Spelling Word List
+              </h3>
+              {data && (
+                <p className="text-sm text-slate-400 mt-0.5">
+                  {data.childName} · Grade {data.grade} · Set {data.setNumber} of {data.totalSets}
+                </p>
+              )}
+            </div>
+            <button onClick={onClose} className="p-2 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Content */}
+          <div className="overflow-y-auto flex-1 px-7 py-5">
+            {loading && <div className="py-16 text-center text-slate-400 text-sm">Loading word list…</div>}
+            {error && <div className="py-16 text-center text-rose-400 text-sm">{error}</div>}
+            {data && (
+              <ol className="space-y-4">
+                {data.words.map((w, i) => (
+                  <li key={i} className="bg-slate-50 rounded-2xl px-5 py-4 border border-slate-100">
+                    <div className="flex items-baseline gap-3">
+                      <span className="text-xs text-slate-400 font-bold w-5 shrink-0">{i + 1}.</span>
+                      <div className="flex-1">
+                        <p className="font-black text-slate-800 text-xl tracking-wide">{w.word}</p>
+                        <p className="text-sm text-indigo-600 font-semibold mt-1">{w.hint}</p>
+                        {w.sentence && (
+                          <p className="text-sm text-slate-500 italic mt-1">&ldquo;{w.sentence}&rdquo;</p>
+                        )}
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            )}
+          </div>
+
+          {/* Footer actions */}
+          {data && (
+            <div className="px-7 py-4 border-t border-slate-100 flex gap-3">
+              <button onClick={handlePrint}
+                className="flex items-center gap-2 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white text-sm font-bold rounded-xl transition-colors">
+                <Printer className="w-4 h-4" /> Print List
+              </button>
+              <a href={`mailto:?subject=Spelling Word List — ${data.childName}&body=${buildMailtoBody()}`}
+                className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold rounded-xl transition-colors">
+                <Mail className="w-4 h-4" /> Email to Yourself
+              </a>
+            </div>
+          )}
+        </div>
+      </div>
+    </>
+  );
+}
 
 const MODULE_COLORS = {
   Math:          "bg-blue-100 text-blue-700",
@@ -52,9 +192,12 @@ function StatChip({ label, value, accent }) {
   );
 }
 
-export default function HubClient({ safeProfiles, planMap, totalChildren, totalModulesToday, streakTop, familySlug, completedSessions }) {
+export default function HubClient({ safeProfiles, planMap, totalChildren, totalModulesToday, streakTop, familySlug, completedSessions, spellingHistory }) {
   const [overviewView, setOverviewView] = useState("day"); // 'day', 'week', 'month'
   const [overviewOffset, setOverviewOffset] = useState(0);
+  const [wordListProfileId, setWordListProfileId] = useState(null);
+
+  const wordListProfile = wordListProfileId ? safeProfiles.find(p => p.id === wordListProfileId) : null;
 
   const childLink = (p) => {
     return familySlug && p.child_slug 
@@ -376,6 +519,57 @@ export default function HubClient({ safeProfiles, planMap, totalChildren, totalM
           </div>
         )}
       </section>
+
+      {/* ── Spelling Mastery ── */}
+      {spellingHistory?.length > 0 && (
+        <section className="bg-white rounded-[2rem] shadow-lg shadow-slate-200/60 border border-slate-100 p-8">
+          <div className="flex items-center gap-2 mb-5">
+            <Type className="w-5 h-5 text-purple-500" />
+            <h2 className="text-xl font-bold text-slate-800">Spelling Mastery</h2>
+            <span className="ml-auto flex items-center gap-3 text-xs">
+              <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-emerald-500 inline-block" /> Mastered</span>
+              <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-amber-400 inline-block" /> In progress</span>
+              <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-slate-200 border border-slate-300 inline-block" /> Locked</span>
+            </span>
+          </div>
+          <div className="divide-y divide-slate-50">
+            {safeProfiles.map(child => {
+              const childHasSpelling = spellingHistory.some(s => s.profile_id === child.id);
+              if (!childHasSpelling) return null;
+              const hasPhoto = child.avatar_url?.startsWith("http") || child.avatar_url?.startsWith("/api/");
+              return (
+                <div key={child.id} className="flex items-center gap-5 py-4 first:pt-0 last:pb-0">
+                  {hasPhoto ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={`/api/avatar/${child.id}`} alt={child.name} className="w-9 h-9 rounded-full object-cover shrink-0" />
+                  ) : (
+                    <div className={`w-9 h-9 rounded-full ${child.avatar_url || 'bg-indigo-500'} text-white flex items-center justify-center font-bold text-sm shrink-0`}>
+                      {child.name?.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  <div className="w-24 shrink-0">
+                    <p className="font-bold text-slate-700 text-sm">{child.name}</p>
+                    <p className="text-xs text-slate-400">Grade {child.grade_level}</p>
+                  </div>
+                  <div className="flex-1">
+                    <SpellingMasteryChart profile={child} spellingHistory={spellingHistory} />
+                  </div>
+                  <button
+                    onClick={() => setWordListProfileId(child.id)}
+                    className="flex items-center gap-1.5 text-xs font-bold text-purple-600 hover:text-purple-800 bg-purple-50 hover:bg-purple-100 px-3 py-2 rounded-xl transition-colors shrink-0">
+                    <Printer className="w-3.5 h-3.5" /> Word List
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      {/* Word list modal */}
+      {wordListProfile && (
+        <WordListModal profile={wordListProfile} onClose={() => setWordListProfileId(null)} />
+      )}
 
       {/* ── Quick Action Cards ── */}
       <div className="grid gap-4 md:grid-cols-2">
