@@ -132,7 +132,7 @@ export default function MathModule({ profileId, gradeLevel = 1, onRoundComplete 
     if(ledgerMutated) setLedger(nextLedger);
 
     if (today.isTestDay) {
-        setQueue(selectWeightedProblems(nextLedger.skills, 20)); // Friday Test
+        setQueue(selectWeightedProblems(nextLedger.skills, 50)); // Friday Test (scaled up to 50)
         setNextPhaseAfterReady("test");
         setPhase("ready");
     } else {
@@ -143,7 +143,7 @@ export default function MathModule({ profileId, gradeLevel = 1, onRoundComplete 
             setNextPhaseAfterReady("teaching");
             setPhase("ready");
         } else {
-            setQueue(selectWeightedProblems(nextLedger.skills, 5));
+            setQueue(selectWeightedProblems(nextLedger.skills, 20)); // Daily Speed Drill (scaled up to 20)
             setNextPhaseAfterReady("warmup");
             setPhase("ready");
         }
@@ -216,10 +216,10 @@ export default function MathModule({ profileId, gradeLevel = 1, onRoundComplete 
       if (phase === "warmup") {
          setPhase("teaching");
       } else if (phase === "practice") {
-         // Generate daily quiz: 10 items (mix of new and review)
+         // Generate daily quiz: 30 items
          const mixed = shuffle([
-             ...generateNewSkillProblems(dayConfig.newSkills, 3), // guarantee 3 hits on new stuff
-             ...selectWeightedProblems(ledger.skills, 7)
+             ...generateNewSkillProblems(dayConfig.newSkills, 10), // 10 new
+             ...selectWeightedProblems(ledger.skills, 20) // 20 review
          ]);
          setQueue(mixed);
          setCurrentIndex(0);
@@ -236,10 +236,17 @@ export default function MathModule({ profileId, gradeLevel = 1, onRoundComplete 
 
   const skipTeaching = () => {
     stop();
-    // Build practice queue
-    setQueue(generateNewSkillProblems(dayConfig.newSkills, 5));
-    setCurrentIndex(0);
-    setPhase(dayConfig.newSkills.length > 0 ? "practice" : "quiz");
+    if (dayConfig.newSkills && dayConfig.newSkills.length > 0) {
+      // Go to Practice (testing new skills)
+      setQueue(generateNewSkillProblems(dayConfig.newSkills, 10)); // 10 practice problems
+      setCurrentIndex(0);
+      setPhase("practice");
+    } else {
+      // Skip straight to Quiz, generating a pure Review Quiz (30 items)
+      setQueue(selectWeightedProblems(ledger.skills, 30));
+      setCurrentIndex(0);
+      setPhase("quiz");
+    }
   };
 
   // Keyboard support
