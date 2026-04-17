@@ -61,16 +61,16 @@ function useSpeechAsync(voiceId) {
 }
 
 // ── Storage Helpers ────────────────────────────────────────────────────────────
-const loadLedger = (profileId) => {
+const loadLedger = (profileId, grade) => {
   const blank = { day: 1, skills: {} };
   if (typeof window === "undefined") return blank;
-  const stored = localStorage.getItem(`math_ledger_${profileId}`);
+  const stored = localStorage.getItem(`math_ledger_g${grade}_${profileId}`);
   return stored ? JSON.parse(stored) : blank;
 };
 
-const saveLedger = (profileId, data) => {
+const saveLedger = (profileId, grade, data) => {
   if (typeof window !== "undefined") {
-    localStorage.setItem(`math_ledger_${profileId}`, JSON.stringify(data));
+    localStorage.setItem(`math_ledger_g${grade}_${profileId}`, JSON.stringify(data));
   }
 };
 
@@ -110,9 +110,9 @@ function generateNewSkillProblems(newSkillsTags, requiredCount) {
 }
 
 // ── Main UI Component ──────────────────────────────────────────────────────────
-export default function MathModule({ profileId, gradeLevel = 1, onRoundComplete }) {
+export default function MathModule({ profileId, grade = 1, onRoundComplete }) {
   const { speakAsync, stop } = useSpeechAsync("alloy");
-  const [ledger, setLedger] = useState(() => loadLedger(profileId));
+  const [ledger, setLedger] = useState(() => loadLedger(profileId, grade));
   
   const [phase, setPhase] = useState("booting"); // booting -> ready -> warmup -> teaching -> practice -> quiz -> test -> review_complete
   const [queue, setQueue] = useState([]);
@@ -131,7 +131,7 @@ export default function MathModule({ profileId, gradeLevel = 1, onRoundComplete 
     if (phase !== "booting") return;
 
     // Select curriculum by grade level with fallback
-    const curriculum = CURRICULUM_MAP[gradeLevel] || GRADE_1_CURRICULUM;
+    const curriculum = CURRICULUM_MAP[grade] || GRADE_1_CURRICULUM;
     const today = curriculum.find(c => c.day === ledger.day);
     
     // If they beat all 10 days of MVP, fallback to generic endless test.
@@ -175,8 +175,8 @@ export default function MathModule({ profileId, gradeLevel = 1, onRoundComplete 
   }, [phase, ledger]);
 
   useEffect(() => {
-    saveLedger(profileId, ledger);
-  }, [ledger, profileId]);
+    saveLedger(profileId, grade, ledger);
+  }, [ledger, profileId, grade]);
 
   // Audio driver
   useEffect(() => {
