@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { UserButton } from "@clerk/nextjs";
-import { PlusCircle, CalendarSync, Settings, TrendingUp, GripVertical, Settings2, Sparkles, BookOpen, Calculator, Type, Gamepad2, X, Link, Clock, Medal, ChevronRight } from "lucide-react";
+import { PlusCircle, CalendarSync, Settings, TrendingUp, GripVertical, Settings2, Sparkles, BookOpen, Calculator, Type, Gamepad2, X, Link, Clock, Medal, ChevronRight, Play, Volume2 } from "lucide-react";
 import { addChild } from "../actions";
 
 const ICON_MAP = {
@@ -17,6 +17,32 @@ export default function ParentClient({ profiles }) {
   const [isAddingChild, setIsAddingChild] = useState(false);
   const [activeChildId, setActiveChildId] = useState(profiles[0]?.id || null);
   const [rewardTime, setRewardTime] = useState(15);
+
+  const voiceOptions = [
+    { id: "2fe8mwpfJcqvj9RGBsC1", name: "Mr. Smith" },
+    { id: "vDDsFF2fWRAHODFKKuEX", name: "Mr. Davis" },
+    { id: "fnYMz3F5gMEDGMWcH1ex", name: "Mr. Harrison" },
+    { id: "DODLEQrClDo8wCz460ld", name: "Ms. Sarah" },
+    { id: "w2CTE3MYza6FgBnETYNT", name: "Ms. Emily" }
+  ];
+
+  const [selectedVoice, setSelectedVoice] = useState(voiceOptions[0].id);
+  const [playingVoice, setPlayingVoice] = useState(null);
+
+  const handlePlaySample = (voiceId, e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    if (playingVoice) return; // Prevent overlapping audio
+    setPlayingVoice(voiceId);
+    
+    const audio = new Audio(`/api/tts?voiceId=${voiceId}`);
+    audio.play();
+    audio.onended = () => setPlayingVoice(null);
+    audio.onerror = () => {
+      console.error("Audio playback error");
+      setPlayingVoice(null);
+    }
+  };
 
   const [todaysPlan, setTodaysPlan] = useState([
     { id: "p1", type: "Math", iconCode: "Calculator", color: "text-blue-600 bg-blue-100" },
@@ -85,8 +111,31 @@ export default function ParentClient({ profiles }) {
 
               {/* Advanced Settings */}
               <div className="border-t border-slate-100 pt-4 mt-4">
-                 <h3 className="text-sm font-bold text-slate-800 mb-3">Academic Schedule</h3>
+                 <h3 className="text-sm font-bold text-slate-800 mb-3">Settings & Guide Voice</h3>
                  
+                 <div className="mb-4">
+                   <label className="block text-sm font-semibold text-slate-600 mb-2">Select a Guide Voice</label>
+                   <input type="hidden" name="voiceId" value={selectedVoice} />
+                   <div className="grid grid-cols-2 gap-2">
+                     {voiceOptions.map(v => (
+                       <div key={v.id} 
+                         onClick={() => setSelectedVoice(v.id)}
+                         className={`flex items-center justify-between p-2 rounded-xl cursor-pointer border-2 transition-all ${selectedVoice === v.id ? 'border-indigo-500 bg-indigo-50' : 'border-slate-100 bg-white hover:border-slate-300'}`}
+                       >
+                         <div>
+                           <p className="text-xs font-bold text-slate-800">{v.name}</p>
+                         </div>
+                         <button 
+                           onClick={(e) => handlePlaySample(v.id, e)}
+                           className={`p-1.5 rounded-full ${playingVoice === v.id ? 'bg-indigo-500 text-white animate-pulse' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
+                         >
+                           {playingVoice === v.id ? <Volume2 className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                         </button>
+                       </div>
+                     ))}
+                   </div>
+                 </div>
+
                  <div className="mb-4">
                    <label className="block text-sm font-semibold text-slate-600 mb-1">School Start Date</label>
                    <input name="startDate" required type="date" defaultValue={new Date().toISOString().split('T')[0]} className="w-full border border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
