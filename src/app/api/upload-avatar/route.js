@@ -60,6 +60,7 @@ export async function POST(request) {
     return NextResponse.json({ error: updateError.message }, { status: 500 });
   }
 
-  // Return the PROXY path to the client — browser never touches the Supabase domain
-  return NextResponse.json({ url: `/api/avatar/${profileId}` });
+  // Return the PROXY path to the client — browser never touches the Supabase domain.
+  // The ?v= timestamp busts the browser cache on each re-upload.
+  return NextResponse.json({ url: `/api/avatar/${profileId}?v=${Date.now()}` });
 }

@@ -31,7 +31,9 @@ export async function GET(request, { params }) {
   }
 
   try {
-    const upstream = await fetch(upstreamUrl, { next: { revalidate: 3600 } });
+    // Always fetch fresh — uploading a new photo replaces the same Supabase path,
+    // so we must never serve a stale cached copy.
+    const upstream = await fetch(upstreamUrl, { cache: "no-store" });
     if (!upstream.ok) return new NextResponse(null, { status: 404 });
 
     const contentType = upstream.headers.get("content-type") || "image/jpeg";
@@ -41,7 +43,8 @@ export async function GET(request, { params }) {
       status: 200,
       headers: {
         "Content-Type": contentType,
-        "Cache-Control": "public, max-age=86400, stale-while-revalidate=3600",
+        // Short browser cache (30s) so a re-upload with ?v= query is served fresh
+        "Cache-Control": "private, max-age=30, must-revalidate",
       },
     });
   } catch {

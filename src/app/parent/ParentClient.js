@@ -132,6 +132,7 @@ export default function ParentClient({ profiles }) {
   const [toasts, setToasts] = useState([]);
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [editAvatarUrl, setEditAvatarUrl] = useState(null); // preview while in edit modal
+  const [avatarVersions, setAvatarVersions] = useState({}); // { [profileId]: timestamp } for cache busting
   const avatarInputRef = useRef(null);
 
   const addToast = useCallback((message, type = "success") => {
@@ -159,9 +160,11 @@ export default function ParentClient({ profiles }) {
 
       if (!res.ok) throw new Error(data.error || "Upload failed");
 
-      // Update the live editingChild reference so roster re-renders
+      // Update the live editingChild reference so the edit modal avatar refreshes
       setEditingChild(prev => ({ ...prev, avatar_url: data.url }));
       setEditAvatarUrl(data.url);
+      // Update version map so ALL roster avatars for this profile re-render immediately
+      setAvatarVersions(v => ({ ...v, [editingChild.id]: Date.now() }));
       addToast("📸 Photo saved!");
     } catch (err) {
       addToast(err.message, "error");
@@ -633,7 +636,13 @@ export default function ParentClient({ profiles }) {
                   return (
                     <li key={child.id} onClick={() => setActiveChildId(child.id)} className={`flex items-center justify-between p-3 rounded-2xl cursor-pointer transition-[colors,transform,shadow] duration-300 ${isActive ? "bg-indigo-50 border border-indigo-100 ring-1 ring-indigo-200 shadow-sm" : "hover:bg-slate-50 border border-transparent"}`}>
                       <div className="flex items-center gap-3">
-                        <Avatar name={child.name} avatarUrl={child.avatar_url} profileId={child.id} className="w-11 h-11 rounded-full" textClass="text-base font-bold" />
+                        <Avatar
+                          name={child.name}
+                          avatarUrl={avatarVersions[child.id] ? `/api/avatar/${child.id}?v=${avatarVersions[child.id]}` : child.avatar_url}
+                          profileId={child.id}
+                          className="w-11 h-11 rounded-full"
+                          textClass="text-base font-bold"
+                        />
                         <div>
                           <p className="font-semibold text-slate-800 text-sm">{child.name}</p>
                           <p className="text-xs text-slate-500 font-medium">Grade {child.grade_level}</p>
@@ -923,7 +932,13 @@ export default function ParentClient({ profiles }) {
                   const chipIcons = { done: "✓", active: "▶", pending: "○", missed: "!" };
                   return (
                     <div key={child.id} className="flex items-center gap-6 py-4 first:pt-0 last:pb-0 hover:bg-indigo-50/30 px-3 -mx-3 rounded-2xl transition-colors cursor-pointer" onClick={() => setActiveChildId(child.id)}>
-                      <Avatar name={child.name} avatarUrl={child.avatar_url} profileId={child.id} className="w-11 h-11 rounded-full shrink-0" textClass="text-base font-bold" />
+                      <Avatar
+                        name={child.name}
+                        avatarUrl={avatarVersions[child.id] ? `/api/avatar/${child.id}?v=${avatarVersions[child.id]}` : child.avatar_url}
+                        profileId={child.id}
+                        className="w-11 h-11 rounded-full shrink-0"
+                        textClass="text-base font-bold"
+                      />
                       <div className="w-36 shrink-0">
                         <p className="font-bold text-slate-800 text-sm">{child.name}</p>
                         <div className="flex items-center gap-2 mt-1">
@@ -970,7 +985,13 @@ export default function ParentClient({ profiles }) {
                         <tr key={child.id} className="hover:bg-indigo-50/20 transition-colors cursor-pointer group" onClick={() => setActiveChildId(child.id)}>
                           <td className="py-3 pr-6">
                             <div className="flex items-center gap-3">
-                              <Avatar name={child.name} avatarUrl={child.avatar_url} profileId={child.id} className="w-8 h-8 rounded-full shrink-0" textClass="text-sm font-bold" />
+                              <Avatar
+                                name={child.name}
+                                avatarUrl={avatarVersions[child.id] ? `/api/avatar/${child.id}?v=${avatarVersions[child.id]}` : child.avatar_url}
+                                profileId={child.id}
+                                className="w-8 h-8 rounded-full shrink-0"
+                                textClass="text-sm font-bold"
+                              />
                               <span className="font-semibold text-slate-700 text-xs">{child.name}</span>
                             </div>
                           </td>
