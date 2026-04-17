@@ -196,7 +196,7 @@ export default function HubClient({ safeProfiles, planMap, totalChildren, totalM
                     )}
                   </div>
 
-                  {/* Name + grade */}
+                  {/* Name + grade + time */}
                   <div className="w-36 shrink-0">
                     <p className="font-bold text-slate-800 group-hover:text-indigo-600 transition-colors">{child.name}</p>
                     <div className="flex items-center gap-2 mt-1">
@@ -205,6 +205,17 @@ export default function HubClient({ safeProfiles, planMap, totalChildren, totalM
                       </div>
                       <span className="text-xs font-bold text-slate-400">{pct}%</span>
                     </div>
+                    {/* Total time today */}
+                    {(() => {
+                      const totalSecs = childSessions.reduce((acc, s) => acc + (s.time_spent_seconds || 0), 0);
+                      if (totalSecs < 60) return null;
+                      const mins = Math.round(totalSecs / 60);
+                      return (
+                        <span className="text-xs text-indigo-500 font-bold mt-1 flex items-center gap-1">
+                          ⏱ {mins} min{mins !== 1 ? "s" : ""} today
+                        </span>
+                      );
+                    })()}
                     {child.current_streak > 0 && (
                       <span className="text-xs text-amber-600 font-bold flex items-center gap-1 mt-1">
                         <Flame className="w-3 h-3" />{child.current_streak} day streak
@@ -212,7 +223,7 @@ export default function HubClient({ safeProfiles, planMap, totalChildren, totalM
                     )}
                   </div>
 
-                  {/* Module chips */}
+                  {/* Module chips with completion + time */}
                   <div className="flex flex-wrap gap-2 flex-1">
                     {modules.length === 0 ? (
                       <span className="text-xs text-slate-300 font-medium italic">No plan set</span>
@@ -222,11 +233,25 @@ export default function HubClient({ safeProfiles, planMap, totalChildren, totalM
                       
                       return activeModules.length === 0 ? (
                         <span className="text-xs text-slate-300 font-medium italic">Rest day</span>
-                      ) : activeModules.map((m, i) => (
-                        <span key={i} className={`text-xs font-bold px-3 py-1 rounded-lg ${MODULE_COLORS[m.type] || "bg-slate-100 text-slate-600"}`}>
-                          {m.type}
-                        </span>
-                      ));
+                      ) : activeModules.map((m, i) => {
+                        const sessionForMod = childSessions.find(s => s.module_type === m.type);
+                        const isDone = !!sessionForMod;
+                        const timeSecs = sessionForMod?.time_spent_seconds || 0;
+                        const timeMins = timeSecs > 0 ? Math.round(timeSecs / 60) : null;
+                        return (
+                          <span key={i} className={`text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all ${
+                            isDone
+                              ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                              : MODULE_COLORS[m.type] || "bg-slate-100 text-slate-600"
+                          }`}>
+                            {isDone && <span className="text-emerald-500">✓</span>}
+                            {m.type}
+                            {isDone && timeMins && (
+                              <span className="text-emerald-400 font-normal">{timeMins}m</span>
+                            )}
+                          </span>
+                        );
+                      });
                     })()}
                   </div>
 

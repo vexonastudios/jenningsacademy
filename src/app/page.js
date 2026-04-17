@@ -54,7 +54,7 @@ export default async function Home() {
   if (safeProfiles.length > 0) {
     const { data } = await supabase
       .from("sessions")
-      .select("profile_id, daily_plan_id, module_type, created_at")
+      .select("profile_id, daily_plan_id, module_type, score, time_spent_seconds, created_at")
       .in("profile_id", safeProfiles.map(p => p.id))
       .gte("created_at", thirtyDaysAgo.toISOString())
       .eq("completed", true);

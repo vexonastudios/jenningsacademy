@@ -52,7 +52,6 @@ export async function updateChild(payload) {
   if (!userId) throw new Error("Unauthorized");
 
   const { id, name, grade, pin, voiceId, startDate, schoolDays, lockMode, parentExitPin } = payload;
-  // Re-slug if name changed
   const newSlug = slugify(name);
   const { error } = await supabase.from('profiles')
     .update({
@@ -94,21 +93,16 @@ export async function publishPlan(payload) {
 
   const { profileId, modules, targetDate } = payload;
 
-  // Verify the profile belongs to this parent
   const { data: profile } = await supabase.from('profiles')
     .select('id').eq('id', profileId).eq('parent_id', userId).single();
   if (!profile) throw new Error("Profile not found");
 
-  // 1. Save to the child's Master Plan Template
   const { error: masterErr } = await supabase.from('profiles')
     .update({ master_plan: modules })
     .eq('id', profileId);
 
   if (masterErr) throw new Error(masterErr.message);
 
-  // 2. Clear out any un-started 'future' or 'today' daily plans so they get regenerated fresh if the parent edited it
-  // Notice we only delete plans that haven't been completed, but for simplicity we'll just delete today's plan
-  // so the JIT engine rebuilds it instantly.
   await supabase.from('daily_plans')
     .delete()
     .eq('profile_id', profileId)
@@ -129,14 +123,10 @@ export async function savePlanAsTemplate(payload) {
   revalidatePath('/parent');
 }
 
-// ─── VERIFY CHILD PIN ─────────────────────────────────────────────────────────
-// Note: called client-side via fetch to /api/verify-pin — not a Server Action
-// but kept here for reference pattern.
-
-// --- RECORD SESSION -------------------------------------------------------------
+// ─── RECORD SESSION ──────────────────────────────────────────────────────────
 export async function recordSession(payload) {
-  const { profileId, planId, moduleType, score, timeSpent } = payload;
-  
+  const { profileId, planId, moduleType, score, timeSpent, metadata } = payload;
+
   if (!profileId || !planId || !moduleType) throw new Error("Invalid session data");
 
   const { error } = await supabase.from('sessions').insert([{
@@ -145,7 +135,8 @@ export async function recordSession(payload) {
     module_type: moduleType,
     score: score || 0,
     time_spent_seconds: timeSpent || 0,
-    completed: true
+    metadata: metadata || null,
+    completed: true,
   }]);
 
   if (error) throw new Error(error.message);
@@ -155,10 +146,10 @@ export async function recordSession(payload) {
 
 export async function fetchTodayPlan(profileId) {
   const todayStr = new Date().toISOString().split('T')[0];
-  
+
   // 1. Get the generated active plan for today
   const plan = await getOrGenerateDailyPlan(profileId, todayStr);
-  
+
   if (!plan || !plan.id) return { plan: null, completedModuleTypes: [] };
 
   // 2. Fetch all completed sessions strictly for this daily plan

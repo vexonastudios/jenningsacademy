@@ -83,8 +83,9 @@ export const MODULE_REGISTRY = {
  * @returns {Object[]}    - Array of module registry entries
  */
 export function getModulesForGrade(grade) {
+  const g = Number(grade) || 1; // treat null / undefined / 0 as grade 1
   return Object.values(MODULE_REGISTRY).filter((m) =>
-    m.supportedGrades.includes(Number(grade))
+    m.supportedGrades.includes(g)
   );
 }
 
