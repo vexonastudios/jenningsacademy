@@ -52,7 +52,7 @@ function StatChip({ label, value, accent }) {
   );
 }
 
-export default function HubClient({ safeProfiles, planMap, totalChildren, totalModulesToday, streakTop, familySlug }) {
+export default function HubClient({ safeProfiles, planMap, totalChildren, totalModulesToday, streakTop, familySlug, completedSessions }) {
   const [overviewView, setOverviewView] = useState("day"); // 'day', 'week', 'month'
   const [overviewOffset, setOverviewOffset] = useState(0);
 
