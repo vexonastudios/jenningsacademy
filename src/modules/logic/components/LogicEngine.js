@@ -71,6 +71,30 @@ function DraggableList({ items, onReorder }) {
   );
 }
 
+function buildOptionsAudio(q, isExplain) {
+  const source = isExplain ? q.explainBack : q;
+  const opts = source.options;
+  if (!opts || opts.length === 0) return "";
+
+  const optTexts = opts.map(o => o.text);
+  const optionsString = optTexts.join(" ... or ... ");
+
+  if (source.question) {
+    return `${source.question} ... ${optionsString}?`;
+  }
+
+  if (q.type === "spot-flaw") {
+      return `Is this ... ${optionsString}?`;
+  }
+  if (q.type === "fair-unfair") {
+      return `Is this a ... ${optionsString}?`;
+  }
+  if (q.type === "contradiction-hunt") {
+      return `Do these state that ... ${optionsString}?`;
+  }
+  return `Please choose ... ${optionsString}?`;
+}
+
 export default function LogicEngine({ content, voiceId, onComplete }) {
   const { speakAsync, stop } = useSpeechAsync(voiceId);
 
@@ -91,7 +115,11 @@ export default function LogicEngine({ content, voiceId, onComplete }) {
     if (phase === "intro") {
       speakAsync(q.audioText).then(() => {
         setPhase("interaction");
-        if (isChain) setReorderedList([...q.parts]);
+        if (isChain) {
+          setReorderedList([...q.parts]);
+        } else {
+          speakAsync(buildOptionsAudio(q, false));
+        }
       });
     }
     return () => stop();
@@ -134,7 +162,7 @@ export default function LogicEngine({ content, voiceId, onComplete }) {
       setPhase("explain-back");
       setShowingExplain(true);
       setSelectedOpt(null);
-      speakAsync(q.explainBack.question);
+      speakAsync(buildOptionsAudio(q, true));
       return;
     }
 
@@ -169,7 +197,14 @@ export default function LogicEngine({ content, voiceId, onComplete }) {
         {(!showingExplain || phase === "explain-back" || phase === "explain-feedback") && (
           <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8 w-full mb-8 relative">
             <button 
-              onClick={() => speakAsync(showingExplain ? q.explainBack.question : q.audioText)}
+              onClick={() => {
+                stop();
+                if (phase === "interaction" || phase === "explain-back") {
+                  speakAsync(buildOptionsAudio(q, showingExplain));
+                } else {
+                  speakAsync(showingExplain ? q.explainBack.question : q.audioText);
+                }
+              }}
               className="absolute top-4 right-4 text-slate-400 hover:text-indigo-500 transition-colors"
             >
               <Volume2 className="w-6 h-6" />
