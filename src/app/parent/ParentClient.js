@@ -204,7 +204,7 @@ export default function ParentClient({ profiles }) {
 
         {/* Floating Add Child Modal still available from this screen */}
         {isAddingChild && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm px-4">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 px-4">
             <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg p-8 relative max-h-[90vh] overflow-y-auto">
               <button onClick={() => setIsAddingChild(false)} className="absolute top-6 right-6 text-slate-400"><X className="w-6 h-6" /></button>
               <h2 className="text-2xl font-bold text-slate-800 mb-6">Add Your First Student</h2>
@@ -230,7 +230,7 @@ export default function ParentClient({ profiles }) {
       
       {/* Edit Child Modal */}
       {editingChild && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm px-4">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 px-4">
           <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg p-8 relative max-h-[90vh] overflow-y-auto">
             <button onClick={() => setEditingChild(null)} className="absolute top-6 right-6 text-slate-400"><X className="w-6 h-6" /></button>
             <h2 className="text-2xl font-bold text-slate-800 mb-6">Edit {editingChild.name}</h2>
@@ -281,7 +281,7 @@ export default function ParentClient({ profiles }) {
 
       {/* Delete Confirm Modal */}
       {confirmDelete && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm px-4">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 px-4">
           <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-8 text-center">
             <div className="w-14 h-14 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Trash2 className="w-7 h-7 text-rose-500" />
@@ -298,7 +298,7 @@ export default function ParentClient({ profiles }) {
 
       {/* Save Template Modal */}
       {saveTemplateModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm px-4">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 px-4">
           <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-8">
             <h2 className="text-xl font-bold text-slate-800 mb-4">Save as Template</h2>
             <input value={templateName} onChange={e => setTemplateName(e.target.value)} type="text" placeholder="e.g. Standard Week, Heavy Math Day..." className="w-full border border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-4" />
@@ -315,7 +315,7 @@ export default function ParentClient({ profiles }) {
         {toasts.map(toast => (
           <div
             key={toast.id}
-            className={`flex items-center gap-3 px-5 py-4 rounded-2xl shadow-2xl border backdrop-blur-xl text-sm font-semibold
+            className={`flex items-center gap-3 px-5 py-4 rounded-2xl shadow-xl border text-sm font-semibold
               pointer-events-auto animate-[slideIn_0.3s_ease]
               ${toast.type === "error"
                 ? "bg-rose-50 border-rose-200 text-rose-700 shadow-rose-200/50"
@@ -336,7 +336,7 @@ export default function ParentClient({ profiles }) {
       `}</style>
 
       {isAddingChild && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm px-4">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 px-4">
           <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg p-8 relative max-h-[90vh] overflow-y-auto">
             <button onClick={() => setIsAddingChild(false)} className="absolute top-6 right-6 text-slate-400 hover:text-slate-600">
               <X className="w-6 h-6" />
@@ -526,7 +526,7 @@ export default function ParentClient({ profiles }) {
                  </div>
                </div>
 
-               <button className="w-full text-sm font-medium bg-white/10 hover:bg-white/20 transition-colors py-2.5 rounded-xl backdrop-blur-sm border border-white/10 flex items-center justify-center gap-2">
+               <button className="w-full text-sm font-medium bg-white/10 hover:bg-white/20 transition-colors py-2.5 rounded-xl border border-white/10 flex items-center justify-center gap-2">
                  Detailed Report <ChevronRight className="w-4 h-4" />
                </button>
             </div>
