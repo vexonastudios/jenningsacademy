@@ -72,17 +72,18 @@ export default function ModuleShell({
         timeSpentSeconds: elapsedSeconds,
         attempt,
       };
-      setLastResults(finalResults);
 
-      const passed =
-        minimumPassScore === null || // no pass requirement (rewards)
-        (results.score ?? 0) >= minimumPassScore;
-
-      setPhase(passed ? "passed" : "failed");
-
-      if (passed) {
+      // If no minimumPassScore, the module manages its own UX (e.g. Spelling).
+      // Just fire onComplete immediately — no ModuleShell result screens.
+      if (minimumPassScore === null) {
         onComplete(finalResults);
+        return;
       }
+
+      setLastResults(finalResults);
+      const passed = (results.score ?? 0) >= minimumPassScore;
+      setPhase(passed ? "passed" : "failed");
+      if (passed) onComplete(finalResults);
     },
     [elapsedSeconds, attempt, minimumPassScore, onComplete]
   );

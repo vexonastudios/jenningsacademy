@@ -30,7 +30,7 @@ export const MODULE_REGISTRY = {
     iconCode: "Type",
     supportedGrades: [1, 2, 3, 4, 5, 6, 7, 8],
     estimatedMinutes: 10,
-    minimumPassScore: 80,
+    minimumPassScore: null,  // Spelling manages its own mastery — no ModuleShell retry
     timeLimitSeconds: null,
     component: () => import("@/modules/spelling/SpellingModule"),
   },
