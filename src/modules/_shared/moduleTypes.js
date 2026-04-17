@@ -100,6 +100,19 @@ export const MODULE_REGISTRY = {
     component: () => import("@/modules/geography/GeographyModule"),
   },
 
+  MathFlow: {
+    id: "MathFlow",
+    label: "Math Curriculum",
+    description: "Abeka-style core math curriculum with targeted error practice",
+    color: "text-sky-600 bg-sky-100",
+    iconCode: "Calculator",
+    supportedGrades: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+    estimatedMinutes: 20,
+    minimumPassScore: null,
+    timeLimitSeconds: null,
+    component: () => import("@/modules/math/MathModule"),
+  },
+
   "Reward Unlock": {
     id: "Reward Unlock",
     label: "Reward Unlock",
