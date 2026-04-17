@@ -21,5 +21,18 @@ export default async function ParentDashboard() {
     console.error("Error fetching profiles:", error);
   }
 
-  return <ParentClient profiles={profiles || []} />;
+  // Fetch today's saved plans for all children
+  const todayStr = new Date().toISOString().split('T')[0];
+  const profileIds = (profiles || []).map(p => p.id);
+  let initialPlans = [];
+  if (profileIds.length > 0) {
+    const { data: plans } = await supabase
+      .from('daily_plans')
+      .select('profile_id, modules')
+      .eq('target_date', todayStr)
+      .in('profile_id', profileIds);
+    initialPlans = plans || [];
+  }
+
+  return <ParentClient profiles={profiles || []} initialPlans={initialPlans || []} />;
 }

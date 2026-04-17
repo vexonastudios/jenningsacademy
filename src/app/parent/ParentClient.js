@@ -97,7 +97,7 @@ function buildWeekDays() {
 }
 const weekDays = buildWeekDays();
 
-export default function ParentClient({ profiles }) {
+export default function ParentClient({ profiles, initialPlans = [] }) {
   const [isAddingChild, setIsAddingChild] = useState(false);
   const [activeChildId, setActiveChildId] = useState(profiles[0]?.id || null);
   const [rewardTime, setRewardTime] = useState(15);
@@ -188,11 +188,26 @@ export default function ParentClient({ profiles }) {
     }
   };
 
-  const [todaysPlan, setTodaysPlan] = useState([
-    { id: "p1", type: "Math", iconCode: "Calculator", color: "text-blue-600 bg-blue-100" },
-    { id: "p2", type: "Spelling", iconCode: "Type", color: "text-purple-600 bg-purple-100" },
-    { id: "p3", type: "Audiobook", iconCode: "BookOpen", color: "text-amber-600 bg-amber-100" },
-  ]);
+  // Build a lookup: profileId → today's saved modules
+  const planByProfile = Object.fromEntries(
+    initialPlans.map(p => [p.profile_id, p.modules])
+  );
+
+  const defaultPlan = [
+    { id: "p1", type: "Math",     iconCode: "Calculator", color: "text-blue-600 bg-blue-100" },
+    { id: "p2", type: "Spelling", iconCode: "Type",       color: "text-purple-600 bg-purple-100" },
+    { id: "p3", type: "Audiobook",iconCode: "BookOpen",   color: "text-amber-600 bg-amber-100" },
+  ];
+
+  const getInitialPlan = (profileId) => planByProfile[profileId] || defaultPlan;
+
+  const [todaysPlan, setTodaysPlan] = useState(() => getInitialPlan(profiles[0]?.id));
+
+  // When parent switches to a different child, load that child's saved plan
+  useEffect(() => {
+    setTodaysPlan(getInitialPlan(activeChildId));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeChildId]);
 
   const libraryModules = [
     { type: "Math",         iconCode: "Calculator", color: "text-blue-600 bg-blue-100",    desc: "Adaptive arithmetic" },
