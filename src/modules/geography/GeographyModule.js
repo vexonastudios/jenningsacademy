@@ -79,6 +79,7 @@ export default function GeographyModule({ profileId, onRoundComplete }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAnswering, setIsAnswering] = useState(false); // To block multiple clicks
   const [overlayMsg, setOverlayMsg] = useState(null); // visual feedback on map
+  const [tappedStateId, setTappedStateId] = useState(null); // track tapped state for temp highlight
   
   // Initialize Daily Queue
   useEffect(() => {
@@ -119,11 +120,23 @@ export default function GeographyModule({ profileId, onRoundComplete }) {
   // Audio orchestrator based on phase and index
   useEffect(() => {
     if (phase === "review" && reviewQueue[currentIndex]) {
-      speakAsync(`Let's review. This is ${reviewQueue[currentIndex].name}.`);
+      if (currentIndex === 0) {
+        speakAsync(`Let's review. The highlighted state is ${reviewQueue[currentIndex].name}. Hit next to review the next state.`);
+      } else {
+        speakAsync(reviewQueue[currentIndex].name);
+      }
     } else if (phase === "new" && newQueue[currentIndex]) {
-      speakAsync(`New state! This is ${newQueue[currentIndex].name}.`);
+      if (currentIndex === 0) {
+        speakAsync(`Let's learn some new states. The highlighted state is ${newQueue[currentIndex].name}. Hit next to see the next state.`);
+      } else {
+        speakAsync(newQueue[currentIndex].name);
+      }
     } else if (phase === "test" && testQueue[currentIndex]) {
-      speakAsync(`Tap ${testQueue[currentIndex].name} on the map.`);
+      if (currentIndex === 0) {
+        speakAsync(`Now let's see what you remember. Tap ${testQueue[currentIndex].name} on the map.`);
+      } else {
+        speakAsync(`Tap ${testQueue[currentIndex].name} on the map.`);
+      }
     }
   }, [phase, currentIndex, reviewQueue, newQueue, testQueue, speakAsync]);
 
@@ -161,6 +174,7 @@ export default function GeographyModule({ profileId, onRoundComplete }) {
     
     const target = testQueue[currentIndex];
     setIsAnswering(true);
+    setTappedStateId(location.id);
 
     const updatedLedger = { ...ledger, states: { ...ledger.states } };
     const stateData = { ...updatedLedger.states[target.id] };
@@ -174,6 +188,7 @@ export default function GeographyModule({ profileId, onRoundComplete }) {
 
       speakAsync(`Great job! That is ${target.name}.`).then(() => {
         setIsAnswering(false);
+        setTappedStateId(null);
         handleNext();
       });
       setOverlayMsg({ isCorrect: true, text: "Correct!" });
@@ -186,6 +201,7 @@ export default function GeographyModule({ profileId, onRoundComplete }) {
 
       speakAsync(`Oops, that was ${location.name}. Try tapping ${target.name} again.`).then(() => {
         setIsAnswering(false);
+        setTappedStateId(null);
         setOverlayMsg(null);
       });
       setOverlayMsg({ isCorrect: false, text: location.name });
@@ -228,6 +244,9 @@ export default function GeographyModule({ profileId, onRoundComplete }) {
     mapMode = "test";
     // We only dim Unseen unintroduced states. Everything else is active.
     dimIds = USA.locations.filter(l => ledger.states[l.id].status === 'Unseen').map(l => l.id);
+    if (tappedStateId) {
+      highlightIds = [tappedStateId];
+    }
     promptText = `Tap ${testQueue[currentIndex].name}`;
   }
 
