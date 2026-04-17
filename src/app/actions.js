@@ -93,12 +93,23 @@ export async function publishPlan(payload) {
 
   const { profileId, modules, targetDate } = payload;
 
-  // Upsert: if a plan exists for this profile+date, replace it
-  const { error } = await supabase.from('daily_plans').upsert([{
+  // Verify the profile belongs to this parent
+  const { data: profile } = await supabase.from('profiles')
+    .select('id').eq('id', profileId).eq('parent_id', userId).single();
+  if (!profile) throw new Error("Profile not found");
+
+  // Delete any existing plan for this profile+date, then insert fresh.
+  // This avoids needing a UNIQUE constraint for upsert to work.
+  await supabase.from('daily_plans')
+    .delete()
+    .eq('profile_id', profileId)
+    .eq('target_date', targetDate);
+
+  const { error } = await supabase.from('daily_plans').insert([{
     profile_id: profileId,
     target_date: targetDate,
     modules,
-  }], { onConflict: 'profile_id,target_date' });
+  }]);
 
   if (error) throw new Error(error.message);
   revalidatePath('/parent');

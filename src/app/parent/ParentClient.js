@@ -195,10 +195,11 @@ export default function ParentClient({ profiles }) {
   ]);
 
   const libraryModules = [
-    { type: "Math", iconCode: "Calculator", color: "text-blue-600 bg-blue-100", desc: "Adaptive arithmetic" },
-    { type: "Spelling", iconCode: "Type", color: "text-purple-600 bg-purple-100", desc: "Weekly word lists" },
-    { type: "Audiobook", iconCode: "BookOpen", color: "text-amber-600 bg-amber-100", desc: "Comprehension focus" },
-    { type: "Logic", iconCode: "Settings", color: "text-rose-600 bg-rose-100", desc: "Critical thinking puzzles" },
+    { type: "Math",         iconCode: "Calculator", color: "text-blue-600 bg-blue-100",    desc: "Adaptive arithmetic" },
+    { type: "Spelling",     iconCode: "Type",       color: "text-purple-600 bg-purple-100", desc: "Weekly word lists" },
+    { type: "Audiobook",    iconCode: "BookOpen",   color: "text-amber-600 bg-amber-100",  desc: "Comprehension focus" },
+    { type: "Logic",        iconCode: "Settings",   color: "text-rose-600 bg-rose-100",    desc: "Critical thinking" },
+    { type: "Reward Unlock", iconCode: "Gamepad2",  color: "text-emerald-600 bg-emerald-100", desc: "Free playtime reward" },
   ];
 
   const activeChild = profiles.find(p => p.id === activeChildId) || profiles[0];
@@ -777,17 +778,6 @@ export default function ParentClient({ profiles }) {
                             onRemove={handleRemoveModule}
                           />
                         ))}
-
-                        {/* Reward Game — fixed at end, not sortable */}
-                        <div className="flex items-center bg-emerald-50/50 p-4 rounded-xl border border-emerald-100 shadow-sm mt-8 opacity-80">
-                          <div className="px-2 text-emerald-200"><Lock className="w-5 h-5" /></div>
-                          <span className="w-8 text-center font-bold text-emerald-300 text-sm ml-2 mr-3">{todaysPlan.length + 1}</span>
-                          <div className="p-3 rounded-lg bg-emerald-100 text-emerald-600 mr-4"><Gamepad2 className="w-5 h-5" /></div>
-                          <div className="flex-1">
-                            <h3 className="font-bold text-emerald-800">Reward Unlock</h3>
-                            <p className="text-xs text-emerald-600 font-medium">{rewardTime} Minutes of Playtime</p>
-                          </div>
-                        </div>
                       </div>
                     </SortableContext>
                   </DndContext>
