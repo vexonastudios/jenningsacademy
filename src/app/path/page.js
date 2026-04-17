@@ -6,6 +6,7 @@ import { UserButton } from "@clerk/nextjs";
 import PinGate from "./PinGate";
 import CelebrationOverlay from "@/components/CelebrationOverlay";
 import LockOverlay from "@/components/LockOverlay";
+import Avatar from "@/components/Avatar";
 import { useLockMode } from "@/hooks/useLockMode";
 
 // Pull profileId from URL query e.g. /path?profile=abc-123
@@ -172,10 +173,13 @@ export default function ChildPath() {
             </div>
           )}
           <div className="bg-white p-1 rounded-full shadow-md border border-slate-100">
-            <div className={`w-10 h-10 rounded-full ${profile.avatar_url || "bg-indigo-500"} text-white flex items-center justify-center font-bold text-base`}>
-              {profile.name?.charAt(0).toUpperCase()}
+              <Avatar
+                name={profile.name}
+                avatarUrl={profile.avatar_url}
+                className="w-10 h-10 rounded-full"
+                textClass="text-base font-bold"
+              />
             </div>
-          </div>
         </div>
       </nav>
 

@@ -61,6 +61,10 @@ INSERT INTO storage.buckets (id, name, public)
 VALUES ('voice_cache', 'voice_cache', true)
 ON CONFLICT (id) DO NOTHING;
 
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('child-avatars', 'child-avatars', true)
+ON CONFLICT (id) DO NOTHING;
+
 -- ==========================================
 -- PHASE 4: Templates, Badges & Streaks
 -- ==========================================
