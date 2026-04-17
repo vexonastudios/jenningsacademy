@@ -48,6 +48,19 @@ export const MODULE_REGISTRY = {
     component: () => import("@/modules/typing/TypingModule"),
   },
 
+  FeedAnimals: {
+    id: "FeedAnimals",
+    label: "Feed the Animals",
+    description: "Visual counting and addition game for early learners",
+    color: "text-pink-600 bg-pink-100",
+    iconCode: "Star",
+    supportedGrades: [1, 2],
+    estimatedMinutes: 10,
+    minimumPassScore: null,  // Game manages its own loop
+    timeLimitSeconds: null,
+    component: () => import("@/modules/feedAnimals/FeedAnimalsModule"),
+  },
+
   Audiobook: {
     id: "Audiobook",
     label: "Audiobook",
