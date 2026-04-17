@@ -13,13 +13,14 @@
 export default function Avatar({ name, avatarUrl, profileId, className = "", textClass = "text-base" }) {
   const letter = name?.charAt(0).toUpperCase() || "?";
 
-  // Choose the image src:
-  //  /api/avatar/... already proxied → use as-is
-  //  https://...supabase.co + profileId → force through proxy (browser DNS blocked)
-  //  any other http URL → use directly
-  //  CSS class / null → show initial letter
+  // data:...       = server-preloaded base64, render instantly with no request
+  // /api/avatar/.. = already proxied, use as-is
+  // https://...    = Supabase URL + profileId, force through proxy
+  // CSS class/null = show initial letter
   let src = null;
-  if (avatarUrl?.startsWith("/api/avatar")) {
+  if (avatarUrl?.startsWith("data:")) {
+    src = avatarUrl;
+  } else if (avatarUrl?.startsWith("/api/avatar")) {
     src = avatarUrl;
   } else if (avatarUrl?.startsWith("http") && profileId) {
     src = `/api/avatar/${profileId}`;

@@ -97,7 +97,7 @@ function buildWeekDays() {
 }
 const weekDays = buildWeekDays();
 
-export default function ParentClient({ profiles, initialPlans = [] }) {
+export default function ParentClient({ profiles, initialPlans = [], avatarDataUrls = {} }) {
   const [isAddingChild, setIsAddingChild] = useState(false);
   const [activeChildId, setActiveChildId] = useState(profiles[0]?.id || null);
   const [rewardTime, setRewardTime] = useState(15);
@@ -208,6 +208,16 @@ export default function ParentClient({ profiles, initialPlans = [] }) {
     setTodaysPlan(getInitialPlan(activeChildId));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeChildId]);
+
+  // Resolve best avatar URL for a child:
+  // 1. Server-preloaded base64 data URI (instant, no network)
+  // 2. Versioned proxy path after an upload this session
+  // 3. Proxy path from the profile's stored avatar_url
+  const resolveAvatar = (child) => {
+    if (avatarDataUrls[child.id]) return avatarDataUrls[child.id];
+    if (avatarVersions[child.id]) return `/api/avatar/${child.id}?v=${avatarVersions[child.id]}`;
+    return child.avatar_url; // Supabase URL; Avatar component will proxy it
+  };
 
   const libraryModules = [
     { type: "Math",         iconCode: "Calculator", color: "text-blue-600 bg-blue-100",    desc: "Adaptive arithmetic" },
@@ -668,7 +678,7 @@ export default function ParentClient({ profiles, initialPlans = [] }) {
                       <div className="flex items-center gap-3">
                         <Avatar
                           name={child.name}
-                          avatarUrl={avatarVersions[child.id] ? `/api/avatar/${child.id}?v=${avatarVersions[child.id]}` : child.avatar_url}
+                          avatarUrl={resolveAvatar(child)}
                           profileId={child.id}
                           className="w-11 h-11 rounded-full"
                           textClass="text-base font-bold"
@@ -953,7 +963,7 @@ export default function ParentClient({ profiles, initialPlans = [] }) {
                     <div key={child.id} className="flex items-center gap-6 py-4 first:pt-0 last:pb-0 hover:bg-indigo-50/30 px-3 -mx-3 rounded-2xl transition-colors cursor-pointer" onClick={() => setActiveChildId(child.id)}>
                       <Avatar
                         name={child.name}
-                        avatarUrl={avatarVersions[child.id] ? `/api/avatar/${child.id}?v=${avatarVersions[child.id]}` : child.avatar_url}
+                        avatarUrl={resolveAvatar(child)}
                         profileId={child.id}
                         className="w-11 h-11 rounded-full shrink-0"
                         textClass="text-base font-bold"
@@ -1006,7 +1016,7 @@ export default function ParentClient({ profiles, initialPlans = [] }) {
                             <div className="flex items-center gap-3">
                               <Avatar
                                 name={child.name}
-                                avatarUrl={avatarVersions[child.id] ? `/api/avatar/${child.id}?v=${avatarVersions[child.id]}` : child.avatar_url}
+                                avatarUrl={resolveAvatar(child)}
                                 profileId={child.id}
                                 className="w-8 h-8 rounded-full shrink-0"
                                 textClass="text-sm font-bold"
