@@ -13,6 +13,16 @@ const ICON_MAP = {
   Gamepad2: Gamepad2
 };
 
+// Mock per-student daily progress — will be replaced by live `sessions` table queries
+const overviewData = {
+  Default: [
+    { type: "Math",      status: "done",    minutesSpent: 18 },
+    { type: "Spelling",  status: "active",  minutesSpent: 6  },
+    { type: "Audiobook", status: "pending", minutesSpent: 0  },
+    { type: "Reward",    status: "pending", minutesSpent: 0  },
+  ],
+};
+
 export default function ParentClient({ profiles }) {
   const [isAddingChild, setIsAddingChild] = useState(false);
   const [activeChildId, setActiveChildId] = useState(profiles[0]?.id || null);
@@ -416,6 +426,92 @@ export default function ParentClient({ profiles }) {
             </div>
           </div>
         </aside>
+
+        {/* === FULL WIDTH: Today's Bird's-Eye Overview === */}
+        <section className="lg:col-span-12">
+          <div className="bg-white/80 backdrop-blur-xl p-8 rounded-[2rem] shadow-xl shadow-slate-200/50 border border-white">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-xl font-bold text-slate-800">Today's Overview</h2>
+                <p className="text-sm text-slate-400 font-medium mt-0.5">Bird's-eye view of all student progress</p>
+              </div>
+              <div className="flex items-center gap-4 text-xs font-semibold">
+                <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-emerald-400 inline-block"></span> Done</span>
+                <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-indigo-400 inline-block animate-pulse"></span> Active</span>
+                <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-slate-200 inline-block"></span> Pending</span>
+                <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-rose-400 inline-block"></span> Missed</span>
+              </div>
+            </div>
+
+            {profiles.length === 0 ? (
+              <div className="text-center py-10 text-slate-400 text-sm">Add children to see their daily progress here.</div>
+            ) : (
+              <div className="divide-y divide-slate-100">
+                {profiles.map((child) => {
+                  const initials = child.name?.charAt(0).toUpperCase() || "?";
+                  // Mock per-child progress data — will be wired to `sessions` table
+                  const mockProgress = overviewData[child.name] || overviewData["Default"];
+                  const completed = mockProgress.filter(m => m.status === "done").length;
+                  const total = mockProgress.length;
+                  const pct = Math.round((completed / total) * 100);
+
+                  return (
+                    <div key={child.id} className="flex items-center gap-6 py-4 first:pt-0 last:pb-0 group hover:bg-indigo-50/30 px-3 -mx-3 rounded-2xl transition-colors cursor-pointer" onClick={() => setActiveChildId(child.id)}>
+                      {/* Avatar */}
+                      <div className={`w-11 h-11 rounded-full ${child.avatar_url || "bg-indigo-500"} text-white flex items-center justify-center font-bold text-base shrink-0 shadow ring-2 ring-white`}>
+                        {initials}
+                      </div>
+
+                      {/* Name + Progress Bar */}
+                      <div className="w-36 shrink-0">
+                        <p className="font-bold text-slate-800 text-sm">{child.name}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                            <div
+                              className={`h-full rounded-full transition-all duration-700 ${pct === 100 ? "bg-emerald-400" : "bg-indigo-400"}`}
+                              style={{ width: `${pct}%` }}
+                            />
+                          </div>
+                          <span className="text-xs font-bold text-slate-400">{pct}%</span>
+                        </div>
+                      </div>
+
+                      {/* Module Status Chips */}
+                      <div className="flex flex-wrap gap-2 flex-1">
+                        {mockProgress.map((mod, idx) => {
+                          const chipColors = {
+                            done: "bg-emerald-100 text-emerald-700 border-emerald-200",
+                            active: "bg-indigo-100 text-indigo-700 border-indigo-200 animate-pulse",
+                            pending: "bg-slate-100 text-slate-500 border-slate-200",
+                            missed: "bg-rose-100 text-rose-700 border-rose-200",
+                          };
+                          const chipIcons = {
+                            done: "✓",
+                            active: "▶",
+                            pending: "○",
+                            missed: "!",
+                          };
+                          return (
+                            <span key={idx} className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full border text-xs font-semibold ${chipColors[mod.status]}`}>
+                              <span>{chipIcons[mod.status]}</span>
+                              {mod.type}
+                            </span>
+                          );
+                        })}
+                      </div>
+
+                      {/* Total Time */}
+                      <div className="shrink-0 text-right">
+                        <p className="text-xs text-slate-400 font-medium">Active Time</p>
+                        <p className="text-sm font-bold text-slate-700">{mockProgress.reduce((acc, m) => acc + (m.minutesSpent || 0), 0)} min</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </section>
 
       </main>
     </div>
