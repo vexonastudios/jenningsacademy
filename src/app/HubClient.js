@@ -26,6 +26,7 @@ function buildWeekDays() {
     days.push({
       label: d.toLocaleDateString("en-US", { weekday: "short" }),
       date: d.getDate(),
+      iso: d.toISOString().split('T')[0],
       isToday: d.toISOString().split('T')[0] === todayStr
     });
   }
@@ -168,8 +169,16 @@ export default function HubClient({ safeProfiles, planMap, totalChildren, totalM
           <div className="divide-y divide-slate-50">
             {safeProfiles.map((child) => {
               const modules = planMap[child.id] || [];
-              const done = 0; // TODO: pull from sessions when available
-              const pct = modules.length ? Math.round((done / modules.length) * 100) : 0;
+              const currentDayShort = new Date().toLocaleDateString("en-US", { weekday: "short" });
+              const activeModules = modules.filter(m => !m.active_days || m.active_days.includes(currentDayShort));
+              const todayStrStrict = new Date().toISOString().split("T")[0];
+              const childSessions = completedSessions?.filter(s => s.profile_id === child.id && s.created_at?.startsWith(todayStrStrict)) || [];
+              
+              // Only count unique module types to avoid over-100% bugs if they replay
+              const doneTypes = new Set(childSessions.map(s => s.module_type));
+              const done = activeModules.filter(m => doneTypes.has(m.type)).length;
+              
+              const pct = activeModules.length ? Math.round((done / activeModules.length) * 100) : 0;
               const hasPhoto = child.avatar_url?.startsWith("http") || child.avatar_url?.startsWith("/api/");
 
               return (
@@ -289,17 +298,22 @@ export default function HubClient({ safeProfiles, planMap, totalChildren, totalM
                         </div>
                       </td>
                       {overviewView === "week" ? weekDays.map((d, dIdx) => {
-                        const mockPct = d.isToday ? 50 : dIdx < 4 ? (dIdx % 2 === 0 ? 100 : 75) : null;
+                        const childModules = planMap[child.id] || [];
+                        const activeMods = childModules.filter(m => !m.active_days || m.active_days.includes(d.label));
+                        const doneThisDay = completedSessions?.filter(s => s.profile_id === child.id && s.created_at?.startsWith(d.iso)) || [];
+                        const unqDone = new Set(doneThisDay.map(s => s.module_type)).size;
+                        const realPct = activeMods.length > 0 ? Math.round((unqDone / activeMods.length) * 100) : null;
+
                         return (
                           <td key={d.label} className="py-3 px-2 text-center">
-                            {mockPct === null ? (
+                            {realPct === null ? (
                               <span className="text-slate-300 text-xs">—</span>
                             ) : (
                               <div className="flex flex-col items-center gap-1">
                                 <div className="w-full max-w-[60px] h-2 bg-slate-100 rounded-full overflow-hidden mx-auto">
-                                  <div className={`h-full rounded-full ${mockPct === 100 ? "bg-emerald-400" : mockPct >= 75 ? "bg-amber-400" : "bg-rose-400"}`} style={{ width: `${mockPct}%` }} />
+                                  <div className={`h-full rounded-full ${realPct === 100 ? "bg-emerald-400" : realPct >= 75 ? "bg-amber-400" : realPct > 0 ? "bg-indigo-400" : "bg-transparent"}`} style={{ width: `${realPct}%` }} />
                                 </div>
-                                <span className={`text-xs font-bold ${mockPct === 100 ? "text-emerald-600" : mockPct >= 75 ? "text-amber-600" : "text-rose-500"}`}>{mockPct}%</span>
+                                <span className={`text-xs font-bold ${realPct === 100 ? "text-emerald-600" : realPct >= 75 ? "text-amber-600" : realPct > 0 ? "text-indigo-500" : "text-slate-300"}`}>{realPct}%</span>
                               </div>
                             )}
                           </td>

@@ -30,16 +30,34 @@ export default async function Home() {
 
   const todayStr = new Date().toISOString().split("T")[0];
 
-  // Fetch all profiles + today's plans + family slug in parallel
-  const [{ data: profiles }, { data: plans }, { data: settings }] = await Promise.all([
+  // Fetch profiles + settings
+  const [{ data: profiles }, { data: settings }] = await Promise.all([
     supabase.from("profiles").select("*").eq("parent_id", userId).order("created_at", { ascending: true }),
-    supabase.from("daily_plans").select("profile_id, modules").eq("target_date", todayStr),
     supabase.from("parent_settings").select("family_slug").eq("user_id", userId).single()
   ]);
 
   const safeProfiles = profiles || [];
-  const planMap = Object.fromEntries((plans || []).map(p => [p.profile_id, p.modules || []]));
   const familySlug = settings?.family_slug || "";
+
+  // JIT Generate/Fetch today's plan for every child
+  const { getOrGenerateDailyPlan } = await import("@/lib/planEngine");
+  const plans = await Promise.all(safeProfiles.map(p => getOrGenerateDailyPlan(p.id, todayStr)));
+  
+  const planMap = Object.fromEntries(plans.map(p => [p.profile_id, p.modules || []]));
+  const planIds = plans.map(p => p.id).filter(Boolean);
+
+  // Fetch recent completed sessions (last 30 days) for historical views
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  
+  const { data: rawSessions } = await supabase
+    .from("sessions")
+    .select("profile_id, daily_plan_id, module_type, created_at")
+    .in("profile_id", safeProfiles.map(p => p.id))
+    .gte("created_at", thirtyDaysAgo.toISOString())
+    .eq("completed", true);
+
+  const completedSessions = rawSessions || [];
 
   // Summary stats
   const currentDayShort = new Date().toLocaleDateString("en-US", { weekday: "short" });
@@ -73,6 +91,7 @@ export default async function Home() {
         totalModulesToday={totalModulesToday} 
         streakTop={streakTop} 
         familySlug={familySlug}
+        completedSessions={completedSessions}
       />
     </div>
   );

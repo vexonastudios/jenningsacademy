@@ -97,9 +97,10 @@ ADD COLUMN IF NOT EXISTS longest_streak INTEGER DEFAULT 0,
 ADD COLUMN IF NOT EXISTS lock_mode BOOLEAN DEFAULT false,
 ADD COLUMN IF NOT EXISTS parent_exit_pin TEXT;
 
--- Add child slug (friendly URL segment, e.g. "emma", "johnny")
+-- Add child slug & master_plan (friendly URL segment & blueprint template)
 ALTER TABLE public.profiles
-ADD COLUMN IF NOT EXISTS child_slug TEXT;
+ADD COLUMN IF NOT EXISTS child_slug TEXT,
+ADD COLUMN IF NOT EXISTS master_plan JSONB;
 
 -- Family slug table (one row per parent account)
 CREATE TABLE IF NOT EXISTS parent_settings (

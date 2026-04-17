@@ -3,6 +3,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { supabase } from "@/lib/supabase";
 import { revalidatePath } from "next/cache";
+import { getOrGenerateDailyPlan } from "@/lib/planEngine";
 import { slugify } from "@/lib/slugify";
 
 // ─── ADD CHILD ────────────────────────────────────────────────────────────────
@@ -98,21 +99,23 @@ export async function publishPlan(payload) {
     .select('id').eq('id', profileId).eq('parent_id', userId).single();
   if (!profile) throw new Error("Profile not found");
 
-  // Delete any existing plan for this profile+date, then insert fresh.
-  // This avoids needing a UNIQUE constraint for upsert to work.
+  // 1. Save to the child's Master Plan Template
+  const { error: masterErr } = await supabase.from('profiles')
+    .update({ master_plan: modules })
+    .eq('id', profileId);
+
+  if (masterErr) throw new Error(masterErr.message);
+
+  // 2. Clear out any un-started 'future' or 'today' daily plans so they get regenerated fresh if the parent edited it
+  // Notice we only delete plans that haven't been completed, but for simplicity we'll just delete today's plan
+  // so the JIT engine rebuilds it instantly.
   await supabase.from('daily_plans')
     .delete()
     .eq('profile_id', profileId)
     .eq('target_date', targetDate);
 
-  const { error } = await supabase.from('daily_plans').insert([{
-    profile_id: profileId,
-    target_date: targetDate,
-    modules,
-  }]);
-
-  if (error) throw new Error(error.message);
   revalidatePath('/parent');
+  revalidatePath('/');
 }
 
 // ─── SAVE PLAN AS TEMPLATE ────────────────────────────────────────────────────
@@ -129,3 +132,43 @@ export async function savePlanAsTemplate(payload) {
 // ─── VERIFY CHILD PIN ─────────────────────────────────────────────────────────
 // Note: called client-side via fetch to /api/verify-pin — not a Server Action
 // but kept here for reference pattern.
+
+// --- RECORD SESSION -------------------------------------------------------------
+export async function recordSession(payload) {
+  const { profileId, planId, moduleType, score, timeSpent } = payload;
+  
+  if (!profileId || !planId || !moduleType) throw new Error("Invalid session data");
+
+  const { error } = await supabase.from('sessions').insert([{
+    profile_id: profileId,
+    daily_plan_id: planId,
+    module_type: moduleType,
+    score: score || 0,
+    time_spent_seconds: timeSpent || 0,
+    completed: true
+  }]);
+
+  if (error) throw new Error(error.message);
+}
+
+// ─── FETCH TODAY'S PLAN & SESSIONS ─────────────────────────────────────────
+
+export async function fetchTodayPlan(profileId) {
+  const todayStr = new Date().toISOString().split('T')[0];
+  
+  // 1. Get the generated active plan for today
+  const plan = await getOrGenerateDailyPlan(profileId, todayStr);
+  
+  if (!plan || !plan.id) return { plan: null, completedModuleTypes: [] };
+
+  // 2. Fetch all completed sessions strictly for this daily plan
+  const { data: sessions } = await supabase
+    .from('sessions')
+    .select('module_type')
+    .eq('daily_plan_id', plan.id)
+    .eq('completed', true);
+
+  const completedModuleTypes = (sessions || []).map(s => s.module_type);
+
+  return { plan, completedModuleTypes };
+}
