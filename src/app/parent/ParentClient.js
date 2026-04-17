@@ -110,6 +110,7 @@ export default function ParentClient({ profiles }) {
   ];
 
   const [selectedVoice, setSelectedVoice] = useState(voiceOptions[0].id);
+  const [editVoice, setEditVoice] = useState(voiceOptions[0].id);
   const [playingVoice, setPlayingVoice] = useState(null);
   const [overviewView, setOverviewView] = useState("day");
   const [overviewOffset, setOverviewOffset] = useState(0);
@@ -307,7 +308,29 @@ export default function ParentClient({ profiles }) {
                 <div><label className="block text-sm font-semibold text-slate-600 mb-1">PIN</label>
                   <input name="epin" required type="text" maxLength="4" pattern="[0-9]{4}" title="4 digits" defaultValue={editingChild.pin_code} className="w-full border border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" /></div>
               </div>
-              <input type="hidden" name="evoiceId" value={editingChild.voice_id || voiceOptions[0].id} />
+                <input type="hidden" name="evoiceId" value={editVoice} />
+                <div>
+                  <label className="block text-sm font-semibold text-slate-600 mb-2">Guide Voice</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {voiceOptions.map(v => (
+                      <div
+                        key={v.id}
+                        onClick={() => setEditVoice(v.id)}
+                        className={`flex items-center justify-between p-2 rounded-xl cursor-pointer border-2 transition-colors
+                          ${editVoice === v.id ? 'border-indigo-500 bg-indigo-50' : 'border-slate-100 bg-white hover:border-slate-300'}`}
+                      >
+                        <p className="text-xs font-bold text-slate-800">{v.name}</p>
+                        <button
+                          type="button"
+                          onClick={(e) => handlePlaySample(v.id, e)}
+                          className={`p-1.5 rounded-full ${playingVoice === v.id ? 'bg-indigo-500 text-white animate-pulse' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
+                        >
+                          {playingVoice === v.id ? <Volume2 className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               <div><label className="block text-sm font-semibold text-slate-600 mb-1">Start Date</label>
                 <input name="estartDate" required type="date" defaultValue={editingChild.start_date || new Date().toISOString().split('T')[0]} className="w-full border border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" /></div>
               <div><label className="block text-sm font-semibold text-slate-600 mb-2">School Days</label>
@@ -532,7 +555,7 @@ export default function ParentClient({ profiles }) {
                         <button title="Copy Link" className="p-1.5 text-indigo-400 hover:text-indigo-600 hover:bg-indigo-100 rounded-full transition-colors" onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(`https://app-jenningsacademy.vercel.app/path?profile=${child.id}`); addToast(`🔗 Link copied for ${child.name}!`); }}>
                           <Link className="w-3.5 h-3.5" />
                         </button>
-                        <button title="Edit" className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-100 rounded-full transition-colors" onClick={(e) => { e.stopPropagation(); setEditingChild(child); }}>
+                        <button title="Edit" className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-100 rounded-full transition-colors" onClick={(e) => { e.stopPropagation(); setEditingChild(child); setEditVoice(child.voice_id || voiceOptions[0].id); }}>
                           <Pencil className="w-3.5 h-3.5" />
                         </button>
                         <button title="Delete" className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-full transition-colors" onClick={(e) => { e.stopPropagation(); setConfirmDelete(child.id); }}>
