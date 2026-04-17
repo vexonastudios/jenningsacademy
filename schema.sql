@@ -38,3 +38,25 @@ CREATE TABLE sessions (
 -- Because parents use Clerk (and not Supabase Auth), all Database inserts/updates
 -- should be securely funneled through Next.js Server Actions or API routes,
 -- where we can verify `const { userId } = auth();` on the server before writing to Supabase.
+
+-- ==========================================
+-- PHASE 3.5: Caching & Advanced Profiles Update
+-- ==========================================
+
+-- A. Add Advanced Configuration to Profiles
+ALTER TABLE public.profiles
+ADD COLUMN IF NOT EXISTS voice_id TEXT,
+ADD COLUMN IF NOT EXISTS start_date DATE,
+ADD COLUMN IF NOT EXISTS school_days JSONB;
+
+-- B. Voice Cache Ledger (Lightning fast checks before querying storage buckets)
+CREATE TABLE voice_cache_ledger (
+  hash_id TEXT PRIMARY KEY, -- MD5 hash of "voiceId_text"
+  public_url TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- C. Create the Storage Bucket (Might need to be run as Superuser or handled in Supabase Dashboard UI manually)
+INSERT INTO storage.buckets (id, name, public) 
+VALUES ('voice_cache', 'voice_cache', true)
+ON CONFLICT (id) DO NOTHING;

@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+import { supabase } from "@/lib/supabase";
+import crypto from 'crypto';
 
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
@@ -11,11 +13,26 @@ export async function GET(request) {
 
   const apiKey = process.env.ELEVENLABS_API_KEY;
   if (!apiKey) {
-    console.error("Missing ELEVENLABS_API_KEY environment variable");
     return NextResponse.json({ error: 'Server missing ElevenLabs credentials' }, { status: 500 });
   }
 
+  // 1. Generate unique cache hash
+  const hashId = crypto.createHash('md5').update(`${voiceId}_${text}`).digest('hex');
+
   try {
+    // 2. Check the Database Ledger (Blazing fast indexed check)
+    const { data: cacheHit } = await supabase
+       .from('voice_cache_ledger')
+       .select('public_url')
+       .eq('hash_id', hashId)
+       .single();
+
+    if (cacheHit && cacheHit.public_url) {
+       // Instantly serve from edge storage cache! 0 API Credits used.
+       return NextResponse.redirect(cacheHit.public_url);
+    }
+
+    // 3. Cache Miss: Generate via ElevenLabs (Burn 1 Credit)
     const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
       method: 'POST',
       headers: {
@@ -30,12 +47,26 @@ export async function GET(request) {
       })
     });
 
-    if (!response.ok) {
-      throw new Error(`ElevenLabs API error: ${response.statusText}`);
-    }
+    if (!response.ok) throw new Error(`API error: ${response.statusText}`);
 
     const audioBuffer = await response.arrayBuffer();
 
+    // 4. Upload to Supabase Storage Bucket
+    const fileName = `${hashId}.mp3`;
+    const { error: uploadError } = await supabase.storage
+       .from('voice_cache')
+       .upload(fileName, audioBuffer, { contentType: 'audio/mpeg' });
+
+    if (!uploadError) {
+       // 5. Register in Ledger to skip future API calls
+       const { data } = supabase.storage.from('voice_cache').getPublicUrl(fileName);
+       await supabase.from('voice_cache_ledger').insert([{ 
+           hash_id: hashId, 
+           public_url: data.publicUrl 
+       }]);
+    }
+
+    // 6. Send the generated buffer to the current user immediately
     return new NextResponse(audioBuffer, {
       headers: {
         'Content-Type': 'audio/mpeg',
@@ -44,7 +75,7 @@ export async function GET(request) {
     });
 
   } catch (error) {
-    console.error("TTS Generation Error:", error);
-    return NextResponse.json({ error: 'Failed to generate audio' }, { status: 500 });
+    console.error("TTS Pipeline Error:", error);
+    return NextResponse.json({ error: 'Failed to stream audio' }, { status: 500 });
   }
 }

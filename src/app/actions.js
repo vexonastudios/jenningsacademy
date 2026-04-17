@@ -20,22 +20,16 @@ export async function addChild(formData) {
   const schoolDaysJson = formData.get("schoolDays_json");
   const voiceId = formData.get("voiceId");
 
-  // Since we haven't updated the strict schema.sql with new columns, 
-  // we can securely pack these custom settings into the avatar_url TEXT field to preserve the Data Contract!
-  const packedSettings = JSON.stringify({
-     color: avatarColor,
-     startDate,
-     schoolDays: schoolDaysJson ? JSON.parse(schoolDaysJson) : [],
-     voiceId
-  });
-
   const { data: newProfile, error: profileError } = await supabase.from('profiles').insert([
     {
        parent_id: userId,
        name,
        grade_level: grade,
        pin_code: pin,
-       avatar_url: packedSettings, 
+       avatar_url: avatarColor, 
+       voice_id: voiceId,
+       start_date: startDate,
+       school_days: schoolDaysJson ? JSON.parse(schoolDaysJson) : []
     }
   ]).select().single();
 
