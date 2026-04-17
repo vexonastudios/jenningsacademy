@@ -97,7 +97,7 @@ function buildWeekDays() {
 }
 const weekDays = buildWeekDays();
 
-export default function ParentClient({ profiles, initialPlans = [], avatarDataUrls = {} }) {
+export default function ParentClient({ profiles, initialPlans = [] }) {
   const [isAddingChild, setIsAddingChild] = useState(false);
   const [activeChildId, setActiveChildId] = useState(profiles[0]?.id || null);
   const [rewardTime, setRewardTime] = useState(15);
@@ -210,13 +210,11 @@ export default function ParentClient({ profiles, initialPlans = [], avatarDataUr
   }, [activeChildId]);
 
   // Resolve best avatar URL for a child:
-  // 1. Server-preloaded base64 data URI (instant, no network)
-  // 2. Versioned proxy path after an upload this session
-  // 3. Proxy path from the profile's stored avatar_url
+  // 1. Versioned proxy path after an upload this session (cache-busted)
+  // 2. Original avatar_url; Avatar component proxies it through /api/avatar
   const resolveAvatar = (child) => {
-    if (avatarDataUrls[child.id]) return avatarDataUrls[child.id];
     if (avatarVersions[child.id]) return `/api/avatar/${child.id}?v=${avatarVersions[child.id]}`;
-    return child.avatar_url; // Supabase URL; Avatar component will proxy it
+    return child.avatar_url;
   };
 
   const libraryModules = [
@@ -229,8 +227,18 @@ export default function ParentClient({ profiles, initialPlans = [], avatarDataUr
 
   const activeChild = profiles.find(p => p.id === activeChildId) || profiles[0];
 
-  const handleAddModule = (mod) => {
-    setTodaysPlan([...todaysPlan, { ...mod, id: `p${Date.now()}` }]);
+  const handleAddModule = async (mod) => {
+    const updated = [...todaysPlan, { ...mod, id: `p${Date.now()}` }];
+    setTodaysPlan(updated);
+    if (activeChild) {
+      const todayStr = new Date().toISOString().split('T')[0];
+      try {
+        await publishPlan({ profileId: activeChild.id, modules: updated, targetDate: todayStr });
+        addToast("💾 Plan updated!", "save");
+      } catch {
+        addToast("Couldn't save — try again", "error");
+      }
+    }
   };
 
   const handleRemoveModule = async (id) => {

@@ -34,22 +34,5 @@ export default async function ParentDashboard() {
     initialPlans = plans || [];
   }
 
-  // Pre-fetch all avatar images server-side so they are inlined as base64
-  // in the initial HTML response — zero extra round-trips for the browser.
-  const avatarDataUrls = {};
-  await Promise.all(
-    (profiles || []).map(async (profile) => {
-      const url = profile.avatar_url;
-      if (!url?.startsWith('http')) return;
-      try {
-        const res = await fetch(url, { next: { revalidate: 3600 } });
-        if (!res.ok) return;
-        const buf = await res.arrayBuffer();
-        const ct  = res.headers.get('content-type') || 'image/jpeg';
-        avatarDataUrls[profile.id] = `data:${ct};base64,${Buffer.from(buf).toString('base64')}`;
-      } catch { /* silently fall back to proxy */ }
-    })
-  );
-
-  return <ParentClient profiles={profiles || []} initialPlans={initialPlans || []} avatarDataUrls={avatarDataUrls} />;
+  return <ParentClient profiles={profiles || []} initialPlans={initialPlans || []} />;
 }

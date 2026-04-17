@@ -43,8 +43,9 @@ export async function GET(request, { params }) {
       status: 200,
       headers: {
         "Content-Type": contentType,
-        // Cache for 1 hour in browser. Upload adds ?v=timestamp to bust this automatically.
-        "Cache-Control": "private, max-age=3600, must-revalidate",
+        // Public CDN cache: Vercel edge caches this globally after first request.
+        // The ?v=timestamp on each upload bypasses this for fresh uploads.
+        "Cache-Control": "public, s-maxage=86400, stale-while-revalidate=86400",
       },
     });
   } catch {
