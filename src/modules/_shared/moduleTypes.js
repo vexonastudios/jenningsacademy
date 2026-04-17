@@ -87,6 +87,19 @@ export const MODULE_REGISTRY = {
     component: () => import("@/modules/logic/LogicModule"),
   },
 
+  Geography: {
+    id: "Geography",
+    label: "Geography Mastery",
+    description: "30-day mastery of U.S. states, capitals, and continents",
+    color: "text-emerald-600 bg-emerald-100",
+    iconCode: "Map",
+    supportedGrades: [1, 2, 3, 4, 5, 6, 7, 8],
+    estimatedMinutes: 15,
+    minimumPassScore: null,
+    timeLimitSeconds: null,
+    component: () => import("@/modules/geography/GeographyModule"),
+  },
+
   "Reward Unlock": {
     id: "Reward Unlock",
     label: "Reward Unlock",
