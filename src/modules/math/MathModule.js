@@ -4,6 +4,30 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { Calculator, ArrowRight, Volume2, Target, Trophy, Flame } from "lucide-react";
 import { generateProblem } from "./MathEngine";
 import { GRADE_1_CURRICULUM } from "./curriculum/mathGrade1";
+import { GRADE_2_CURRICULUM } from "./curriculum/mathGrade2";
+import { GRADE_3_CURRICULUM } from "./curriculum/mathGrade3";
+import { GRADE_4_CURRICULUM } from "./curriculum/mathGrade4";
+import { GRADE_5_CURRICULUM } from "./curriculum/mathGrade5";
+import { GRADE_6_CURRICULUM } from "./curriculum/mathGrade6";
+import { GRADE_7_CURRICULUM } from "./curriculum/mathGrade7";
+import { GRADE_8_CURRICULUM } from "./curriculum/mathGrade8";
+import { GRADE_9_CURRICULUM, GRADE_10_CURRICULUM } from "./curriculum/mathGrade9";
+import GeometryCanvas from "./components/GeometryCanvas";
+
+const CURRICULUM_MAP = {
+  1: GRADE_1_CURRICULUM,
+  2: GRADE_2_CURRICULUM,
+  3: GRADE_3_CURRICULUM,
+  4: GRADE_4_CURRICULUM,
+  5: GRADE_5_CURRICULUM,
+  6: GRADE_6_CURRICULUM,
+  7: GRADE_7_CURRICULUM,
+  8: GRADE_8_CURRICULUM,
+  9: GRADE_9_CURRICULUM,
+  10: GRADE_10_CURRICULUM,
+  11: GRADE_10_CURRICULUM, // Reuse grade 10 advanced algebra for 11
+  12: GRADE_10_CURRICULUM, // Reuse grade 10 advanced algebra for 12
+};
 
 // ── TTS Hook ──────────────────────────────────────────────────────────────────
 function useSpeechAsync(voiceId) {
@@ -106,8 +130,8 @@ export default function MathModule({ profileId, gradeLevel = 1, onRoundComplete 
   useEffect(() => {
     if (phase !== "booting") return;
 
-    // Use Grade 1 curriculum mapping MVP. In production, select by gradeLevel prop.
-    const curriculum = GRADE_1_CURRICULUM;
+    // Select curriculum by grade level with fallback
+    const curriculum = CURRICULUM_MAP[gradeLevel] || GRADE_1_CURRICULUM;
     const today = curriculum.find(c => c.day === ledger.day);
     
     // If they beat all 10 days of MVP, fallback to generic endless test.
@@ -339,12 +363,17 @@ export default function MathModule({ profileId, gradeLevel = 1, onRoundComplete 
 
              {/* The Equation */}
              <div className="bg-white rounded-[2rem] shadow-xl p-8 w-full border-4 border-slate-100 text-center relative overflow-hidden">
-                <h2 className="text-5xl font-black text-slate-800 mb-6 drop-shadow-sm">
+                <h2 className={`font-black text-slate-800 mb-6 drop-shadow-sm ${queue[currentIndex]?.equation?.length > 30 ? 'text-2xl' : 'text-5xl'}`}>
                   {queue[currentIndex]?.equation.replace("?", "")}
                   <span className={`inline-block min-w-16 h-14 border-b-4 ml-2 transition-colors ${feedback === 'correct' ? 'text-emerald-500 border-emerald-500' : feedback === 'wrong' ? 'text-rose-500 border-rose-500' : 'text-sky-600 border-sky-300'}`}>
                     {userInput || "\u00A0"}
                   </span>
                 </h2>
+
+                {/* Geometry Canvas (only if this problem has visual data) */}
+                {queue[currentIndex]?.visualData && (
+                  <GeometryCanvas visualData={queue[currentIndex].visualData} />
+                )}
 
                 {/* Sub-label for tracking */}
                 <div className="text-xs font-bold text-slate-300 uppercase tracking-widest mt-4">
