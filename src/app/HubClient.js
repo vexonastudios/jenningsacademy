@@ -51,18 +51,22 @@ function StatChip({ label, value, accent }) {
   );
 }
 
-export default function HubClient({ safeProfiles, planMap, totalChildren, totalModulesToday, streakTotal }) {
+export default function HubClient({ safeProfiles, planMap, totalChildren, totalModulesToday, streakTop, familySlug }) {
   const [overviewView, setOverviewView] = useState("day"); // 'day', 'week', 'month'
   const [overviewOffset, setOverviewOffset] = useState(0);
 
-  const childLink = (p) => `/path?profile=${p.id}`;
+  const childLink = (p) => {
+    return familySlug && p.child_slug 
+      ? `/path/${familySlug}/${p.child_slug}`
+      : `/path?profile=${p.id}`;
+  };
 
   const CopyButtonLink = ({ profile }) => {
     const [copied, setCopied] = useState(false);
     
     const handleCopy = (e) => {
       e.preventDefault();
-      const url = `${window.location.origin}/path?profile=${profile.id}`;
+      const url = `${window.location.origin}${childLink(profile)}`;
       navigator.clipboard.writeText(url);
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
@@ -85,7 +89,7 @@ export default function HubClient({ safeProfiles, planMap, totalChildren, totalM
       <div className="grid grid-cols-3 gap-4">
         <StatChip label="Students" value={totalChildren} accent="text-indigo-600" />
         <StatChip label="Modules Today" value={totalModulesToday} accent="text-purple-600" />
-        <StatChip label="Total Streak Days" value={`${streakTotal}🔥`} accent="text-amber-600" />
+        <StatChip label="Top Streak" value={`${streakTop}🔥`} accent="text-amber-600" />
       </div>
 
       {/* ── Progress Overview ── */}
@@ -210,13 +214,12 @@ export default function HubClient({ safeProfiles, planMap, totalChildren, totalM
                     ))}
                   </div>
 
-                  {/* Copy Link Button & Launch */}
+                      {/* Launch button */}
                   <div className="flex items-center gap-3">
                     <button 
                       onClick={(e) => {
                         e.preventDefault();
-                        navigator.clipboard.writeText(`${window.location.origin}/path?profile=${child.id}`);
-                        // Fallback logic, a formal toast would be better here but since it's just a 1-off:
+                        navigator.clipboard.writeText(`${window.location.origin}${childLink(child)}`);
                         const btn = e.currentTarget;
                         const origText = btn.innerHTML;
                         btn.innerHTML = `<svg class="w-3.5 h-3.5 text-emerald-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Copied!`;
@@ -250,7 +253,13 @@ export default function HubClient({ safeProfiles, planMap, totalChildren, totalM
                       <div className={`text-base font-black mt-0.5 ${d.isToday ? "text-indigo-600" : "text-slate-700"}`}>{d.date}</div>
                     </th>
                   )) : (
-                    <th colSpan="7" className="pb-3 text-center text-slate-400 text-xs font-semibold uppercase">Monthly Trends Syncing...</th>
+                    // Month View Columns
+                    [1, 2, 3, 4].map(w => (
+                      <th key={w} className="pb-3 px-2 font-semibold text-xs uppercase tracking-wider text-center text-slate-400">
+                        <div>Week {w}</div>
+                        <div className="text-base font-black mt-0.5 text-slate-700">Avg</div>
+                      </th>
+                    ))
                   )}
                 </tr>
               </thead>
@@ -289,11 +298,24 @@ export default function HubClient({ safeProfiles, planMap, totalChildren, totalM
                           </td>
                         );
                       }) : (
-                        <td colSpan="7" className="py-8 text-center">
-                          <div className="w-full h-8 bg-slate-50 border border-slate-100 rounded-lg flex items-center justify-center">
-                            <span className="animate-pulse text-slate-400 text-xs font-semibold">Loading monthly aggregate data...</span>
-                          </div>
-                        </td>
+                        // Month View Mock Data Rows
+                        [1, 2, 3, 4].map((w, wIdx) => {
+                          const mockPct = wIdx < 2 ? (wIdx % 2 === 0 ? 95 : 80) : null;
+                          return (
+                            <td key={w} className="py-3 px-2 text-center">
+                              {mockPct === null ? (
+                                <span className="text-slate-300 text-xs">—</span>
+                              ) : (
+                                <div className="flex flex-col items-center gap-1">
+                                  <div className="w-full max-w-[60px] h-2 bg-slate-100 rounded-full overflow-hidden mx-auto">
+                                    <div className={`h-full rounded-full ${mockPct >= 90 ? "bg-emerald-400" : "bg-amber-400"}`} style={{ width: `${mockPct}%` }} />
+                                  </div>
+                                  <span className={`text-xs font-bold ${mockPct >= 90 ? "text-emerald-600" : "text-amber-600"}`}>{mockPct}%</span>
+                                </div>
+                              )}
+                            </td>
+                          );
+                        })
                       )}
                     </tr>
                   );

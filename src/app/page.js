@@ -30,27 +30,21 @@ export default async function Home() {
 
   const todayStr = new Date().toISOString().split("T")[0];
 
-  // Fetch all profiles + today's plans in parallel
-  const [{ data: profiles }, { data: plans }] = await Promise.all([
+  // Fetch all profiles + today's plans + family slug in parallel
+  const [{ data: profiles }, { data: plans }, { data: settings }] = await Promise.all([
     supabase.from("profiles").select("*").eq("parent_id", userId).order("created_at", { ascending: true }),
     supabase.from("daily_plans").select("profile_id, modules").eq("target_date", todayStr),
+    supabase.from("parent_settings").select("family_slug").eq("user_id", userId).single()
   ]);
 
   const safeProfiles = profiles || [];
   const planMap = Object.fromEntries((plans || []).map(p => [p.profile_id, p.modules || []]));
-
-  // Build per-child link: prefer friendly URL, fall back to UUID
-  const childLink = (p) => {
-    if (p.child_slug) {
-      // Need family slug too — skip for now, use UUID path
-    }
-    return `/path?profile=${p.id}`;
-  };
+  const familySlug = settings?.family_slug || "";
 
   // Summary stats
   const totalChildren = safeProfiles.length;
   const totalModulesToday = safeProfiles.reduce((acc, p) => acc + (planMap[p.id]?.length || 0), 0);
-  const streakTotal = safeProfiles.reduce((acc, p) => acc + (p.current_streak || 0), 0);
+  const streakTop = Math.max(0, ...safeProfiles.map(p => p.current_streak || 0));
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-slate-50 to-cyan-50 font-[family-name:var(--font-geist-sans)]">
@@ -73,7 +67,8 @@ export default async function Home() {
         planMap={planMap} 
         totalChildren={totalChildren} 
         totalModulesToday={totalModulesToday} 
-        streakTotal={streakTotal} 
+        streakTop={streakTop} 
+        familySlug={familySlug}
       />
     </div>
   );
