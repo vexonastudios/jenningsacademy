@@ -71,14 +71,24 @@ export default function ParentClient({ profiles }) {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     
-    // Convert checkbox array to JSON string for backend
+    // Convert checkbox array for the days
     const days = [];
     ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].forEach(d => {
        if (formData.get(`day_${d}`)) days.push(d);
     });
-    formData.append('schoolDays_json', JSON.stringify(days));
 
-    await addChild(formData);
+    // Create a plain serializable JSON object instead of passing FormData
+    // This perfectly bypasses Next.js MessagePort boundary crashes
+    const payload = {
+      name: formData.get("name"),
+      grade: formData.get("grade"),
+      pin: formData.get("pin"),
+      startDate: formData.get("startDate"),
+      voiceId: formData.get("voiceId"),
+      schoolDays: days
+    };
+
+    await addChild(payload);
     setIsAddingChild(false);
   };
 

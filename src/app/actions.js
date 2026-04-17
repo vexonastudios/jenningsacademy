@@ -4,21 +4,23 @@ import { auth } from "@clerk/nextjs/server";
 import { supabase } from "@/lib/supabase";
 import { revalidatePath } from "next/cache";
 
-export async function addChild(formData) {
+export async function addChild(payload) {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
-  const name = formData.get("name");
-  const grade = parseInt(formData.get("grade") || "1", 10);
-  const pin = formData.get("pin");
+  const {
+     name,
+     grade: rawGrade,
+     pin,
+     startDate,
+     schoolDays,
+     voiceId
+  } = payload;
+
+  const grade = parseInt(rawGrade || "1", 10);
 
   const colors = ["bg-blue-500", "bg-pink-500", "bg-emerald-500", "bg-amber-500", "bg-purple-500"];
   const avatarColor = colors[Math.floor(Math.random() * colors.length)];
-  
-  // Extract new advanced settings
-  const startDate = formData.get("startDate");
-  const schoolDaysJson = formData.get("schoolDays_json");
-  const voiceId = formData.get("voiceId");
 
   const { data: newProfile, error: profileError } = await supabase.from('profiles').insert([
     {
@@ -29,7 +31,7 @@ export async function addChild(formData) {
        avatar_url: avatarColor, 
        voice_id: voiceId,
        start_date: startDate,
-       school_days: schoolDaysJson ? JSON.parse(schoolDaysJson) : []
+       school_days: schoolDays
     }
   ]).select().single();
 
