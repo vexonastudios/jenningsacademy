@@ -84,5 +84,7 @@ CREATE TABLE IF NOT EXISTS badges (
 -- Add streak counter to profiles (avoids expensive recalculation)
 ALTER TABLE public.profiles
 ADD COLUMN IF NOT EXISTS current_streak INTEGER DEFAULT 0,
-ADD COLUMN IF NOT EXISTS longest_streak INTEGER DEFAULT 0;
+ADD COLUMN IF NOT EXISTS longest_streak INTEGER DEFAULT 0,
+ADD COLUMN IF NOT EXISTS lock_mode BOOLEAN DEFAULT false,
+ADD COLUMN IF NOT EXISTS parent_exit_pin TEXT;
 

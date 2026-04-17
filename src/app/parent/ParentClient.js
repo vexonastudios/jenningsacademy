@@ -146,6 +146,8 @@ export default function ParentClient({ profiles }) {
       voiceId: fd.get("evoiceId"),
       startDate: fd.get("estartDate"),
       schoolDays: days,
+      lockMode: fd.get("elockMode") === "on",
+      parentExitPin: fd.get("eparentExitPin") || null,
     });
     setEditingChild(null);
   };
@@ -245,6 +247,23 @@ export default function ParentClient({ profiles }) {
                       <span className="text-sm font-medium text-slate-700">{day}</span>
                     </label>
                   ))}
+                </div>
+              </div>
+              <div className="border-t border-slate-100 pt-4 mt-2">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <label className="text-sm font-bold text-slate-800 flex items-center gap-2">🔒 Focus Mode (Kiosk Lock)</label>
+                    <p className="text-xs text-slate-400 mt-0.5">Forces fullscreen & blocks alt-tab when child logs in</p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" name="elockMode" defaultChecked={!!editingChild.lock_mode} className="sr-only peer" />
+                    <div className="w-11 h-6 bg-slate-200 peer-focus:ring-2 peer-focus:ring-indigo-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-indigo-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+                  </label>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-600 mb-1">Parent Exit PIN (4 digits)</label>
+                  <input name="eparentExitPin" type="text" maxLength="4" pattern="[0-9]{4}" title="4 digits" defaultValue={editingChild.parent_exit_pin || ""} placeholder="e.g. 9999 — only you know this" className="w-full border border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" />
+                  <p className="text-xs text-slate-400 mt-1">This is different from the child's PIN — only the parent uses it to exit Focus Mode.</p>
                 </div>
               </div>
               <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 rounded-xl transition-all shadow-md">Save Changes</button>

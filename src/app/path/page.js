@@ -5,6 +5,8 @@ import { Check, Lock, Play, Volume2, CalendarDays, AlertCircle, Flame } from "lu
 import { UserButton } from "@clerk/nextjs";
 import PinGate from "./PinGate";
 import CelebrationOverlay from "@/components/CelebrationOverlay";
+import LockOverlay from "@/components/LockOverlay";
+import { useLockMode } from "@/hooks/useLockMode";
 
 // Pull profileId from URL query e.g. /path?profile=abc-123
 function getProfileIdFromUrl() {
@@ -14,15 +16,24 @@ function getProfileIdFromUrl() {
 
 export default function ChildPath() {
   const [profileId, setProfileId] = useState(null);
-  const [profile, setProfile] = useState(null); // Set after PIN verified
-  const [celebration, setCelebration] = useState(null); // { message }
+  const [profile, setProfile] = useState(null);
+  const [celebration, setCelebration] = useState(null);
   const [activeDate, setActiveDate] = useState("Oct 14");
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [lockUnlocked, setLockUnlocked] = useState(false);
 
   // Pull profileId from URL on mount
   useEffect(() => {
     setProfileId(getProfileIdFromUrl());
   }, []);
+
+  // ── Lock Mode ──────────────────────────────────────────────────────────────
+  const { isBlocked, setIsBlocked, parentUnlock, unlockError, setUnlockError, unlockCompleted } = useLockMode({
+    enabled: !lockUnlocked && !!profile?.lock_mode,
+    profileId: profile?.id,
+    parentExitPin: profile?.parent_exit_pin,
+    onUnlocked: () => setLockUnlocked(true),
+  });
 
   // Speak via ElevenLabs whenever a new step becomes active
   const speakGuide = useCallback(async (text) => {
@@ -106,6 +117,16 @@ export default function ChildPath() {
   // ── Authenticated Child View ──────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-sky-50 font-[family-name:var(--font-geist-sans)] selection:bg-indigo-500/30 overflow-hidden relative pb-32">
+      {/* Lock Overlay — shown when alt-tabbed or fullscreen exited */}
+      {isBlocked && profile?.lock_mode && !lockUnlocked && (
+        <LockOverlay
+          childName={profile.name}
+          onReturn={() => { setIsBlocked(false); }}
+          onParentUnlock={parentUnlock}
+          unlockError={unlockError}
+        />
+      )}
+
       {/* Celebration Overlay */}
       {celebration && (
         <CelebrationOverlay

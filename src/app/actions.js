@@ -37,9 +37,18 @@ export async function updateChild(payload) {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
-  const { id, name, grade, pin, voiceId, startDate, schoolDays } = payload;
+  const { id, name, grade, pin, voiceId, startDate, schoolDays, lockMode, parentExitPin } = payload;
   const { error } = await supabase.from('profiles')
-    .update({ name, grade_level: parseInt(grade, 10), pin_code: pin, voice_id: voiceId, start_date: startDate, school_days: schoolDays })
+    .update({
+      name,
+      grade_level: parseInt(grade, 10),
+      pin_code: pin,
+      voice_id: voiceId,
+      start_date: startDate,
+      school_days: schoolDays,
+      lock_mode: lockMode,
+      parent_exit_pin: parentExitPin || null,
+    })
     .eq('id', id)
     .eq('parent_id', userId);
 
