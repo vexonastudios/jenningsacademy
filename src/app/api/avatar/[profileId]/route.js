@@ -43,8 +43,8 @@ export async function GET(request, { params }) {
       status: 200,
       headers: {
         "Content-Type": contentType,
-        // Short browser cache (30s) so a re-upload with ?v= query is served fresh
-        "Cache-Control": "private, max-age=30, must-revalidate",
+        // Cache for 1 hour in browser. Upload adds ?v=timestamp to bust this automatically.
+        "Cache-Control": "private, max-age=3600, must-revalidate",
       },
     });
   } catch {

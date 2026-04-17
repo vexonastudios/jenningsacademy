@@ -15,6 +15,41 @@ function getProfileIdFromUrl() {
   return new URLSearchParams(window.location.search).get("profile");
 }
 
+/** Small PIN pad for the always-visible parent exit corner button */
+function ParentExitPad({ onUnlock, error }) {
+  const [pin, setPin] = useState("");
+  const digits = [1,2,3,4,5,6,7,8,9,null,0,"⌫"];
+  const handleDigit = (d) => {
+    if (d === "⌫") { setPin(p => p.slice(0,-1)); return; }
+    if (pin.length >= 4) return;
+    const next = pin + String(d);
+    setPin(next);
+    if (next.length === 4) { onUnlock(next); setPin(""); }
+  };
+  return (
+    <div>
+      <div className="flex justify-center gap-2 mb-3">
+        {[0,1,2,3].map(i => (
+          <div key={i} className={`w-8 h-8 rounded-lg border flex items-center justify-center
+            ${pin.length > i ? "border-emerald-400 bg-emerald-900/40" : "border-slate-600 bg-slate-800"}`}>
+            {pin.length > i && <div className="w-2 h-2 rounded-full bg-emerald-400" />}
+          </div>
+        ))}
+      </div>
+      {error && <p className="text-rose-400 text-xs text-center mb-2">{error}</p>}
+      <div className="grid grid-cols-3 gap-1.5">
+        {digits.map((d, idx) => (
+          d === null ? <div key={idx} /> :
+          <button key={idx} onClick={() => handleDigit(d)}
+            className="h-10 rounded-xl text-sm font-bold text-white bg-slate-700 hover:bg-slate-600 active:scale-95 transition-all">
+            {d}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function ChildPath() {
   const [profileId, setProfileId] = useState(null);
   const [profile, setProfile] = useState(null);
@@ -29,7 +64,7 @@ export default function ChildPath() {
   }, []);
 
   // ── Lock Mode ──────────────────────────────────────────────────────────────
-  const { isBlocked, setIsBlocked, parentUnlock, unlockError, setUnlockError, unlockCompleted } = useLockMode({
+  const { isBlocked, setIsBlocked, returnToWork, parentUnlock, unlockError, setUnlockError, unlockCompleted, showParentExit, setShowParentExit } = useLockMode({
     enabled: !lockUnlocked && !!profile?.lock_mode,
     profileId: profile?.id,
     parentExitPin: profile?.parent_exit_pin,
@@ -132,10 +167,33 @@ export default function ChildPath() {
       {isBlocked && profile?.lock_mode && !lockUnlocked && (
         <LockOverlay
           childName={profile.name}
-          onReturn={() => { setIsBlocked(false); }}
+          onReturn={returnToWork}
           onParentUnlock={parentUnlock}
           unlockError={unlockError}
         />
+      )}
+
+      {/* Always-visible Parent Exit corner button (lock mode only) */}
+      {profile?.lock_mode && !lockUnlocked && !isBlocked && (
+        <>
+          {showParentExit ? (
+            // Mini PIN pad overlay in corner
+            <div className="fixed bottom-6 right-6 z-[9998] bg-slate-900 rounded-2xl p-4 shadow-2xl border border-slate-700 w-64">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-white text-xs font-bold">Parent Exit PIN</p>
+                <button onClick={() => { setShowParentExit(false); setUnlockError(""); }} className="text-slate-400 hover:text-white text-xs">✕</button>
+              </div>
+              <ParentExitPad onUnlock={parentUnlock} error={unlockError} />
+            </div>
+          ) : (
+            <button
+              onClick={() => setShowParentExit(true)}
+              className="fixed bottom-6 right-6 z-[9998] bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-semibold px-4 py-2 rounded-full border border-slate-600 shadow-lg transition-all backdrop-blur-sm"
+            >
+              🔒 Parent Exit
+            </button>
+          )}
+        </>
       )}
 
       {/* Celebration Overlay */}

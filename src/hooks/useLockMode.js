@@ -5,13 +5,13 @@ import { useEffect, useRef, useCallback, useState } from "react";
 /**
  * useLockMode — Kiosk-style lock for the Child Path.
  *
- * When active:
- *  - Forces fullscreen immediately
- *  - Re-requests fullscreen the instant it's exited
- *  - On alt-tab / app switch: shows a full-screen "Come back" overlay
- *  - Intercepts dangerous keyboard shortcuts (F5, Ctrl+W, Alt+F4, etc.)
- *  - Blocks beforeunload (browser close / refresh)
- *  - Provides a parentUnlock(pin) function that checks the parent exit PIN
+ * KEY DESIGN DECISION:
+ * Browsers cannot be stopped from handling ESC (security spec).
+ * Instead of fighting the browser, we:
+ *  1. Show the LockOverlay immediately when fullscreen exits or tab switches
+ *  2. The overlay itself IS the effective lock — child can see nothing underneath
+ *  3. The "Tap to Return" button is a real user gesture, so requestFullscreen() works there
+ *  4. We do NOT use setTimeout to re-request fullscreen (those are rejected by browsers)
  *
  * @param {Object} options
  * @param {boolean}  options.enabled       - Is lock mode on for this session?
@@ -20,17 +20,17 @@ import { useEffect, useRef, useCallback, useState } from "react";
  * @param {Function} options.onUnlocked    - Called when parent successfully exits lock mode
  */
 export function useLockMode({ enabled, profileId, parentExitPin, onUnlocked }) {
-  const [isBlocked, setIsBlocked] = useState(false); // Tab-switch blocker visible?
+  const [isBlocked, setIsBlocked] = useState(false);
   const [unlockError, setUnlockError] = useState("");
-  const reEntryTimeoutRef = useRef(null);
+  const [showParentExit, setShowParentExit] = useState(false);
 
-  // ── 1. Force fullscreen ────────────────────────────────────────────────────
+  // ── 1. Force fullscreen on mount ───────────────────────────────────────────
   const requestFS = useCallback(() => {
     const el = document.documentElement;
     if (el.requestFullscreen) {
-      el.requestFullscreen().catch(() => {});
+      return el.requestFullscreen().catch(() => {});
     } else if (el.webkitRequestFullscreen) {
-      el.webkitRequestFullscreen(); // Safari / older iOS
+      el.webkitRequestFullscreen();
     }
   }, []);
 
@@ -42,17 +42,21 @@ export function useLockMode({ enabled, profileId, parentExitPin, onUnlocked }) {
     }
   }, []);
 
-  // ── 2. Fullscreen change listener — re-enter if they escape ───────────────
   useEffect(() => {
     if (!enabled) return;
     requestFS();
+  }, [enabled, requestFS]);
+
+  // ── 2. Fullscreen change listener ─────────────────────────────────────────
+  // IMPORTANT: We do NOT try to re-request fullscreen here (no user gesture).
+  // Instead, we show the overlay. The overlay's "Tap to Return" button handles
+  // re-entering fullscreen inside a real user gesture.
+  useEffect(() => {
+    if (!enabled) return;
 
     const onFSChange = () => {
-      const isNowFS =
-        !!(document.fullscreenElement || document.webkitFullscreenElement);
+      const isNowFS = !!(document.fullscreenElement || document.webkitFullscreenElement);
       if (!isNowFS) {
-        // Give browser 200ms then re-request
-        setTimeout(requestFS, 200);
         setIsBlocked(true);
       } else {
         setIsBlocked(false);
@@ -65,31 +69,25 @@ export function useLockMode({ enabled, profileId, parentExitPin, onUnlocked }) {
       document.removeEventListener("fullscreenchange", onFSChange);
       document.removeEventListener("webkitfullscreenchange", onFSChange);
     };
-  }, [enabled, requestFS]);
+  }, [enabled]);
 
-  // ── 3. Visibility change (alt-tab, home button, app switcher) ─────────────
+  // ── 3. Visibility change (alt-tab, home button) ───────────────────────────
   useEffect(() => {
     if (!enabled) return;
 
     const onVisibilityChange = () => {
       if (document.hidden) {
-        // Tab is hidden — set blocked so overlay shows on return
         setIsBlocked(true);
-        // Optionally clear any pending re-entry timer
-        if (reEntryTimeoutRef.current) clearTimeout(reEntryTimeoutRef.current);
-      } else {
-        // They came back — re-request fullscreen immediately
-        requestFS();
-        // Brief delay to let fullscreen kick in, then clear blocker
-        reEntryTimeoutRef.current = setTimeout(() => setIsBlocked(false), 800);
       }
+      // When they come back, the overlay is already showing.
+      // They MUST tap "Return to Work" which re-requests FS as a user gesture.
     };
 
     document.addEventListener("visibilitychange", onVisibilityChange);
     return () => document.removeEventListener("visibilitychange", onVisibilityChange);
-  }, [enabled, requestFS]);
+  }, [enabled]);
 
-  // ── 4. Keyboard shortcut interception ────────────────────────────────────
+  // ── 4. Keyboard shortcut interception ─────────────────────────────────────
   useEffect(() => {
     if (!enabled) return;
 
@@ -104,48 +102,56 @@ export function useLockMode({ enabled, profileId, parentExitPin, onUnlocked }) {
       if (e.ctrlKey && ["w","t","n","r","l"].includes(e.key.toLowerCase())) {
         e.preventDefault(); return;
       }
-      // Block Alt+F4, Alt+Left (back)
+      // Block Alt+F4, Alt+Left/Right (back/forward)
       if (e.altKey && ["F4","ArrowLeft","ArrowRight"].includes(e.key)) {
         e.preventDefault(); return;
       }
-      // Block Meta+Tab (macOS app switch via keyboard)
+      // Block Meta+Tab (macOS app switch)
       if (e.metaKey && e.key === "Tab") {
         e.preventDefault(); return;
       }
+      // Intercept ESC — show the blocker overlay instead of just exiting
+      // Note: ESC WILL still exit fullscreen (browser security spec), but
+      // our fullscreenchange listener above catches that and shows the overlay.
     };
 
     window.addEventListener("keydown", onKeyDown, { capture: true });
     return () => window.removeEventListener("keydown", onKeyDown, { capture: true });
   }, [enabled]);
 
-  // ── 5. Beforeunload (close/refresh prevention) ───────────────────────────
+  // ── 5. Beforeunload ────────────────────────────────────────────────────────
   useEffect(() => {
     if (!enabled) return;
 
     const onBeforeUnload = (e) => {
       e.preventDefault();
-      e.returnValue = ""; // Required by Chrome
+      e.returnValue = "";
     };
 
     window.addEventListener("beforeunload", onBeforeUnload);
     return () => window.removeEventListener("beforeunload", onBeforeUnload);
   }, [enabled]);
 
-  // ── 6. Browser Back Button ────────────────────────────────────────────────
+  // ── 6. Browser Back Button ─────────────────────────────────────────────────
   useEffect(() => {
     if (!enabled) return;
-    // Push a dummy state so back button doesn't navigate away
     window.history.pushState(null, "", window.location.href);
     const onPopState = () => {
       window.history.pushState(null, "", window.location.href);
       setIsBlocked(true);
-      setTimeout(() => { setIsBlocked(false); requestFS(); }, 400);
     };
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);
-  }, [enabled, requestFS]);
+  }, [enabled]);
 
-  // ── 7. Parent PIN unlock ──────────────────────────────────────────────────
+  // ── 7. "Return to Work" — called from overlay button (user gesture) ────────
+  // This IS a user gesture, so requestFullscreen() will succeed here.
+  const returnToWork = useCallback(() => {
+    requestFS();
+    setIsBlocked(false);
+  }, [requestFS]);
+
+  // ── 8. Parent PIN unlock ───────────────────────────────────────────────────
   const parentUnlock = useCallback(async (enteredPin) => {
     setUnlockError("");
     if (enteredPin === parentExitPin) {
@@ -156,11 +162,21 @@ export function useLockMode({ enabled, profileId, parentExitPin, onUnlocked }) {
     }
   }, [parentExitPin, exitFS, onUnlocked]);
 
-  // ── 8. All tasks complete — graceful exit ─────────────────────────────────
+  // ── 9. All tasks complete — graceful exit ──────────────────────────────────
   const unlockCompleted = useCallback(() => {
     exitFS();
     onUnlocked?.();
   }, [exitFS, onUnlocked]);
 
-  return { isBlocked, setIsBlocked, parentUnlock, unlockError, setUnlockError, unlockCompleted };
+  return {
+    isBlocked,
+    setIsBlocked,
+    returnToWork,
+    parentUnlock,
+    unlockError,
+    setUnlockError,
+    unlockCompleted,
+    showParentExit,
+    setShowParentExit,
+  };
 }

@@ -5,15 +5,15 @@ import { Lock, ShieldCheck, Delete } from "lucide-react";
 
 /**
  * LockOverlay — shown when:
- * a) The child alt-tabs away and comes back
- * b) Fullscreen is manually exited
- * 
- * Has two modes:
- * - "return"  → just a "Tap to Return" prompt that re-enters fullscreen
+ * a) The child alt-tabs away or ESC is pressed
+ * b) Fullscreen exits for any reason
+ *
+ * Two modes:
+ * - "return"  → "Tap to Return" re-enters fullscreen (user gesture = allowed)
  * - "unlock"  → parent PIN pad for exiting lock mode entirely
  */
 export default function LockOverlay({ childName, onReturn, onParentUnlock, unlockError }) {
-  const [mode, setMode] = useState("return"); // "return" | "unlock"  
+  const [mode, setMode] = useState("return");
   const [pin, setPin] = useState("");
   const digits = [1, 2, 3, 4, 5, 6, 7, 8, 9, null, 0, "del"];
 
@@ -29,8 +29,8 @@ export default function LockOverlay({ childName, onReturn, onParentUnlock, unloc
   };
 
   return (
-    <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-slate-900/95 backdrop-blur-xl text-white select-none">
-      
+    <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-slate-900/98 text-white select-none">
+
       {mode === "return" ? (
         /* ── Return to Work View ── */
         <div className="text-center px-8 max-w-md">
@@ -39,17 +39,20 @@ export default function LockOverlay({ childName, onReturn, onParentUnlock, unloc
           </div>
           <h1 className="text-4xl font-black mb-3">Focus Mode is On</h1>
           <p className="text-slate-400 text-lg leading-relaxed mb-10">
-            {childName}, let's get back to your work!<br />You're almost done for today. 💪
+            {childName}, let&apos;s get back to your work!<br />You&apos;re almost done for today. 💪
           </p>
+
+          {/* This button is the user gesture that allows requestFullscreen() */}
           <button
             onClick={onReturn}
             className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xl py-5 rounded-2xl shadow-2xl shadow-indigo-500/30 transition-all active:scale-95"
           >
             Tap to Return to Work
           </button>
+
           <button
             onClick={() => setMode("unlock")}
-            className="mt-6 text-slate-600 hover:text-slate-400 text-sm font-medium transition-colors"
+            className="mt-8 text-slate-500 hover:text-slate-300 text-sm font-medium transition-colors"
           >
             Parent Exit →
           </button>
@@ -57,7 +60,10 @@ export default function LockOverlay({ childName, onReturn, onParentUnlock, unloc
       ) : (
         /* ── Parent PIN Exit View ── */
         <div className="text-center px-8 w-full max-w-sm">
-          <button onClick={() => { setMode("return"); setPin(""); }} className="mb-8 text-slate-400 hover:text-white text-sm flex items-center gap-2 mx-auto transition-colors">
+          <button
+            onClick={() => { setMode("return"); setPin(""); }}
+            className="mb-8 text-slate-400 hover:text-white text-sm flex items-center gap-2 mx-auto transition-colors"
+          >
             ← Back
           </button>
           <div className="w-16 h-16 bg-emerald-600/20 border-2 border-emerald-400/40 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -65,7 +71,7 @@ export default function LockOverlay({ childName, onReturn, onParentUnlock, unloc
           </div>
           <h2 className="text-2xl font-black mb-2">Parent Override</h2>
           <p className="text-slate-400 text-sm mb-8">Enter the parent exit PIN to unlock</p>
-          
+
           {/* PIN dots */}
           <div className="flex justify-center gap-4 mb-6">
             {[0,1,2,3].map(i => (
