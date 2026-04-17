@@ -2,24 +2,39 @@
 
 import { useState } from "react";
 import { UserButton } from "@clerk/nextjs";
-import { PlusCircle, CalendarSync, Settings, TrendingUp, GripVertical, Settings2, Sparkles, BookOpen, Calculator, Type, Gamepad2, X, Link } from "lucide-react";
+import { PlusCircle, CalendarSync, Settings, TrendingUp, GripVertical, Settings2, Sparkles, BookOpen, Calculator, Type, Gamepad2, X, Link, Clock, Medal, ChevronRight } from "lucide-react";
 import { addChild } from "../actions";
 
 export default function ParentClient({ profiles }) {
   const [isAddingChild, setIsAddingChild] = useState(false);
   const [activeChildId, setActiveChildId] = useState(profiles[0]?.id || null);
+  const [rewardTime, setRewardTime] = useState(15);
 
-  const todaysPlan = [
+  const [todaysPlan, setTodaysPlan] = useState([
     { id: "p1", type: "Math", icon: Calculator, color: "text-blue-600 bg-blue-100" },
     { id: "p2", type: "Spelling", icon: Type, color: "text-purple-600 bg-purple-100" },
     { id: "p3", type: "Audiobook", icon: BookOpen, color: "text-amber-600 bg-amber-100" },
-    { id: "p4", type: "Word Runner", icon: Gamepad2, color: "text-emerald-600 bg-emerald-100" },
+  ]);
+
+  const libraryModules = [
+    { type: "Math", icon: Calculator, color: "text-blue-600 bg-blue-100", desc: "Adaptive arithmetic" },
+    { type: "Spelling", icon: Type, color: "text-purple-600 bg-purple-100", desc: "Weekly word lists" },
+    { type: "Audiobook", icon: BookOpen, color: "text-amber-600 bg-amber-100", desc: "Comprehension focus" },
+    { type: "Logic", icon: Settings, color: "text-rose-600 bg-rose-100", desc: "Critical thinking puzzles" },
   ];
 
   const activeChild = profiles.find(p => p.id === activeChildId) || profiles[0];
 
+  const handleAddModule = (mod) => {
+    setTodaysPlan([...todaysPlan, { ...mod, id: `p${Date.now()}` }]);
+  };
+
+  const handleRemoveModule = (id) => {
+    setTodaysPlan(todaysPlan.filter(p => p.id !== id));
+  };
+
   return (
-    <div className="min-h-screen bg-[conic-gradient(at_top_left,_var(--tw-gradient-stops))] from-indigo-50 via-white to-cyan-50 font-[family-name:var(--font-geist-sans)] pb-24">
+    <div className="min-h-screen bg-[conic-gradient(at_top_left,_var(--tw-gradient-stops))] from-indigo-50 via-slate-50 to-cyan-50 font-[family-name:var(--font-geist-sans)] pb-24">
       
       {/* Modal for adding a child */}
       {isAddingChild && (
@@ -75,10 +90,10 @@ export default function ParentClient({ profiles }) {
         </div>
       </nav>
 
-      <main className="max-w-6xl mx-auto px-6 mt-10 grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <main className="max-w-[1400px] mx-auto px-6 mt-10 grid grid-cols-1 lg:grid-cols-12 gap-8">
         
-        {/* Left Sidebar: Students List */}
-        <aside className="lg:col-span-4 space-y-6">
+        {/* === COLUMN 1: Roster & Analytics === */}
+        <aside className="lg:col-span-3 space-y-6">
           <div className="bg-white/80 backdrop-blur-xl p-6 rounded-3xl shadow-xl shadow-slate-200/50 border border-white">
             <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4">
               Your Students
@@ -105,13 +120,12 @@ export default function ParentClient({ profiles }) {
                           <p className="text-xs text-slate-500 font-medium">Grade {child.grade_level}</p>
                         </div>
                       </div>
-                      {/* Copy Link Button functionality */}
                       <button 
                         title="Copy Student Link"
                         className="p-2 text-indigo-400 hover:text-indigo-600 hover:bg-indigo-100 rounded-full transition-colors"
                         onClick={(e) => {
                            e.stopPropagation();
-                           alert(`Bookmark Link Copied! (In future: https://app.jennings.com/path?profile=${child.id})`);
+                           alert(`Bookmark Link Copied: https://app.jennings.com/path?profile=${child.id}`);
                         }}
                       >
                          <Link className="w-4 h-4" />
@@ -127,21 +141,56 @@ export default function ParentClient({ profiles }) {
             </button>
           </div>
 
-          <div className="bg-gradient-to-br from-indigo-600 to-indigo-800 p-6 rounded-3xl shadow-xl shadow-indigo-600/20 text-white relative overflow-hidden">
-             <div className="absolute top-0 right-0 p-4 opacity-10">
-               <TrendingUp className="w-24 h-24" />
-             </div>
-             <h3 className="font-semibold text-indigo-100 text-sm mb-1">Weekly Mastery</h3>
-             <p className="text-3xl font-bold mb-4">84%</p>
-             <button className="text-sm bg-white/20 hover:bg-white/30 transition-colors px-4 py-2 rounded-lg font-medium backdrop-blur-sm">
-               View Full Report
-             </button>
-          </div>
+          {/* Analytics Card */}
+          {activeChild && (
+            <div className="bg-gradient-to-br from-indigo-700 to-indigo-900 p-6 rounded-3xl shadow-xl shadow-indigo-600/20 text-white relative overflow-hidden">
+               <div className="absolute top-0 right-0 p-4 opacity-10">
+                 <TrendingUp className="w-24 h-24" />
+               </div>
+               <h3 className="font-semibold text-indigo-100 text-sm mb-1">{activeChild.name}'s Mastery</h3>
+               <p className="text-3xl font-bold mb-6">84%</p>
+               
+               {/* Mini CSS Chart */}
+               <div className="space-y-3 mb-6 relative z-10">
+                 <div>
+                   <div className="flex justify-between text-xs font-medium text-indigo-200 mb-1">
+                     <span>Math</span>
+                     <span>92%</span>
+                   </div>
+                   <div className="w-full h-1.5 bg-indigo-950 rounded-full overflow-hidden">
+                      <div className="h-full bg-emerald-400 rounded-full w-[92%]"></div>
+                   </div>
+                 </div>
+                 <div>
+                   <div className="flex justify-between text-xs font-medium text-indigo-200 mb-1">
+                     <span>Spelling</span>
+                     <span>76%</span>
+                   </div>
+                   <div className="w-full h-1.5 bg-indigo-950 rounded-full overflow-hidden">
+                      <div className="h-full bg-amber-400 rounded-full w-[76%]"></div>
+                   </div>
+                 </div>
+                 <div>
+                   <div className="flex justify-between text-xs font-medium text-indigo-200 mb-1">
+                     <span>Comprehension</span>
+                     <span>88%</span>
+                   </div>
+                   <div className="w-full h-1.5 bg-indigo-950 rounded-full overflow-hidden">
+                      <div className="h-full bg-emerald-400 rounded-full w-[88%]"></div>
+                   </div>
+                 </div>
+               </div>
+
+               <button className="w-full text-sm font-medium bg-white/10 hover:bg-white/20 transition-colors py-2.5 rounded-xl backdrop-blur-sm border border-white/10 flex items-center justify-center gap-2">
+                 Detailed Report <ChevronRight className="w-4 h-4" />
+               </button>
+            </div>
+          )}
         </aside>
 
-        {/* Main Content: Daily Plan Editor */}
-        <section className="lg:col-span-8">
-          <div className="bg-white/80 backdrop-blur-xl p-8 rounded-[2rem] shadow-xl shadow-slate-200/50 border border-white min-h-[600px]">
+        {/* === COLUMN 2: Flight Plan Editor === */}
+        <section className="lg:col-span-6">
+          <div className="bg-white/80 backdrop-blur-xl p-8 rounded-[2rem] shadow-xl shadow-slate-200/50 border border-white min-h-[700px]">
              {activeChild ? (
                <>
                  <div className="flex justify-between items-end mb-8 border-b border-slate-100 pb-6">
@@ -149,56 +198,118 @@ export default function ParentClient({ profiles }) {
                       <h2 className="text-3xl font-bold text-slate-800 mb-2">Today's Flight Plan</h2>
                       <p className="text-slate-500 flex items-center gap-2">
                         <CalendarSync className="w-4 h-4" /> 
-                        Editing plan for <span className="font-semibold text-indigo-600">{activeChild.name}</span>
+                        Building path for <span className="font-semibold text-indigo-600">{activeChild.name}</span>
                       </p>
                    </div>
                    <div className="flex gap-3">
-                     <button className="px-5 py-2.5 rounded-xl font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors">
-                       Load Template
-                     </button>
-                     <button className="px-6 py-2.5 rounded-xl font-medium text-white bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-600/20 transition-all hover:-translate-y-0.5">
+                     <button className="px-6 py-2.5 rounded-xl font-medium text-white bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-600/20 transition-all hover:-translate-y-0.5 whitespace-nowrap">
                        Publish Plan
                      </button>
                    </div>
                  </div>
 
-                 {/* Drag and Drop modules placeholder */}
-                 <div className="space-y-4 max-w-2xl">
+                 {/* Active Path Editor */}
+                 <div className="space-y-4">
+                    {todaysPlan.length === 0 && (
+                      <div className="text-center py-12 border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50 text-slate-400">
+                        Drop modules here from the Library to build the path.
+                      </div>
+                    )}
                     {todaysPlan.map((module, idx) => (
-                      <div key={module.id} className="group flex items-center bg-white p-4 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all">
+                      <div key={module.id} className="group flex items-center bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all relative">
                          <div className="px-2 text-slate-300 cursor-grab hover:text-slate-500 transition-colors">
                            <GripVertical className="w-5 h-5" />
                          </div>
-                         <span className="w-8 text-center font-bold text-slate-300 text-sm ml-2 mr-4">
-                           0{idx + 1}
+                         <span className="w-8 text-center font-bold text-slate-300 text-sm ml-2 mr-3">
+                           {idx + 1}
                          </span>
-                         <div className={`p-3 rounded-xl ${module.color} mr-4`}>
-                           <module.icon className="w-6 h-6" />
+                         <div className={`p-3 rounded-lg ${module.color} mr-4`}>
+                           <module.icon className="w-5 h-5" />
                          </div>
                          <div className="flex-1">
                            <h3 className="font-bold text-slate-800">{module.type}</h3>
-                           <p className="text-sm text-slate-500">Auto-assigned progression</p>
+                           <p className="text-xs text-slate-500">Standard progression</p>
                          </div>
-                         <button className="opacity-0 group-hover:opacity-100 p-2 text-slate-400 hover:text-indigo-600 transition-all">
-                           <Settings className="w-5 h-5" />
-                       </button>
+                         <button onClick={() => handleRemoveModule(module.id)} className="opacity-0 group-hover:opacity-100 p-2 text-slate-400 hover:text-red-500 transition-all">
+                           <X className="w-5 h-5" />
+                         </button>
                       </div>
                     ))}
 
-                    <button className="w-full mt-6 flex items-center justify-center gap-2 py-4 rounded-2xl border-2 border-dashed border-indigo-200 bg-indigo-50/50 text-indigo-500 font-bold hover:bg-indigo-100/50 hover:border-indigo-300 transition-all">
-                      <PlusCircle className="w-5 h-5" /> Add Module
-                    </button>
+                    {/* The Reward Game is always fixed at the end */}
+                    <div className="flex items-center bg-emerald-50/50 p-4 rounded-xl border border-emerald-100 shadow-sm mt-8 opacity-80">
+                       <div className="px-2 text-emerald-200">
+                         <Lock className="w-5 h-5" />
+                       </div>
+                       <span className="w-8 text-center font-bold text-emerald-300 text-sm ml-2 mr-3">
+                         {todaysPlan.length + 1}
+                       </span>
+                       <div className="p-3 rounded-lg bg-emerald-100 text-emerald-600 mr-4">
+                         <Gamepad2 className="w-5 h-5" />
+                       </div>
+                       <div className="flex-1">
+                         <h3 className="font-bold text-emerald-800">Reward Unlock</h3>
+                         <p className="text-xs text-emerald-600 font-medium">{rewardTime} Minutes of Playtime</p>
+                       </div>
+                    </div>
                  </div>
                </>
              ) : (
-                <div className="flex flex-col items-center justify-center h-full text-slate-400 py-32">
+                <div className="flex flex-col items-center justify-center h-[500px] text-slate-400">
                    <Settings2 className="w-16 h-16 mb-4 opacity-20" />
                    <h2 className="text-xl font-semibold mb-2">No Students Selected</h2>
-                   <p className="text-sm text-center max-w-sm">Add a child to the roster on the left to begin creating their daily learning paths.</p>
+                   <p className="text-sm text-center max-w-sm">Add a child to the roster to build their path.</p>
                 </div>
              )}
           </div>
         </section>
+
+        {/* === COLUMN 3: Module Library & Settings === */}
+        <aside className="lg:col-span-3 space-y-6">
+          <div className="bg-white/80 backdrop-blur-xl p-6 rounded-3xl shadow-xl shadow-slate-200/50 border border-white">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4 flex items-center gap-2">
+              <BookOpen className="w-4 h-4" /> Module Library
+            </h2>
+            <div className="space-y-3">
+              {libraryModules.map((mod, idx) => (
+                <div key={idx} onClick={() => handleAddModule(mod)} className="flex items-start gap-3 p-3 rounded-xl border border-slate-100 hover:border-indigo-200 hover:bg-indigo-50/50 cursor-pointer transition-all group">
+                   <div className={`p-2 rounded-lg ${mod.color} mt-0.5`}>
+                     <mod.icon className="w-4 h-4" />
+                   </div>
+                   <div>
+                     <p className="font-semibold text-slate-700 text-sm group-hover:text-indigo-700 transition-colors">{mod.type}</p>
+                     <p className="text-xs text-slate-500 leading-tight mt-0.5">{mod.desc}</p>
+                   </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-white/80 backdrop-blur-xl p-6 rounded-3xl shadow-xl shadow-slate-200/50 border border-white">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4 flex items-center gap-2">
+              <Medal className="w-4 h-4" /> Reward Settings
+            </h2>
+            <div className="mb-4">
+              <div className="flex justify-between items-center mb-2">
+                <label className="text-sm font-semibold text-slate-700">Game Playtime</label>
+                <span className="text-xs font-bold bg-indigo-100 text-indigo-700 px-2 py-1 rounded-md">{rewardTime} Mins</span>
+              </div>
+              <input 
+                type="range" 
+                min="5" 
+                max="60" 
+                step="5"
+                value={rewardTime}
+                onChange={(e) => setRewardTime(parseInt(e.target.value))}
+                className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+              />
+              <div className="flex justify-between text-xs text-slate-400 mt-2 font-medium">
+                <span>5m</span>
+                <span>60m</span>
+              </div>
+            </div>
+          </div>
+        </aside>
 
       </main>
     </div>
