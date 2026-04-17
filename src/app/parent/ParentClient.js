@@ -196,7 +196,7 @@ export default function ParentClient({ profiles }) {
           <p className="text-slate-400 text-lg leading-relaxed mb-10">
             Let's get started by adding your first student. You'll set up their profile, pick a guide voice, and we'll build their learning path together.
           </p>
-          <button onClick={() => setIsAddingChild(true)} className="inline-flex items-center gap-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-10 py-4 rounded-2xl shadow-xl shadow-indigo-500/30 transition-all hover:-translate-y-1 text-lg">
+          <button onClick={() => setIsAddingChild(true)} className="inline-flex items-center gap-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-10 py-4 rounded-2xl shadow-xl shadow-indigo-500/30 transition-[colors,transform,shadow] hover:-translate-y-1 text-lg">
             <PlusCircle className="w-6 h-6" /> Add Your First Student
           </button>
           <p className="text-slate-400 text-sm mt-6">It only takes 60 seconds ✨</p>
@@ -216,7 +216,7 @@ export default function ParentClient({ profiles }) {
                 </div>
                 <input type="hidden" name="voiceId" value={voiceOptions[0].id} />
                 <input name="startDate" required type="date" defaultValue={new Date().toISOString().split('T')[0]} className="w-full border border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-                <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 rounded-xl transition-all shadow-md">Create Profile →</button>
+                <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 rounded-xl transition-[colors,transform,shadow] shadow-md">Create Profile →</button>
               </form>
             </div>
           </div>
@@ -226,7 +226,7 @@ export default function ParentClient({ profiles }) {
   }
 
   return (
-    <div className="min-h-screen bg-[conic-gradient(at_top_left,_var(--tw-gradient-stops))] from-indigo-50 via-slate-50 to-cyan-50 font-[family-name:var(--font-geist-sans)] pb-24">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-slate-50 to-cyan-50 font-[family-name:var(--font-geist-sans)] pb-24">
       
       {/* Edit Child Modal */}
       {editingChild && (
@@ -264,7 +264,7 @@ export default function ParentClient({ profiles }) {
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input type="checkbox" name="elockMode" defaultChecked={!!editingChild.lock_mode} className="sr-only peer" />
-                    <div className="w-11 h-6 bg-slate-200 peer-focus:ring-2 peer-focus:ring-indigo-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-indigo-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+                    <div className="w-11 h-6 bg-slate-200 peer-focus:ring-2 peer-focus:ring-indigo-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-indigo-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-[colors,transform,shadow]"></div>
                   </label>
                 </div>
                 <div>
@@ -273,7 +273,7 @@ export default function ParentClient({ profiles }) {
                   <p className="text-xs text-slate-400 mt-1">This is different from the child's PIN — only the parent uses it to exit Focus Mode.</p>
                 </div>
               </div>
-              <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 rounded-xl transition-all shadow-md">Save Changes</button>
+              <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 rounded-xl transition-[colors,transform,shadow] shadow-md">Save Changes</button>
             </form>
           </div>
         </div>
@@ -369,7 +369,7 @@ export default function ParentClient({ profiles }) {
                      {voiceOptions.map(v => (
                        <div key={v.id} 
                          onClick={() => setSelectedVoice(v.id)}
-                         className={`flex items-center justify-between p-2 rounded-xl cursor-pointer border-2 transition-all ${selectedVoice === v.id ? 'border-indigo-500 bg-indigo-50' : 'border-slate-100 bg-white hover:border-slate-300'}`}
+                         className={`flex items-center justify-between p-2 rounded-xl cursor-pointer border-2 transition-[colors,transform,shadow] ${selectedVoice === v.id ? 'border-indigo-500 bg-indigo-50' : 'border-slate-100 bg-white hover:border-slate-300'}`}
                        >
                          <div>
                            <p className="text-xs font-bold text-slate-800">{v.name}</p>
@@ -403,7 +403,7 @@ export default function ParentClient({ profiles }) {
                  </div>
               </div>
 
-              <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 rounded-xl transition-all shadow-md mt-6">
+              <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 rounded-xl transition-[colors,transform,shadow] shadow-md mt-6">
                 Create Profile
               </button>
             </form>
@@ -412,7 +412,7 @@ export default function ParentClient({ profiles }) {
       )}
 
       {/* Premium Header */}
-      <nav className="flex justify-between items-center px-8 py-6 bg-white/60 backdrop-blur-md border-b border-white/40 sticky top-0 z-50">
+      <nav className="flex justify-between items-center px-8 py-6 bg-white border-b border-slate-100 sticky top-0 z-50">
         <div className="flex items-center gap-3">
           <div className="bg-indigo-600 p-2 rounded-xl shadow-indigo-600/20 shadow-lg">
             <Sparkles className="w-5 h-5 text-white" />
@@ -435,7 +435,7 @@ export default function ParentClient({ profiles }) {
         
         {/* === COLUMN 1: Roster & Analytics === */}
         <aside className="lg:col-span-3 space-y-6">
-          <div className="bg-white/80 backdrop-blur-xl p-6 rounded-3xl shadow-xl shadow-slate-200/50 border border-white">
+          <div className="bg-white p-6 rounded-3xl shadow-lg shadow-slate-200/60 border border-slate-100">
             <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4">
               Your Students
             </h2>
@@ -451,7 +451,7 @@ export default function ParentClient({ profiles }) {
                   const initials = child.name ? child.name.charAt(0).toUpperCase() : "?";
                   
                   return (
-                    <li key={child.id} onClick={() => setActiveChildId(child.id)} className={`flex items-center justify-between p-3 rounded-2xl cursor-pointer transition-all duration-300 ${isActive ? "bg-indigo-50 border border-indigo-100 ring-1 ring-indigo-200 shadow-sm" : "hover:bg-slate-50 border border-transparent"}`}>
+                    <li key={child.id} onClick={() => setActiveChildId(child.id)} className={`flex items-center justify-between p-3 rounded-2xl cursor-pointer transition-[colors,transform,shadow] duration-300 ${isActive ? "bg-indigo-50 border border-indigo-100 ring-1 ring-indigo-200 shadow-sm" : "hover:bg-slate-50 border border-transparent"}`}>
                       <div className="flex items-center gap-3">
                         <div className={`w-11 h-11 rounded-full ${child.avatar_url || "bg-indigo-500"} text-white flex items-center justify-center font-bold text-base shadow-inner ring-2 ring-white`}>
                           {initials}
@@ -481,7 +481,7 @@ export default function ParentClient({ profiles }) {
               </ul>
             )}
 
-            <button onClick={() => setIsAddingChild(true)} className="w-full mt-4 flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-dashed border-slate-200 text-slate-500 font-medium hover:border-indigo-300 hover:text-indigo-600 hover:bg-indigo-50/50 transition-all">
+            <button onClick={() => setIsAddingChild(true)} className="w-full mt-4 flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-dashed border-slate-200 text-slate-500 font-medium hover:border-indigo-300 hover:text-indigo-600 hover:bg-indigo-50/50 transition-[colors,transform,shadow]">
               <PlusCircle className="w-4 h-4" /> Add Child
             </button>
           </div>
@@ -535,7 +535,7 @@ export default function ParentClient({ profiles }) {
 
         {/* === COLUMN 2: Flight Plan Editor === */}
         <section className="lg:col-span-6">
-          <div className="bg-white/80 backdrop-blur-xl p-8 rounded-[2rem] shadow-xl shadow-slate-200/50 border border-white min-h-[700px]">
+          <div className="bg-white p-8 rounded-[2rem] shadow-lg shadow-slate-200/60 border border-slate-100 min-h-[700px]">
              {activeChild ? (
                <>
                  <div className="flex justify-between items-end mb-8 border-b border-slate-100 pb-6">
@@ -553,7 +553,7 @@ export default function ParentClient({ profiles }) {
                      <button onClick={() => window.open(`/api/report?profileId=${activeChild.id}`, '_blank')} className="px-4 py-2.5 rounded-xl font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors flex items-center gap-1.5 text-sm">
                        <FileDown className="w-4 h-4" /> Report
                      </button>
-                     <button onClick={handlePublishPlan} disabled={publishing} className="px-5 py-2.5 rounded-xl font-medium text-white bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-600/20 transition-all hover:-translate-y-0.5 whitespace-nowrap disabled:opacity-70 text-sm">
+                     <button onClick={handlePublishPlan} disabled={publishing} className="px-5 py-2.5 rounded-xl font-medium text-white bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-600/20 transition-[colors,transform,shadow] hover:-translate-y-0.5 whitespace-nowrap disabled:opacity-70 text-sm">
                        {publishing ? "Publishing..." : "Publish Plan"}
                      </button>
                    </div>
@@ -569,7 +569,7 @@ export default function ParentClient({ profiles }) {
                     {todaysPlan.map((module, idx) => {
                       const IconComponent = ICON_MAP[module.iconCode] || Calculator;
                       return (
-                      <div key={module.id} className="group flex items-center bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all relative">
+                      <div key={module.id} className="group flex items-center bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-[colors,transform,shadow] relative">
                          <div className="px-2 text-slate-300 cursor-grab hover:text-slate-500 transition-colors">
                            <GripVertical className="w-5 h-5" />
                          </div>
@@ -583,7 +583,7 @@ export default function ParentClient({ profiles }) {
                            <h3 className="font-bold text-slate-800">{module.type}</h3>
                            <p className="text-xs text-slate-500">Standard progression</p>
                          </div>
-                         <button onClick={() => handleRemoveModule(module.id)} className="opacity-0 group-hover:opacity-100 p-2 text-slate-400 hover:text-red-500 transition-all">
+                         <button onClick={() => handleRemoveModule(module.id)} className="opacity-0 group-hover:opacity-100 p-2 text-slate-400 hover:text-red-500 transition-[colors,transform,shadow]">
                            <X className="w-5 h-5" />
                          </button>
                       </div>
@@ -619,7 +619,7 @@ export default function ParentClient({ profiles }) {
 
         {/* === COLUMN 3: Module Library & Settings === */}
         <aside className="lg:col-span-3 space-y-6">
-          <div className="bg-white/80 backdrop-blur-xl p-6 rounded-3xl shadow-xl shadow-slate-200/50 border border-white">
+          <div className="bg-white p-6 rounded-3xl shadow-lg shadow-slate-200/60 border border-slate-100">
             <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4 flex items-center gap-2">
               <BookOpen className="w-4 h-4" /> Module Library
             </h2>
@@ -627,7 +627,7 @@ export default function ParentClient({ profiles }) {
               {libraryModules.map((mod, idx) => {
                 const LibIcon = ICON_MAP[mod.iconCode] || Calculator;
                 return (
-                <div key={idx} onClick={() => handleAddModule(mod)} className="flex items-start gap-3 p-3 rounded-xl border border-slate-100 hover:border-indigo-200 hover:bg-indigo-50/50 cursor-pointer transition-all group">
+                <div key={idx} onClick={() => handleAddModule(mod)} className="flex items-start gap-3 p-3 rounded-xl border border-slate-100 hover:border-indigo-200 hover:bg-indigo-50/50 cursor-pointer transition-[colors,transform,shadow] group">
                    <div className={`p-2 rounded-lg ${mod.color} mt-0.5`}>
                      <LibIcon className="w-4 h-4" />
                    </div>
@@ -640,7 +640,7 @@ export default function ParentClient({ profiles }) {
             </div>
           </div>
 
-          <div className="bg-white/80 backdrop-blur-xl p-6 rounded-3xl shadow-xl shadow-slate-200/50 border border-white">
+          <div className="bg-white p-6 rounded-3xl shadow-lg shadow-slate-200/60 border border-slate-100">
             <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4 flex items-center gap-2">
               <Medal className="w-4 h-4" /> Reward Settings
             </h2>
@@ -668,7 +668,7 @@ export default function ParentClient({ profiles }) {
 
         {/* === FULL WIDTH: Bird's-Eye Overview with Date Navigation === */}
         <section className="lg:col-span-12">
-          <div className="bg-white/80 backdrop-blur-xl p-8 rounded-[2rem] shadow-xl shadow-slate-200/50 border border-white">
+          <div className="bg-white p-8 rounded-[2rem] shadow-lg shadow-slate-200/60 border border-slate-100">
 
             {/* Header Row */}
             <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
@@ -694,21 +694,21 @@ export default function ParentClient({ profiles }) {
                   <div className="flex items-center gap-1 bg-slate-100 rounded-xl p-1">
                     <button
                       onClick={() => setOverviewOffset(o => o - 1)}
-                      className="p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all text-slate-500 hover:text-slate-800"
+                      className="p-2 rounded-lg hover:bg-white hover:shadow-sm transition-[colors,transform,shadow] text-slate-500 hover:text-slate-800"
                     >
                       <ChevronLeft className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => setOverviewOffset(0)}
                       disabled={overviewOffset === 0}
-                      className="px-3 py-1.5 text-xs font-bold rounded-lg hover:bg-white hover:shadow-sm transition-all text-slate-500 disabled:opacity-40"
+                      className="px-3 py-1.5 text-xs font-bold rounded-lg hover:bg-white hover:shadow-sm transition-[colors,transform,shadow] text-slate-500 disabled:opacity-40"
                     >
                       Today
                     </button>
                     <button
                       onClick={() => setOverviewOffset(o => Math.min(o + 1, 0))}
                       disabled={overviewOffset === 0}
-                      className="p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all text-slate-500 hover:text-slate-800 disabled:opacity-30"
+                      className="p-2 rounded-lg hover:bg-white hover:shadow-sm transition-[colors,transform,shadow] text-slate-500 hover:text-slate-800 disabled:opacity-30"
                     >
                       <ChevronRight className="w-4 h-4" />
                     </button>
@@ -719,13 +719,13 @@ export default function ParentClient({ profiles }) {
                 <div className="flex items-center bg-slate-100 rounded-xl p-1">
                   <button
                     onClick={() => { setOverviewView("day"); setOverviewOffset(0); }}
-                    className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${overviewView === "day" ? "bg-white shadow-sm text-slate-800" : "text-slate-400 hover:text-slate-600"}`}
+                    className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-[colors,transform,shadow] ${overviewView === "day" ? "bg-white shadow-sm text-slate-800" : "text-slate-400 hover:text-slate-600"}`}
                   >
                     Day
                   </button>
                   <button
                     onClick={() => setOverviewView("week")}
-                    className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${overviewView === "week" ? "bg-white shadow-sm text-slate-800" : "text-slate-400 hover:text-slate-600"}`}
+                    className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-[colors,transform,shadow] ${overviewView === "week" ? "bg-white shadow-sm text-slate-800" : "text-slate-400 hover:text-slate-600"}`}
                   >
                     Week
                   </button>
@@ -752,7 +752,7 @@ export default function ParentClient({ profiles }) {
                         <p className="font-bold text-slate-800 text-sm">{child.name}</p>
                         <div className="flex items-center gap-2 mt-1">
                           <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                            <div className={`h-full rounded-full transition-all duration-700 ${pct === 100 ? "bg-emerald-400" : "bg-indigo-400"}`} style={{ width: `${pct}%` }} />
+                            <div className={`h-full rounded-full transition-[width] duration-700 ${pct === 100 ? "bg-emerald-400" : "bg-indigo-400"}`} style={{ width: `${pct}%` }} />
                           </div>
                           <span className="text-xs font-bold text-slate-400">{pct}%</span>
                         </div>

@@ -135,16 +135,13 @@ export default function ChildPath() {
         />
       )}
 
-      {/* Background Orbs */}
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-white/60 rounded-full blur-[80px] pointer-events-none" />
-      <div className="absolute bottom-0 right-1/4 w-[30rem] h-[30rem] bg-indigo-100/50 rounded-full blur-[100px] pointer-events-none" />
 
       {/* Voice Guide Header */}
       <nav className="flex justify-between items-center px-6 py-5 relative z-10 max-w-7xl mx-auto">
-        <div className="flex items-center gap-3 bg-white/80 backdrop-blur-xl px-4 py-3 rounded-full shadow-lg border border-white">
+        <div className="flex items-center gap-3 bg-white border border-slate-100 shadow-md px-4 py-3 rounded-full">
           <button
             onClick={() => speakGuide(isPastNotFinished ? "Let's finish up what we missed!" : "Great job! Keep going, you are doing amazing!")}
-            className={`w-10 h-10 rounded-full flex items-center justify-center text-white transition-all shadow-lg ${isSpeaking ? "bg-indigo-400 animate-pulse scale-110" : "bg-indigo-500 hover:bg-indigo-400 hover:scale-105"}`}
+            className={`w-10 h-10 rounded-full flex items-center justify-center text-white transition-[colors,transform,shadow] shadow-lg ${isSpeaking ? "bg-indigo-400 animate-pulse scale-110" : "bg-indigo-500 hover:bg-indigo-400 hover:scale-105"}`}
           >
             <Volume2 className="w-5 h-5" />
           </button>
@@ -174,7 +171,7 @@ export default function ChildPath() {
 
       {/* Horizontal Calendar Timeline */}
       <section className="relative z-10 max-w-4xl mx-auto mt-6 px-6">
-        <div className="bg-white/60 backdrop-blur-md border border-white p-4 rounded-3xl shadow-sm flex items-center justify-between overflow-x-auto gap-4">
+        <div className="bg-white border border-slate-100 shadow-md p-4 rounded-3xl flex items-center justify-between overflow-x-auto gap-4">
           <div className="flex items-center gap-2 px-4 text-indigo-400 font-bold border-r border-slate-200 shrink-0">
             <CalendarDays className="w-6 h-6" />
           </div>
@@ -186,7 +183,7 @@ export default function ChildPath() {
                 <button
                   key={date}
                   onClick={() => setActiveDate(date)}
-                  className={`flex flex-col items-center p-3 rounded-2xl min-w-[72px] transition-all
+                  className={`flex flex-col items-center p-3 rounded-2xl min-w-[72px] transition-[colors,transform,shadow]
                     ${isActive ? "bg-white shadow-md border border-indigo-100 scale-110" : "hover:bg-white/50 border border-transparent"}`}
                 >
                   <p className={`text-xs font-bold uppercase mb-1 ${isActive ? "text-indigo-400" : "text-slate-400"}`}>{dayObj.dayName}</p>
@@ -214,7 +211,7 @@ export default function ChildPath() {
           <h1 className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-indigo-900 to-slate-700 mb-4 tracking-tight">
             {isPastNotFinished ? "Catch-Up Path" : "Today's Path"}
           </h1>
-          <p className="text-slate-500 font-medium text-lg bg-white/50 backdrop-blur-md inline-block px-5 py-2 rounded-full border border-white shadow-sm">
+          <p className="text-slate-500 font-medium text-lg bg-white inline-block px-5 py-2 rounded-full border border-slate-100 shadow-sm">
             {weeklyData[activeDate].dayName}, {activeDate}
           </p>
         </div>
@@ -240,12 +237,12 @@ export default function ChildPath() {
                   )}
                 </div>
 
-                <div className={`flex-1 p-6 rounded-[2rem] border-2 transition-all duration-500
+                <div className={`flex-1 p-6 rounded-[2rem] border-2 transition-[colors,transform,shadow] duration-500
                   ${step.isCurrent
                     ? "bg-white border-indigo-200 shadow-2xl shadow-indigo-500/10 cursor-pointer hover:border-indigo-300 hover:-translate-y-1"
                     : step.isCompleted
                       ? "bg-white/60 border-transparent shadow-sm"
-                      : "bg-white/40 border-transparent backdrop-blur-sm"}`}
+                      : "bg-white/40 border-transparent"}`}
                 >
                   <div className="flex justify-between items-center">
                     <div>
