@@ -5,22 +5,30 @@ import { UserButton } from "@clerk/nextjs";
 import { PlusCircle, CalendarSync, Settings, TrendingUp, GripVertical, Settings2, Sparkles, BookOpen, Calculator, Type, Gamepad2, X, Link, Clock, Medal, ChevronRight } from "lucide-react";
 import { addChild } from "../actions";
 
+const ICON_MAP = {
+  Calculator: Calculator,
+  Type: Type,
+  BookOpen: BookOpen,
+  Settings: Settings,
+  Gamepad2: Gamepad2
+};
+
 export default function ParentClient({ profiles }) {
   const [isAddingChild, setIsAddingChild] = useState(false);
   const [activeChildId, setActiveChildId] = useState(profiles[0]?.id || null);
   const [rewardTime, setRewardTime] = useState(15);
 
   const [todaysPlan, setTodaysPlan] = useState([
-    { id: "p1", type: "Math", icon: Calculator, color: "text-blue-600 bg-blue-100" },
-    { id: "p2", type: "Spelling", icon: Type, color: "text-purple-600 bg-purple-100" },
-    { id: "p3", type: "Audiobook", icon: BookOpen, color: "text-amber-600 bg-amber-100" },
+    { id: "p1", type: "Math", iconCode: "Calculator", color: "text-blue-600 bg-blue-100" },
+    { id: "p2", type: "Spelling", iconCode: "Type", color: "text-purple-600 bg-purple-100" },
+    { id: "p3", type: "Audiobook", iconCode: "BookOpen", color: "text-amber-600 bg-amber-100" },
   ]);
 
   const libraryModules = [
-    { type: "Math", icon: Calculator, color: "text-blue-600 bg-blue-100", desc: "Adaptive arithmetic" },
-    { type: "Spelling", icon: Type, color: "text-purple-600 bg-purple-100", desc: "Weekly word lists" },
-    { type: "Audiobook", icon: BookOpen, color: "text-amber-600 bg-amber-100", desc: "Comprehension focus" },
-    { type: "Logic", icon: Settings, color: "text-rose-600 bg-rose-100", desc: "Critical thinking puzzles" },
+    { type: "Math", iconCode: "Calculator", color: "text-blue-600 bg-blue-100", desc: "Adaptive arithmetic" },
+    { type: "Spelling", iconCode: "Type", color: "text-purple-600 bg-purple-100", desc: "Weekly word lists" },
+    { type: "Audiobook", iconCode: "BookOpen", color: "text-amber-600 bg-amber-100", desc: "Comprehension focus" },
+    { type: "Logic", iconCode: "Settings", color: "text-rose-600 bg-rose-100", desc: "Critical thinking puzzles" },
   ];
 
   const activeChild = profiles.find(p => p.id === activeChildId) || profiles[0];
@@ -33,21 +41,33 @@ export default function ParentClient({ profiles }) {
     setTodaysPlan(todaysPlan.filter(p => p.id !== id));
   };
 
+  const handleSubmitNewChild = async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    
+    // Convert checkbox array to JSON string for backend
+    const days = [];
+    ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].forEach(d => {
+       if (formData.get(`day_${d}`)) days.push(d);
+    });
+    formData.append('schoolDays_json', JSON.stringify(days));
+
+    await addChild(formData);
+    setIsAddingChild(false);
+  };
+
   return (
     <div className="min-h-screen bg-[conic-gradient(at_top_left,_var(--tw-gradient-stops))] from-indigo-50 via-slate-50 to-cyan-50 font-[family-name:var(--font-geist-sans)] pb-24">
       
       {/* Modal for adding a child */}
       {isAddingChild && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm px-4">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 relative">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg p-8 relative max-h-[90vh] overflow-y-auto">
             <button onClick={() => setIsAddingChild(false)} className="absolute top-6 right-6 text-slate-400 hover:text-slate-600">
               <X className="w-6 h-6" />
             </button>
             <h2 className="text-2xl font-bold text-slate-800 mb-6">Add a Child</h2>
-            <form action={async (formData) => {
-              await addChild(formData);
-              setIsAddingChild(false);
-            }} className="space-y-4">
+            <form onSubmit={handleSubmitNewChild} className="space-y-4">
               <div>
                 <label className="block text-sm font-semibold text-slate-600 mb-1">First Name</label>
                 <input name="name" required type="text" className="w-full border border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-shadow" placeholder="e.g. Jimmy" />
@@ -62,7 +82,30 @@ export default function ParentClient({ profiles }) {
                   <input name="pin" required type="text" maxLength="4" pattern="[0-9]{4}" title="Must be exactly 4 numbers" className="w-full border border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="1234" />
                 </div>
               </div>
-              <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 rounded-xl transition-all shadow-md mt-4">
+
+              {/* Advanced Settings */}
+              <div className="border-t border-slate-100 pt-4 mt-4">
+                 <h3 className="text-sm font-bold text-slate-800 mb-3">Academic Schedule</h3>
+                 
+                 <div className="mb-4">
+                   <label className="block text-sm font-semibold text-slate-600 mb-1">School Start Date</label>
+                   <input name="startDate" required type="date" defaultValue={new Date().toISOString().split('T')[0]} className="w-full border border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                 </div>
+
+                 <div>
+                   <label className="block text-sm font-semibold text-slate-600 mb-2">School Days</label>
+                   <div className="flex flex-wrap gap-2">
+                     {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
+                       <label key={day} className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg cursor-pointer hover:bg-slate-100">
+                         <input type="checkbox" name={`day_${day}`} defaultChecked={['Mon','Tue','Wed','Thu','Fri'].includes(day)} className="accent-indigo-600 w-4 h-4" />
+                         <span className="text-sm font-medium text-slate-700">{day}</span>
+                       </label>
+                     ))}
+                   </div>
+                 </div>
+              </div>
+
+              <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 rounded-xl transition-all shadow-md mt-6">
                 Create Profile
               </button>
             </form>
@@ -215,7 +258,9 @@ export default function ParentClient({ profiles }) {
                         Drop modules here from the Library to build the path.
                       </div>
                     )}
-                    {todaysPlan.map((module, idx) => (
+                    {todaysPlan.map((module, idx) => {
+                      const IconComponent = ICON_MAP[module.iconCode] || Calculator;
+                      return (
                       <div key={module.id} className="group flex items-center bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all relative">
                          <div className="px-2 text-slate-300 cursor-grab hover:text-slate-500 transition-colors">
                            <GripVertical className="w-5 h-5" />
@@ -224,7 +269,7 @@ export default function ParentClient({ profiles }) {
                            {idx + 1}
                          </span>
                          <div className={`p-3 rounded-lg ${module.color} mr-4`}>
-                           <module.icon className="w-5 h-5" />
+                           <IconComponent className="w-5 h-5" />
                          </div>
                          <div className="flex-1">
                            <h3 className="font-bold text-slate-800">{module.type}</h3>
@@ -234,7 +279,7 @@ export default function ParentClient({ profiles }) {
                            <X className="w-5 h-5" />
                          </button>
                       </div>
-                    ))}
+                    )})}
 
                     {/* The Reward Game is always fixed at the end */}
                     <div className="flex items-center bg-emerald-50/50 p-4 rounded-xl border border-emerald-100 shadow-sm mt-8 opacity-80">
@@ -271,17 +316,19 @@ export default function ParentClient({ profiles }) {
               <BookOpen className="w-4 h-4" /> Module Library
             </h2>
             <div className="space-y-3">
-              {libraryModules.map((mod, idx) => (
+              {libraryModules.map((mod, idx) => {
+                const LibIcon = ICON_MAP[mod.iconCode] || Calculator;
+                return (
                 <div key={idx} onClick={() => handleAddModule(mod)} className="flex items-start gap-3 p-3 rounded-xl border border-slate-100 hover:border-indigo-200 hover:bg-indigo-50/50 cursor-pointer transition-all group">
                    <div className={`p-2 rounded-lg ${mod.color} mt-0.5`}>
-                     <mod.icon className="w-4 h-4" />
+                     <LibIcon className="w-4 h-4" />
                    </div>
                    <div>
                      <p className="font-semibold text-slate-700 text-sm group-hover:text-indigo-700 transition-colors">{mod.type}</p>
                      <p className="text-xs text-slate-500 leading-tight mt-0.5">{mod.desc}</p>
                    </div>
                 </div>
-              ))}
+              )})}
             </div>
           </div>
 
