@@ -3,8 +3,8 @@ import { redirect } from "next/navigation";
 import { UserButton } from "@clerk/nextjs";
 import { PlusCircle, CalendarSync, Settings, TrendingUp, GripVertical, Settings2, Sparkles, BookOpen, Calculator, Type, Gamepad2 } from "lucide-react";
 
-export default function ParentDashboard() {
-  const { userId } = auth();
+export default async function ParentDashboard() {
+  const { userId } = await auth();
 
   if (!userId) {
     redirect("/sign-in");
