@@ -65,6 +65,11 @@ INSERT INTO storage.buckets (id, name, public)
 VALUES ('child-avatars', 'child-avatars', true)
 ON CONFLICT (id) DO NOTHING;
 
+-- Grant access to Storage objects for the avatars
+CREATE POLICY "Avatar public read access" ON storage.objects FOR SELECT TO public USING (bucket_id = 'child-avatars');
+CREATE POLICY "Avatar public insert access" ON storage.objects FOR INSERT TO public WITH CHECK (bucket_id = 'child-avatars');
+CREATE POLICY "Avatar public update access" ON storage.objects FOR UPDATE TO public USING (bucket_id = 'child-avatars');
+
 -- ==========================================
 -- PHASE 4: Templates, Badges & Streaks
 -- ==========================================
