@@ -26,6 +26,77 @@ export const FALLACY_DETECTIVE_CONTENT = [
     ]
   },
   {
+    type: "spot-flaw",
+    scenario: "A commercial says: 'Either you buy our new expensive security system, or you don't care about your family's safety at all!'",
+    audioText: "A commercial says: 'Either you buy our new expensive security system, or you don't care about your family's safety at all!'",
+    options: [
+      { text: "Hasty Generalization", feedback: "Are they jumping to a conclusion based on a small sample?", isCorrect: false },
+      { text: "False Dilemma", feedback: "Exactly! They act like there are only two choices, ignoring that you could care about safety and just use a different system.", isCorrect: true },
+      { text: "Good reasoning", feedback: "Think again. Is it true that the ONLY way to care about safety is buying their specific product?", isCorrect: false }
+    ],
+    explainBack: {
+      question: "What trick does the False Dilemma play here?",
+      options: [
+        { text: "It pretends there are no other options.", isCorrect: true },
+        { text: "It insults the families who don't buy the product.", isCorrect: false }
+      ]
+    }
+  },
+  {
+    type: "spot-flaw",
+    scenario: "A student is caught cheating on a math test. When confronted, he says: 'But Mr. Davis, did you know that the school lunches have been terrible lately? We need better pizza!'",
+    audioText: "A student is caught cheating on a math test. When confronted, he says: 'But Mr. Davis, did you know that the school lunches have been terrible lately? We need better pizza!'",
+    options: [
+      { text: "Red Herring", feedback: "Correct! The student threw out a distracting topic to sniff the teacher off the trail of the real issue.", isCorrect: true },
+      { text: "False Dilemma", feedback: "Is he presenting exactly two choices?", isCorrect: false },
+      { text: "Circular Reasoning", feedback: "Is his conclusion just repeating his premise? No, he changed the subject entirely.", isCorrect: false }
+    ],
+    explainBack: {
+      question: "Why is this a Red Herring?",
+      options: [
+        { text: "Because school lunches are actually important.", isCorrect: false },
+        { text: "Because it completely avoids the topic of the cheating.", isCorrect: true }
+      ]
+    }
+  },
+  {
+    type: "spot-flaw",
+    scenario: "Sarah saw a teenager drop a candy wrapper on the sidewalk. She thought to herself, 'Wow, teenagers these days are so incredibly messy and disrespectful!'",
+    audioText: "Sarah saw a teenager drop a candy wrapper on the sidewalk. She thought to herself, 'Wow, teenagers these days are so incredibly messy and disrespectful!'",
+    options: [
+      { text: "Straw Man", feedback: "Is Sarah distorting someone's argument?", isCorrect: false },
+      { text: "Ad Hominem", feedback: "Is she attacking the teenager to avoid answering an argument? Not quite.", isCorrect: false },
+      { text: "Hasty Generalization", feedback: "Correct! She saw one teenager do something wrong, and instantly assumed ALL teenagers are like that.", isCorrect: true }
+    ],
+    explainBack: {
+      question: "How should Sarah think more carefully?",
+      options: [
+        { text: "Recognize that one example doesn't define a whole group of people.", isCorrect: true },
+        { text: "Make sure the teenager actually dropped the wrapper on purpose before bringing it up.", isCorrect: false }
+      ]
+    }
+  },
+  {
+    type: "missing-piece",
+    scenario: "Liam argues: 'You have to let me go to the midnight movie. Every single person in our grade is going!'",
+    audioText: "Liam argues: 'You have to let me go to the midnight movie. Every single person in our grade is going!'",
+    question: "This is the Appeal to Popularity fallacy. What is the missing piece in Liam's logic?",
+    options: [
+      { text: "Just because something is popular doesn't mean it is a good or wise choice.", feedback: "Spot on. The number of people doing it doesn't make it the right thing to do.", isCorrect: true },
+      { text: "He didn't explain what the movie was actually about.", feedback: "That might be true, but what is logically wrong with his main argument?", isCorrect: false }
+    ]
+  },
+  {
+    type: "spot-flaw",
+    scenario: "Tim says: 'I am the best basketball player in our town because no one else is better than me at basketball.'",
+    audioText: "Tim says: 'I am the best basketball player in our town because no one else is better than me at basketball.'",
+    options: [
+      { text: "Circular Reasoning", feedback: "Correct! He is trying to prove his point by just restating the same point in different words.", isCorrect: true },
+      { text: "Slippery Slope", feedback: "Is he predicting a chain of terrible events? No.", isCorrect: false },
+      { text: "Red Herring", feedback: "Did he change to an unrelated subject? No.", isCorrect: false }
+    ]
+  },
+  {
     type: "build-chain",
     scenario: "Drag the parts of the argument into the correct logical order: Claim, Evidence, Conclusion.",
     audioText: "A good argument needs a clear structure. Let's arrange these statements.",
@@ -34,6 +105,6 @@ export const FALLACY_DETECTIVE_CONTENT = [
       { id: "claim", text: "It is snowing heavily right now." },
       { id: "conclusion", text: "Therefore, the roads will be icy." }
     ],
-    correctOrder: ["claim", "evidence", "conclusion"] // Alternatively, Evidence, Claim, Conclusion is fine, but we can set one as primary. Let's accept claim first.
+    correctOrder: ["claim", "evidence", "conclusion"]
   }
 ];
