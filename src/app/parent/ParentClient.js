@@ -4,6 +4,16 @@ import { useState, useCallback } from "react";
 import { UserButton } from "@clerk/nextjs";
 import { PlusCircle, CalendarSync, Settings, TrendingUp, GripVertical, Settings2, Sparkles, BookOpen, Calculator, Type, Gamepad2, X, Link, Clock, Medal, ChevronRight, ChevronLeft, Play, Volume2, Lock, Pencil, Trash2, FileDown, Save, Flame } from "lucide-react";
 import { addChild, updateChild, deleteChild, publishPlan, savePlanAsTemplate } from "../actions";
+import {
+  DndContext, closestCenter,
+  PointerSensor, TouchSensor,
+  useSensor, useSensors, DragOverlay
+} from "@dnd-kit/core";
+import {
+  arrayMove, SortableContext,
+  verticalListSortingStrategy, useSortable
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 const ICON_MAP = {
   Calculator: Calculator,
@@ -12,6 +22,45 @@ const ICON_MAP = {
   Settings: Settings,
   Gamepad2: Gamepad2
 };
+
+// ── Sortable module row ───────────────────────────────────────────────────────
+function SortableModule({ module, idx, onRemove }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: module.id });
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.4 : 1,
+    zIndex: isDragging ? 50 : "auto",
+  };
+  const IconComponent = ICON_MAP[module.iconCode] || Calculator;
+  return (
+    <div ref={setNodeRef} style={style}
+      className="group flex items-center bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-[shadow] relative select-none"
+    >
+      {/* Drag Handle — only this area activates drag */}
+      <div {...attributes} {...listeners}
+        className="px-2 text-slate-300 hover:text-indigo-500 cursor-grab active:cursor-grabbing touch-none transition-colors"
+      >
+        <GripVertical className="w-5 h-5" />
+      </div>
+      <span className="w-8 text-center font-bold text-slate-300 text-sm ml-2 mr-3">{idx + 1}</span>
+      <div className={`p-3 rounded-lg ${module.color} mr-4`}>
+        <IconComponent className="w-5 h-5" />
+      </div>
+      <div className="flex-1">
+        <h3 className="font-bold text-slate-800">{module.type}</h3>
+        <p className="text-xs text-slate-500">Standard progression</p>
+      </div>
+      <button
+        onPointerDown={e => e.stopPropagation()} // prevent drag activating on X button
+        onClick={() => onRemove(module.id)}
+        className="opacity-0 group-hover:opacity-100 p-2 text-slate-400 hover:text-red-500 transition-colors"
+      >
+        <X className="w-5 h-5" />
+      </button>
+    </div>
+  );
+}
 
 // Mock per-student daily progress — will be replaced by live `sessions` table queries
 const overviewData = {
@@ -113,6 +162,21 @@ export default function ParentClient({ profiles }) {
 
   const handleRemoveModule = (id) => {
     setTodaysPlan(todaysPlan.filter(p => p.id !== id));
+  };
+
+  // DnD-kit: support both mouse (PointerSensor) and touch/iPad (TouchSensor)
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor,   { activationConstraint: { delay: 200, tolerance: 8 } })
+  );
+
+  const handleDragEnd = ({ active, over }) => {
+    if (!over || active.id === over.id) return;
+    setTodaysPlan(plan => {
+      const oldIdx = plan.findIndex(m => m.id === active.id);
+      const newIdx = plan.findIndex(m => m.id === over.id);
+      return arrayMove(plan, oldIdx, newIdx);
+    });
   };
 
   const handlePublishPlan = async () => {
@@ -558,55 +622,45 @@ export default function ParentClient({ profiles }) {
                      </button>
                    </div>
                  </div>
+                  {/* Active Path Editor — Sortable */}
+                  <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={handleDragEnd}
+                  >
+                    <SortableContext
+                      items={todaysPlan.map(m => m.id)}
+                      strategy={verticalListSortingStrategy}
+                    >
+                      <div className="space-y-4">
+                        {todaysPlan.length === 0 && (
+                          <div className="text-center py-12 border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50 text-slate-400">
+                            Add modules from the Library →
+                          </div>
+                        )}
+                        {todaysPlan.map((module, idx) => (
+                          <SortableModule
+                            key={module.id}
+                            module={module}
+                            idx={idx}
+                            onRemove={handleRemoveModule}
+                          />
+                        ))}
 
-                 {/* Active Path Editor */}
-                 <div className="space-y-4">
-                    {todaysPlan.length === 0 && (
-                      <div className="text-center py-12 border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50 text-slate-400">
-                        Drop modules here from the Library to build the path.
+                        {/* Reward Game — fixed at end, not sortable */}
+                        <div className="flex items-center bg-emerald-50/50 p-4 rounded-xl border border-emerald-100 shadow-sm mt-8 opacity-80">
+                          <div className="px-2 text-emerald-200"><Lock className="w-5 h-5" /></div>
+                          <span className="w-8 text-center font-bold text-emerald-300 text-sm ml-2 mr-3">{todaysPlan.length + 1}</span>
+                          <div className="p-3 rounded-lg bg-emerald-100 text-emerald-600 mr-4"><Gamepad2 className="w-5 h-5" /></div>
+                          <div className="flex-1">
+                            <h3 className="font-bold text-emerald-800">Reward Unlock</h3>
+                            <p className="text-xs text-emerald-600 font-medium">{rewardTime} Minutes of Playtime</p>
+                          </div>
+                        </div>
                       </div>
-                    )}
-                    {todaysPlan.map((module, idx) => {
-                      const IconComponent = ICON_MAP[module.iconCode] || Calculator;
-                      return (
-                      <div key={module.id} className="group flex items-center bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-[colors,transform,shadow] relative">
-                         <div className="px-2 text-slate-300 cursor-grab hover:text-slate-500 transition-colors">
-                           <GripVertical className="w-5 h-5" />
-                         </div>
-                         <span className="w-8 text-center font-bold text-slate-300 text-sm ml-2 mr-3">
-                           {idx + 1}
-                         </span>
-                         <div className={`p-3 rounded-lg ${module.color} mr-4`}>
-                           <IconComponent className="w-5 h-5" />
-                         </div>
-                         <div className="flex-1">
-                           <h3 className="font-bold text-slate-800">{module.type}</h3>
-                           <p className="text-xs text-slate-500">Standard progression</p>
-                         </div>
-                         <button onClick={() => handleRemoveModule(module.id)} className="opacity-0 group-hover:opacity-100 p-2 text-slate-400 hover:text-red-500 transition-[colors,transform,shadow]">
-                           <X className="w-5 h-5" />
-                         </button>
-                      </div>
-                    )})}
-
-                    {/* The Reward Game is always fixed at the end */}
-                    <div className="flex items-center bg-emerald-50/50 p-4 rounded-xl border border-emerald-100 shadow-sm mt-8 opacity-80">
-                       <div className="px-2 text-emerald-200">
-                         <Lock className="w-5 h-5" />
-                       </div>
-                       <span className="w-8 text-center font-bold text-emerald-300 text-sm ml-2 mr-3">
-                         {todaysPlan.length + 1}
-                       </span>
-                       <div className="p-3 rounded-lg bg-emerald-100 text-emerald-600 mr-4">
-                         <Gamepad2 className="w-5 h-5" />
-                       </div>
-                       <div className="flex-1">
-                         <h3 className="font-bold text-emerald-800">Reward Unlock</h3>
-                         <p className="text-xs text-emerald-600 font-medium">{rewardTime} Minutes of Playtime</p>
-                       </div>
-                    </div>
-                 </div>
-               </>
+                    </SortableContext>
+                  </DndContext>
+                </>
              ) : (
                 <div className="flex flex-col items-center justify-center h-[500px] text-slate-400">
                    <Settings2 className="w-16 h-16 mb-4 opacity-20" />
