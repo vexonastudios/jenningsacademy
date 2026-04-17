@@ -18,14 +18,20 @@ export async function GET(request, { params }) {
 
   const avatarUrl = profile?.avatar_url;
 
-  // If it's already a Supabase https URL, fetch and proxy it
-  // If it's a Tailwind class (e.g. "bg-blue-500"), return 404 so client shows initial
-  if (!avatarUrl || !avatarUrl.startsWith("http")) {
-    return new NextResponse(null, { status: 404 });
+  // Determine the real upstream URL to fetch:
+  // - If DB has a full https:// Supabase URL → use it directly
+  // - If DB has an old /api/avatar/... proxy path (prev deploy bug) or a CSS class → 404
+  let upstreamUrl = avatarUrl;
+  if (!upstreamUrl || upstreamUrl.startsWith("/api/") || !upstreamUrl.startsWith("http")) {
+    // Last-resort: try to construct the URL from the Supabase env var + profile ID
+    const base = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    if (!base) return new NextResponse(null, { status: 404 });
+    // Try both jpg and webp
+    upstreamUrl = `${base}/storage/v1/object/public/child-avatars/${profileId}.webp`;
   }
 
   try {
-    const upstream = await fetch(avatarUrl, { next: { revalidate: 3600 } });
+    const upstream = await fetch(upstreamUrl, { next: { revalidate: 3600 } });
     if (!upstream.ok) return new NextResponse(null, { status: 404 });
 
     const contentType = upstream.headers.get("content-type") || "image/jpeg";

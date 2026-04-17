@@ -44,14 +44,15 @@ export async function POST(request) {
     return NextResponse.json({ error: uploadError.message }, { status: 500 });
   }
 
-  // Use a proxy URL so the browser fetches via our own domain,
-  // not the raw Supabase storage domain (which can be blocked by DNS filters).
-  const proxyUrl = `/api/avatar/${profileId}`;
+  // Get the real Supabase public URL — stored in DB so the proxy can fetch it server-side
+  const { data: { publicUrl } } = supabase.storage
+    .from("child-avatars")
+    .getPublicUrl(storagePath);
 
-  // Persist the proxy URL to profiles.avatar_url
+  // Persist the real Supabase URL to the DB (the proxy /api/avatar reads this)
   const { error: updateError } = await supabase
     .from("profiles")
-    .update({ avatar_url: proxyUrl })
+    .update({ avatar_url: publicUrl })
     .eq("id", profileId)
     .eq("parent_id", userId);
 
@@ -59,5 +60,6 @@ export async function POST(request) {
     return NextResponse.json({ error: updateError.message }, { status: 500 });
   }
 
-  return NextResponse.json({ url: proxyUrl });
+  // Return the PROXY path to the client — browser never touches the Supabase domain
+  return NextResponse.json({ url: `/api/avatar/${profileId}` });
 }
