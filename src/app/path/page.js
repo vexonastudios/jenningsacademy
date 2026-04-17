@@ -221,6 +221,8 @@ export default function ChildPath() {
               <activeModule.Component
                 grade={profile?.grade_level ?? 1}
                 attempt={attempt}
+                voiceId={profile?.voice_id ?? null}
+                profileId={profile?.id ?? null}
                 onRoundComplete={onRoundComplete}
               />
             </Suspense>
