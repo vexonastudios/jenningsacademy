@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { UserButton } from "@clerk/nextjs";
-import { PlusCircle, CalendarSync, Settings, TrendingUp, GripVertical, Settings2, Sparkles, BookOpen, Calculator, Type, Gamepad2, X, Link, Clock, Medal, ChevronRight, Play, Volume2, Lock } from "lucide-react";
+import { PlusCircle, CalendarSync, Settings, TrendingUp, GripVertical, Settings2, Sparkles, BookOpen, Calculator, Type, Gamepad2, X, Link, Clock, Medal, ChevronRight, ChevronLeft, Play, Volume2, Lock } from "lucide-react";
 import { addChild } from "../actions";
 
 const ICON_MAP = {
@@ -23,6 +23,30 @@ const overviewData = {
   ],
 };
 
+function formatOverviewDate(offset) {
+  const d = new Date();
+  d.setDate(d.getDate() + offset);
+  if (offset === 0) return "Today — " + d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+  if (offset === -1) return "Yesterday — " + d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+  return d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+}
+
+function buildWeekDays() {
+  const days = [];
+  const today = new Date();
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(today.getDate() - i);
+    days.push({
+      label: d.toLocaleDateString("en-US", { weekday: "short" }),
+      date: d.getDate(),
+      isToday: i === 0,
+    });
+  }
+  return days;
+}
+const weekDays = buildWeekDays();
+
 export default function ParentClient({ profiles }) {
   const [isAddingChild, setIsAddingChild] = useState(false);
   const [activeChildId, setActiveChildId] = useState(profiles[0]?.id || null);
@@ -38,6 +62,8 @@ export default function ParentClient({ profiles }) {
 
   const [selectedVoice, setSelectedVoice] = useState(voiceOptions[0].id);
   const [playingVoice, setPlayingVoice] = useState(null);
+  const [overviewView, setOverviewView] = useState("day"); // "day" | "week"
+  const [overviewOffset, setOverviewOffset] = useState(0);  // 0 = today, -1 = yesterday, etc.
 
   const handlePlaySample = (voiceId, e) => {
     e.stopPropagation();
@@ -427,87 +453,161 @@ export default function ParentClient({ profiles }) {
           </div>
         </aside>
 
-        {/* === FULL WIDTH: Today's Bird's-Eye Overview === */}
+        {/* === FULL WIDTH: Bird's-Eye Overview with Date Navigation === */}
         <section className="lg:col-span-12">
           <div className="bg-white/80 backdrop-blur-xl p-8 rounded-[2rem] shadow-xl shadow-slate-200/50 border border-white">
-            <div className="flex items-center justify-between mb-6">
+
+            {/* Header Row */}
+            <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
               <div>
-                <h2 className="text-xl font-bold text-slate-800">Today's Overview</h2>
-                <p className="text-sm text-slate-400 font-medium mt-0.5">Bird's-eye view of all student progress</p>
+                <h2 className="text-xl font-bold text-slate-800">Progress Overview</h2>
+                <p className="text-sm text-slate-400 font-medium mt-0.5">
+                  {overviewView === "week" ? "Last 7 days across all students" : formatOverviewDate(overviewOffset)}
+                </p>
               </div>
-              <div className="flex items-center gap-4 text-xs font-semibold">
-                <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-emerald-400 inline-block"></span> Done</span>
-                <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-indigo-400 inline-block animate-pulse"></span> Active</span>
-                <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-slate-200 inline-block"></span> Pending</span>
-                <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-rose-400 inline-block"></span> Missed</span>
+
+              {/* Controls */}
+              <div className="flex items-center gap-3 flex-wrap">
+                {/* Legend */}
+                <div className="hidden sm:flex items-center gap-3 text-xs font-semibold mr-2">
+                  <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-400 inline-block"></span>Done</span>
+                  <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-indigo-400 inline-block animate-pulse"></span>Active</span>
+                  <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-slate-200 inline-block"></span>Pending</span>
+                  <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-rose-400 inline-block"></span>Missed</span>
+                </div>
+
+                {/* Day Navigation — hidden in week view */}
+                {overviewView === "day" && (
+                  <div className="flex items-center gap-1 bg-slate-100 rounded-xl p-1">
+                    <button
+                      onClick={() => setOverviewOffset(o => o - 1)}
+                      className="p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all text-slate-500 hover:text-slate-800"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => setOverviewOffset(0)}
+                      disabled={overviewOffset === 0}
+                      className="px-3 py-1.5 text-xs font-bold rounded-lg hover:bg-white hover:shadow-sm transition-all text-slate-500 disabled:opacity-40"
+                    >
+                      Today
+                    </button>
+                    <button
+                      onClick={() => setOverviewOffset(o => Math.min(o + 1, 0))}
+                      disabled={overviewOffset === 0}
+                      className="p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all text-slate-500 hover:text-slate-800 disabled:opacity-30"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+
+                {/* Day / Week Toggle */}
+                <div className="flex items-center bg-slate-100 rounded-xl p-1">
+                  <button
+                    onClick={() => { setOverviewView("day"); setOverviewOffset(0); }}
+                    className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${overviewView === "day" ? "bg-white shadow-sm text-slate-800" : "text-slate-400 hover:text-slate-600"}`}
+                  >
+                    Day
+                  </button>
+                  <button
+                    onClick={() => setOverviewView("week")}
+                    className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${overviewView === "week" ? "bg-white shadow-sm text-slate-800" : "text-slate-400 hover:text-slate-600"}`}
+                  >
+                    Week
+                  </button>
+                </div>
               </div>
             </div>
 
             {profiles.length === 0 ? (
               <div className="text-center py-10 text-slate-400 text-sm">Add children to see their daily progress here.</div>
-            ) : (
+            ) : overviewView === "day" ? (
+              /* ---- DAY VIEW ---- */
               <div className="divide-y divide-slate-100">
                 {profiles.map((child) => {
                   const initials = child.name?.charAt(0).toUpperCase() || "?";
-                  // Mock per-child progress data — will be wired to `sessions` table
-                  const mockProgress = overviewData[child.name] || overviewData["Default"];
+                  const mockProgress = overviewData["Default"];
                   const completed = mockProgress.filter(m => m.status === "done").length;
-                  const total = mockProgress.length;
-                  const pct = Math.round((completed / total) * 100);
-
+                  const pct = Math.round((completed / mockProgress.length) * 100);
+                  const chipColors = { done: "bg-emerald-100 text-emerald-700 border-emerald-200", active: "bg-indigo-100 text-indigo-700 border-indigo-200 animate-pulse", pending: "bg-slate-100 text-slate-500 border-slate-200", missed: "bg-rose-100 text-rose-700 border-rose-200" };
+                  const chipIcons = { done: "✓", active: "▶", pending: "○", missed: "!" };
                   return (
-                    <div key={child.id} className="flex items-center gap-6 py-4 first:pt-0 last:pb-0 group hover:bg-indigo-50/30 px-3 -mx-3 rounded-2xl transition-colors cursor-pointer" onClick={() => setActiveChildId(child.id)}>
-                      {/* Avatar */}
-                      <div className={`w-11 h-11 rounded-full ${child.avatar_url || "bg-indigo-500"} text-white flex items-center justify-center font-bold text-base shrink-0 shadow ring-2 ring-white`}>
-                        {initials}
-                      </div>
-
-                      {/* Name + Progress Bar */}
+                    <div key={child.id} className="flex items-center gap-6 py-4 first:pt-0 last:pb-0 hover:bg-indigo-50/30 px-3 -mx-3 rounded-2xl transition-colors cursor-pointer" onClick={() => setActiveChildId(child.id)}>
+                      <div className={`w-11 h-11 rounded-full ${child.avatar_url || "bg-indigo-500"} text-white flex items-center justify-center font-bold text-base shrink-0 shadow ring-2 ring-white`}>{initials}</div>
                       <div className="w-36 shrink-0">
                         <p className="font-bold text-slate-800 text-sm">{child.name}</p>
                         <div className="flex items-center gap-2 mt-1">
                           <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                            <div
-                              className={`h-full rounded-full transition-all duration-700 ${pct === 100 ? "bg-emerald-400" : "bg-indigo-400"}`}
-                              style={{ width: `${pct}%` }}
-                            />
+                            <div className={`h-full rounded-full transition-all duration-700 ${pct === 100 ? "bg-emerald-400" : "bg-indigo-400"}`} style={{ width: `${pct}%` }} />
                           </div>
                           <span className="text-xs font-bold text-slate-400">{pct}%</span>
                         </div>
                       </div>
-
-                      {/* Module Status Chips */}
                       <div className="flex flex-wrap gap-2 flex-1">
-                        {mockProgress.map((mod, idx) => {
-                          const chipColors = {
-                            done: "bg-emerald-100 text-emerald-700 border-emerald-200",
-                            active: "bg-indigo-100 text-indigo-700 border-indigo-200 animate-pulse",
-                            pending: "bg-slate-100 text-slate-500 border-slate-200",
-                            missed: "bg-rose-100 text-rose-700 border-rose-200",
-                          };
-                          const chipIcons = {
-                            done: "✓",
-                            active: "▶",
-                            pending: "○",
-                            missed: "!",
-                          };
-                          return (
-                            <span key={idx} className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full border text-xs font-semibold ${chipColors[mod.status]}`}>
-                              <span>{chipIcons[mod.status]}</span>
-                              {mod.type}
-                            </span>
-                          );
-                        })}
+                        {mockProgress.map((mod, idx) => (
+                          <span key={idx} className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full border text-xs font-semibold ${chipColors[mod.status]}`}>
+                            <span>{chipIcons[mod.status]}</span>{mod.type}
+                          </span>
+                        ))}
                       </div>
-
-                      {/* Total Time */}
                       <div className="shrink-0 text-right">
                         <p className="text-xs text-slate-400 font-medium">Active Time</p>
-                        <p className="text-sm font-bold text-slate-700">{mockProgress.reduce((acc, m) => acc + (m.minutesSpent || 0), 0)} min</p>
+                        <p className="text-sm font-bold text-slate-700">{mockProgress.reduce((a, m) => a + (m.minutesSpent || 0), 0)} min</p>
                       </div>
                     </div>
                   );
                 })}
+              </div>
+            ) : (
+              /* ---- WEEK VIEW ---- */
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[700px] text-sm">
+                  <thead>
+                    <tr>
+                      <th className="text-left pb-3 pr-6 font-semibold text-slate-400 text-xs uppercase tracking-wider w-36">Student</th>
+                      {weekDays.map(d => (
+                        <th key={d.label} className={`pb-3 px-2 font-semibold text-xs uppercase tracking-wider text-center ${d.isToday ? "text-indigo-500" : "text-slate-400"}`}>
+                          <div>{d.label}</div>
+                          <div className={`text-base font-black mt-0.5 ${d.isToday ? "text-indigo-600" : "text-slate-700"}`}>{d.date}</div>
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {profiles.map((child) => {
+                      const initials = child.name?.charAt(0).toUpperCase() || "?";
+                      return (
+                        <tr key={child.id} className="hover:bg-indigo-50/20 transition-colors cursor-pointer group" onClick={() => setActiveChildId(child.id)}>
+                          <td className="py-3 pr-6">
+                            <div className="flex items-center gap-3">
+                              <div className={`w-8 h-8 rounded-full ${child.avatar_url || "bg-indigo-500"} text-white flex items-center justify-center font-bold text-sm shrink-0`}>{initials}</div>
+                              <span className="font-semibold text-slate-700 text-xs">{child.name}</span>
+                            </div>
+                          </td>
+                          {weekDays.map((d, dIdx) => {
+                            // Mock: Today is partial, yesterday done, others either complete or missed
+                            const mockPct = d.isToday ? 50 : dIdx < 4 ? (dIdx % 2 === 0 ? 100 : 75) : null;
+                            return (
+                              <td key={d.label} className="py-3 px-2 text-center">
+                                {mockPct === null ? (
+                                  <span className="text-slate-300 text-xs">—</span>
+                                ) : (
+                                  <div className="flex flex-col items-center gap-1">
+                                    <div className="w-full max-w-[60px] h-2 bg-slate-100 rounded-full overflow-hidden mx-auto">
+                                      <div className={`h-full rounded-full ${mockPct === 100 ? "bg-emerald-400" : mockPct >= 75 ? "bg-amber-400" : "bg-rose-400"}`} style={{ width: `${mockPct}%` }} />
+                                    </div>
+                                    <span className={`text-xs font-bold ${mockPct === 100 ? "text-emerald-600" : mockPct >= 75 ? "text-amber-600" : "text-rose-500"}`}>{mockPct}%</span>
+                                  </div>
+                                )}
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
               </div>
             )}
           </div>
