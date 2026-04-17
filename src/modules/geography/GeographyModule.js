@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import USA from "@svg-maps/usa";
 import USMap from "./components/USMap";
-import { GEOGRAPHY_GROUPS } from "./geographyData";
+import { GEOGRAPHY_GROUPS, STATE_CAPITALS } from "./geographyData";
 import { ArrowRight, Volume2, Sparkles, MapPin } from "lucide-react";
 
 // The TTS Hook
@@ -44,7 +44,7 @@ const loadProgress = (profileId) => {
     states: {} 
   };
   USA.locations.forEach(l => {
-    blank.states[l.id] = { status: 'Unseen', hits: 0, misses: 0, lastTested: null };
+    blank.states[l.id] = { status: 'Unseen', hits: 0, misses: 0, capitalStatus: 'Unseen', capitalHits: 0, capitalMisses: 0, lastTested: null };
   });
 
   if (typeof window === "undefined") return blank;
@@ -86,31 +86,47 @@ export default function GeographyModule({ profileId, onRoundComplete }) {
     if (phase !== "booting") return;
 
     const currentDay = ledger.day;
-    
-    // 1. Find states to review (Prioritize 'Learning', then 'Introduced')
-    const allStatesData = Object.entries(ledger.states).map(([id, data]) => ({id, ...data}));
-    const learning = allStatesData.filter(s => s.status === 'Learning');
-    const introduced = allStatesData.filter(s => s.status === 'Introduced');
+    const isCapitalDay = currentDay >= 26;
     
     // Shuffle helper
     const shuffle = (arr) => arr.slice().sort(() => Math.random() - 0.5);
-    
-    // Pick ~5 review states
-    let pool = shuffle([...learning, ...introduced]).slice(0, 5);
-    const resolvedReviewQueue = pool.map(s => USA.locations.find(l => l.id === s.id));
 
-    // 2. Find new material based on day
-    const dayConfig = GEOGRAPHY_GROUPS.find(g => g.dayId === currentDay);
-    const resolvedNewQueue = dayConfig ? dayConfig.stateIds.map(sid => USA.locations.find(l => l.id === sid)) : [];
+    let resolvedReviewQueue = [];
+    let resolvedNewQueue = [];
 
-    // 3. Setup sets
+    if (isCapitalDay) {
+        const allStatesData = Object.entries(ledger.states).map(([id, data]) => ({id, ...data}));
+        const learning = allStatesData.filter(s => s.capitalStatus === 'Learning');
+        const unseen = allStatesData.filter(s => s.capitalStatus === 'Unseen');
+        
+        resolvedReviewQueue = shuffle(learning).slice(0, 5).map(s => USA.locations.find(l => l.id === s.id));
+        resolvedNewQueue = shuffle(unseen).slice(0, 10).map(s => USA.locations.find(l => l.id === s.id));
+    } else {
+        const allStatesData = Object.entries(ledger.states).map(([id, data]) => ({id, ...data}));
+        const learning = allStatesData.filter(s => s.status === 'Learning');
+        const introduced = allStatesData.filter(s => s.status === 'Introduced');
+        
+        // Pick ~5 review states
+        const pool = shuffle([...learning, ...introduced]).slice(0, 5);
+        resolvedReviewQueue = pool.map(s => USA.locations.find(l => l.id === s.id));
+
+        const dayConfig = GEOGRAPHY_GROUPS.find(g => g.dayId === currentDay);
+        resolvedNewQueue = dayConfig ? dayConfig.stateIds.map(sid => USA.locations.find(l => l.id === sid)) : [];
+    }
+
     setReviewQueue(resolvedReviewQueue);
     setNewQueue(resolvedNewQueue);
     
     // The test queue is a shuffled mix of today's review + new
     setTestQueue(shuffle([...resolvedReviewQueue, ...resolvedNewQueue]));
 
-    setPhase("review");
+    if (resolvedReviewQueue.length === 0 && resolvedNewQueue.length === 0) {
+      // Endless mastery loop fallback
+      setTestQueue(shuffle(USA.locations).slice(0, 10));
+      setPhase("test");
+    } else {
+      setPhase(resolvedReviewQueue.length > 0 ? "review" : "new");
+    }
   }, [phase, ledger]);
 
   useEffect(() => {
@@ -119,26 +135,34 @@ export default function GeographyModule({ profileId, onRoundComplete }) {
 
   // Audio orchestrator based on phase and index
   useEffect(() => {
+    const isCapitalDay = ledger.day >= 26;
+
     if (phase === "review" && reviewQueue[currentIndex]) {
+      const state = reviewQueue[currentIndex];
+      const name = isCapitalDay ? `The capital of ${state.name} is ${STATE_CAPITALS[state.id]}` : state.name;
       if (currentIndex === 0) {
-        speakAsync(`Let's review. The highlighted state is ${reviewQueue[currentIndex].name}. Hit next to review the next state.`);
+        speakAsync(`Let's review. The highlighted state is ${name}. Hit next to review the next one.`);
       } else {
-        speakAsync(reviewQueue[currentIndex].name);
+        speakAsync(name);
       }
     } else if (phase === "new" && newQueue[currentIndex]) {
+      const state = newQueue[currentIndex];
+      const name = isCapitalDay ? `The capital of ${state.name} is ${STATE_CAPITALS[state.id]}` : state.name;
       if (currentIndex === 0) {
-        speakAsync(`Let's learn some new states. The highlighted state is ${newQueue[currentIndex].name}. Hit next to see the next state.`);
+        speakAsync(`Let's learn. The highlighted state is ${name}. Hit next to see the next one.`);
       } else {
-        speakAsync(newQueue[currentIndex].name);
+        speakAsync(name);
       }
     } else if (phase === "test" && testQueue[currentIndex]) {
+      const state = testQueue[currentIndex];
+      const targetStr = isCapitalDay ? `the state whose capital is ${STATE_CAPITALS[state.id]}` : state.name;
       if (currentIndex === 0) {
-        speakAsync(`Now let's see what you remember. Tap ${testQueue[currentIndex].name} on the map.`);
+        speakAsync(`Now let's see what you remember. Tap ${targetStr} on the map.`);
       } else {
-        speakAsync(`Tap ${testQueue[currentIndex].name} on the map.`);
+        speakAsync(`Tap ${targetStr} on the map.`);
       }
     }
-  }, [phase, currentIndex, reviewQueue, newQueue, testQueue, speakAsync]);
+  }, [phase, currentIndex, reviewQueue, newQueue, testQueue, speakAsync, ledger.day]);
 
   const handleNext = () => {
     stop();
@@ -179,10 +203,17 @@ export default function GeographyModule({ profileId, onRoundComplete }) {
     const updatedLedger = { ...ledger, states: { ...ledger.states } };
     const stateData = { ...updatedLedger.states[target.id] };
 
+    const isCapitalDay = ledger.day >= 26;
+    
     if (location.id === target.id) {
       // Correct!
-      stateData.hits += 1;
-      if (stateData.hits >= 2) stateData.status = 'Mastered'; // Demands hitting across multiple sessions basically
+      if (isCapitalDay) {
+        stateData.capitalHits += 1;
+        if (stateData.capitalHits >= 2) stateData.capitalStatus = 'Mastered';
+      } else {
+        stateData.hits += 1;
+        if (stateData.hits >= 2) stateData.status = 'Mastered';
+      }
       updatedLedger.states[target.id] = stateData;
       setLedger(updatedLedger);
 
@@ -194,23 +225,30 @@ export default function GeographyModule({ profileId, onRoundComplete }) {
       setOverlayMsg({ isCorrect: true, text: "Correct!" });
     } else {
       // Wrong!
-      stateData.misses += 1;
-      stateData.status = 'Learning'; // Demote to learning
+      if (isCapitalDay) {
+        stateData.capitalMisses += 1;
+        stateData.capitalStatus = 'Learning';
+      } else {
+        stateData.misses += 1;
+        stateData.status = 'Learning';
+      }
       updatedLedger.states[target.id] = stateData;
       setLedger(updatedLedger);
 
-      speakAsync(`Oops, that was ${location.name}. Try tapping ${target.name} again.`).then(() => {
+      const wrongName = isCapitalDay ? `${STATE_CAPITALS[location.id]} (in ${location.name})` : location.name;
+      speakAsync(`Oops, that was ${wrongName}. Try tapping ${isCapitalDay ? 'the state for ' + STATE_CAPITALS[target.id] : target.name} again.`).then(() => {
         setIsAnswering(false);
         setTappedStateId(null);
         setOverlayMsg(null);
       });
-      setOverlayMsg({ isCorrect: false, text: location.name });
+      setOverlayMsg({ isCorrect: false, text: wrongName });
     }
   };
 
   if (phase === "booting") return <div className="flex-1 bg-slate-50 relative flex items-center justify-center font-bold text-slate-400">Loading Map...</div>;
 
   // Resolve Map Properties based on Phase
+  const isCapitalDay = ledger.day >= 26;
   let highlightIds = [];
   let dimIds = [];
   let mapMode = "learn";
@@ -218,36 +256,47 @@ export default function GeographyModule({ profileId, onRoundComplete }) {
   
   if (phase === "review") {
     if (reviewQueue.length === 0) {
-      // Skip logic inside effect if empty, but just in case
       handleNext(); return null;
     }
     highlightIds = [reviewQueue[currentIndex].id];
-    // In learn mode, dim out states that are 'Unseen' so they don't distract
     dimIds = USA.locations.filter(l => ledger.states[l.id].status === 'Unseen' && l.id !== reviewQueue[currentIndex].id).map(l => l.id);
-    promptText = `Review: ${reviewQueue[currentIndex].name}`;
+    promptText = isCapitalDay 
+      ? `Review: ${STATE_CAPITALS[reviewQueue[currentIndex].id]}, ${reviewQueue[currentIndex].name}`
+      : `Review: ${reviewQueue[currentIndex].name}`;
   } 
   else if (phase === "new") {
     highlightIds = [newQueue[currentIndex].id];
-    // Dim out all Unseen EXCEPT the new ones being introduced today
     const todaysIds = newQueue.map(q => q.id);
     dimIds = USA.locations.filter(l => ledger.states[l.id].status === 'Unseen' && !todaysIds.includes(l.id)).map(l => l.id);
-    promptText = `New: ${newQueue[currentIndex].name}`;
+    promptText = isCapitalDay 
+      ? `New: ${STATE_CAPITALS[newQueue[currentIndex].id]}, ${newQueue[currentIndex].name}`
+      : `New: ${newQueue[currentIndex].name}`;
     
-    // Update ledger to mark this as introduced instantly if it was Unseen
-    if (ledger.states[newQueue[currentIndex].id].status === 'Unseen') {
-      const nextL = {...ledger, states: {...ledger.states}};
-      nextL.states[newQueue[currentIndex].id] = { ...nextL.states[newQueue[currentIndex].id], status: 'Introduced'};
-      setLedger(nextL);
+    // Update ledger
+    const targetId = newQueue[currentIndex].id;
+    if (isCapitalDay) {
+      if (ledger.states[targetId].capitalStatus === 'Unseen') {
+        const nextL = {...ledger, states: {...ledger.states}};
+        nextL.states[targetId] = { ...nextL.states[targetId], capitalStatus: 'Introduced'};
+        setLedger(nextL);
+      }
+    } else {
+      if (ledger.states[targetId].status === 'Unseen') {
+        const nextL = {...ledger, states: {...ledger.states}};
+        nextL.states[targetId] = { ...nextL.states[targetId], status: 'Introduced'};
+        setLedger(nextL);
+      }
     }
   } 
   else if (phase === "test") {
     mapMode = "test";
-    // We only dim Unseen unintroduced states. Everything else is active.
-    dimIds = USA.locations.filter(l => ledger.states[l.id].status === 'Unseen').map(l => l.id);
+    dimIds = isCapitalDay ? [] : USA.locations.filter(l => ledger.states[l.id].status === 'Unseen').map(l => l.id);
     if (tappedStateId) {
       highlightIds = [tappedStateId];
     }
-    promptText = `Tap ${testQueue[currentIndex].name}`;
+    promptText = isCapitalDay 
+      ? `Tap the state for ${STATE_CAPITALS[testQueue[currentIndex].id]}`
+      : `Tap ${testQueue[currentIndex].name}`;
   }
 
   return (
