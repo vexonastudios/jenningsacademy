@@ -60,3 +60,29 @@ CREATE TABLE voice_cache_ledger (
 INSERT INTO storage.buckets (id, name, public) 
 VALUES ('voice_cache', 'voice_cache', true)
 ON CONFLICT (id) DO NOTHING;
+
+-- ==========================================
+-- PHASE 4: Templates, Badges & Streaks
+-- ==========================================
+
+CREATE TABLE IF NOT EXISTS plan_templates (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  parent_id TEXT NOT NULL,
+  name TEXT NOT NULL,
+  modules JSONB NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS badges (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  profile_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
+  badge_key TEXT NOT NULL,   -- e.g. "first_day", "streak_5", "perfect_week"
+  earned_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(profile_id, badge_key)
+);
+
+-- Add streak counter to profiles (avoids expensive recalculation)
+ALTER TABLE public.profiles
+ADD COLUMN IF NOT EXISTS current_streak INTEGER DEFAULT 0,
+ADD COLUMN IF NOT EXISTS longest_streak INTEGER DEFAULT 0;
+
