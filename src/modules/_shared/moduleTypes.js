@@ -35,6 +35,19 @@ export const MODULE_REGISTRY = {
     component: () => import("@/modules/spelling/SpellingModule"),
   },
 
+  Typing: {
+    id: "Typing",
+    label: "Typing",
+    description: "Structured keyboard skills from home row to full mastery",
+    color: "text-sky-600 bg-sky-100",
+    iconCode: "Keyboard",
+    supportedGrades: [1, 2, 3, 4, 5, 6, 7, 8],
+    estimatedMinutes: 12,
+    minimumPassScore: null,  // Typing manages its own mastery and lesson progression
+    timeLimitSeconds: null,
+    component: () => import("@/modules/typing/TypingModule"),
+  },
+
   Audiobook: {
     id: "Audiobook",
     label: "Audiobook",
