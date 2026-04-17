@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { UserButton } from "@clerk/nextjs";
 import { PlusCircle, CalendarSync, Settings, TrendingUp, GripVertical, Settings2, Sparkles, BookOpen, Calculator, Type, Gamepad2, X, Link, Clock, Medal, ChevronRight, ChevronLeft, Play, Volume2, Lock, Pencil, Trash2, FileDown, Save, Flame } from "lucide-react";
 import { addChild, updateChild, deleteChild, publishPlan, savePlanAsTemplate } from "../actions";
@@ -100,6 +100,15 @@ export default function ParentClient({ profiles }) {
   const [isAddingChild, setIsAddingChild] = useState(false);
   const [activeChildId, setActiveChildId] = useState(profiles[0]?.id || null);
   const [rewardTime, setRewardTime] = useState(15);
+  const [familySlug, setFamilySlug] = useState("");
+
+  // Fetch (or auto-create) the family slug once on mount
+  useEffect(() => {
+    fetch("/api/family-slug")
+      .then(r => r.json())
+      .then(d => { if (d.familySlug) setFamilySlug(d.familySlug); })
+      .catch(() => {});
+  }, []);
 
   const voiceOptions = [
     { id: "2fe8mwpfJcqvj9RGBsC1", name: "Mr. Smith" },
@@ -552,7 +561,15 @@ export default function ParentClient({ profiles }) {
                         </div>
                       </div>
                       <div className="flex items-center gap-1">
-                        <button title="Copy Link" className="p-1.5 text-indigo-400 hover:text-indigo-600 hover:bg-indigo-100 rounded-full transition-colors" onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(`https://app-jenningsacademy.vercel.app/path?profile=${child.id}`); addToast(`🔗 Link copied for ${child.name}!`); }}>
+                        <button title="Copy Link" className="p-1.5 text-indigo-400 hover:text-indigo-600 hover:bg-indigo-100 rounded-full transition-colors" onClick={(e) => {
+                          e.stopPropagation();
+                          const slug = child.child_slug;
+                          const url = familySlug && slug
+                            ? `https://app-jenningsacademy.vercel.app/path/${familySlug}/${slug}`
+                            : `https://app-jenningsacademy.vercel.app/path?profile=${child.id}`;
+                          navigator.clipboard.writeText(url);
+                          addToast(`🔗 Link copied for ${child.name}!`);
+                        }}>
                           <Link className="w-3.5 h-3.5" />
                         </button>
                         <button title="Edit" className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-100 rounded-full transition-colors" onClick={(e) => { e.stopPropagation(); setEditingChild(child); setEditVoice(child.voice_id || voiceOptions[0].id); }}>

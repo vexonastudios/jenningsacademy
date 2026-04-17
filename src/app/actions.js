@@ -3,6 +3,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { supabase } from "@/lib/supabase";
 import { revalidatePath } from "next/cache";
+import { slugify } from "@/lib/slugify";
 
 // ─── ADD CHILD ────────────────────────────────────────────────────────────────
 export async function addChild(payload) {
@@ -14,9 +15,21 @@ export async function addChild(payload) {
   const colors = ["bg-blue-500", "bg-pink-500", "bg-emerald-500", "bg-amber-500", "bg-purple-500"];
   const avatarColor = colors[Math.floor(Math.random() * colors.length)];
 
+  // Build a unique child_slug within this parent
+  const baseSlug = slugify(name);
+  let childSlug = baseSlug;
+  let attempt = 2;
+  while (true) {
+    const { data: clash } = await supabase.from('profiles')
+      .select('id').eq('parent_id', userId).eq('child_slug', childSlug).single();
+    if (!clash) break;
+    childSlug = `${baseSlug}${attempt++}`;
+  }
+
   const { data: newProfile, error: profileError } = await supabase.from('profiles').insert([{
     parent_id: userId, name, grade_level: grade, pin_code: pin,
-    avatar_url: avatarColor, voice_id: voiceId, start_date: startDate, school_days: schoolDays
+    avatar_url: avatarColor, voice_id: voiceId, start_date: startDate,
+    school_days: schoolDays, child_slug: childSlug
   }]).select().single();
 
   if (profileError) throw new Error(profileError.message);
@@ -38,6 +51,8 @@ export async function updateChild(payload) {
   if (!userId) throw new Error("Unauthorized");
 
   const { id, name, grade, pin, voiceId, startDate, schoolDays, lockMode, parentExitPin } = payload;
+  // Re-slug if name changed
+  const newSlug = slugify(name);
   const { error } = await supabase.from('profiles')
     .update({
       name,
@@ -48,6 +63,7 @@ export async function updateChild(payload) {
       school_days: schoolDays,
       lock_mode: lockMode,
       parent_exit_pin: parentExitPin || null,
+      child_slug: newSlug,
     })
     .eq('id', id)
     .eq('parent_id', userId);

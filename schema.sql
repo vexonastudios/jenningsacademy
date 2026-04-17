@@ -88,3 +88,14 @@ ADD COLUMN IF NOT EXISTS longest_streak INTEGER DEFAULT 0,
 ADD COLUMN IF NOT EXISTS lock_mode BOOLEAN DEFAULT false,
 ADD COLUMN IF NOT EXISTS parent_exit_pin TEXT;
 
+-- Add child slug (friendly URL segment, e.g. "emma", "johnny")
+ALTER TABLE public.profiles
+ADD COLUMN IF NOT EXISTS child_slug TEXT;
+
+-- Family slug table (one row per parent account)
+CREATE TABLE IF NOT EXISTS parent_settings (
+  user_id TEXT PRIMARY KEY,
+  family_slug TEXT UNIQUE NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
