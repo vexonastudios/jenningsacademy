@@ -109,7 +109,17 @@ export default function ChildPath() {
       <PinGate
         profileId={profileId}
         profileName="Student"
-        onSuccess={(p) => setProfile(p)}
+        onSuccess={(p) => {
+          // ⚡ Must request fullscreen synchronously here, inside the user gesture
+          // (button click → fetch → this callback). React's setState is async and
+          // loses the gesture context, so doing it in a useEffect would be blocked.
+          if (p.lock_mode) {
+            const el = document.documentElement;
+            if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
+            else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+          }
+          setProfile(p);
+        }}
       />
     );
   }

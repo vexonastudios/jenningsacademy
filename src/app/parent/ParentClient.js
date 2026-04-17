@@ -180,13 +180,26 @@ export default function ParentClient({ profiles }) {
     useSensor(TouchSensor,   { activationConstraint: { delay: 200, tolerance: 8 } })
   );
 
-  const handleDragEnd = ({ active, over }) => {
+  const handleDragEnd = async ({ active, over }) => {
     if (!over || active.id === over.id) return;
-    setTodaysPlan(plan => {
-      const oldIdx = plan.findIndex(m => m.id === active.id);
-      const newIdx = plan.findIndex(m => m.id === over.id);
-      return arrayMove(plan, oldIdx, newIdx);
-    });
+
+    // Compute the new order synchronously
+    const oldIdx = todaysPlan.findIndex(m => m.id === active.id);
+    const newIdx = todaysPlan.findIndex(m => m.id === over.id);
+    const reordered = arrayMove(todaysPlan, oldIdx, newIdx);
+
+    setTodaysPlan(reordered);
+
+    // Autosave: flush new order to Supabase immediately
+    if (activeChild) {
+      const todayStr = new Date().toISOString().split('T')[0];
+      try {
+        await publishPlan({ profileId: activeChild.id, modules: reordered, targetDate: todayStr });
+        addToast("💾 Order saved!");
+      } catch {
+        addToast("Couldn't save order — try again", "error");
+      }
+    }
   };
 
   const handlePublishPlan = async () => {

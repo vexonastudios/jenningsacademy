@@ -11,7 +11,7 @@ export async function POST(request) {
 
   const { data, error } = await supabase
     .from('profiles')
-    .select('id, name, voice_id, grade_level, avatar_url, current_streak')
+    .select('id, name, voice_id, grade_level, avatar_url, current_streak, lock_mode, parent_exit_pin')
     .eq('id', profileId)
     .eq('pin_code', pin)
     .single();
