@@ -50,14 +50,18 @@ export default async function Home() {
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
   
-  const { data: rawSessions } = await supabase
-    .from("sessions")
-    .select("profile_id, daily_plan_id, module_type, created_at")
-    .in("profile_id", safeProfiles.map(p => p.id))
-    .gte("created_at", thirtyDaysAgo.toISOString())
-    .eq("completed", true);
+  let rawSessions = [];
+  if (safeProfiles.length > 0) {
+    const { data } = await supabase
+      .from("sessions")
+      .select("profile_id, daily_plan_id, module_type, created_at")
+      .in("profile_id", safeProfiles.map(p => p.id))
+      .gte("created_at", thirtyDaysAgo.toISOString())
+      .eq("completed", true);
+    rawSessions = data || [];
+  }
 
-  const completedSessions = rawSessions || [];
+  const completedSessions = rawSessions;
 
   // Summary stats
   const currentDayShort = new Date().toLocaleDateString("en-US", { weekday: "short" });
