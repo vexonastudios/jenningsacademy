@@ -90,10 +90,13 @@ export default function MathModule({ profileId, gradeLevel = 1, onRoundComplete 
   const { speakAsync, stop } = useSpeechAsync("alloy");
   const [ledger, setLedger] = useState(() => loadLedger(profileId));
   
-  const [phase, setPhase] = useState("booting"); // booting -> warmup -> teaching -> practice -> quiz -> test -> review_complete
+  const [phase, setPhase] = useState("booting"); // booting -> ready -> warmup -> teaching -> practice -> quiz -> test -> review_complete
   const [queue, setQueue] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [dayConfig, setDayConfig] = useState(null);
+  
+  // Track where we should go after "ready"
+  const [nextPhaseAfterReady, setNextPhaseAfterReady] = useState(null);
 
   // Answering State
   const [userInput, setUserInput] = useState("");
@@ -130,16 +133,19 @@ export default function MathModule({ profileId, gradeLevel = 1, onRoundComplete 
 
     if (today.isTestDay) {
         setQueue(selectWeightedProblems(nextLedger.skills, 20)); // Friday Test
-        setPhase("test");
+        setNextPhaseAfterReady("test");
+        setPhase("ready");
     } else {
         // Normal Day Bootup: Starts at warmup IF there are prior skills tracked
         const priorSkills = Object.keys(ledger.skills);
         if (priorSkills.length === 0) {
             // First day ever -> Skip to teaching
-            setPhase("teaching");
+            setNextPhaseAfterReady("teaching");
+            setPhase("ready");
         } else {
             setQueue(selectWeightedProblems(nextLedger.skills, 5));
-            setPhase("warmup");
+            setNextPhaseAfterReady("warmup");
+            setPhase("ready");
         }
     }
   }, [phase, ledger]);
@@ -150,20 +156,30 @@ export default function MathModule({ profileId, gradeLevel = 1, onRoundComplete 
 
   // Audio driver
   useEffect(() => {
-    if (!dayConfig) return;
+    if (!dayConfig || phase === "booting" || phase === "ready") return;
     
+    // Quick delay function to sequence speech cleanly
+    const sequenceSpeech = async (intro, problemText) => {
+      if (intro) await speakAsync(intro);
+      if (problemText) await speakAsync(problemText);
+    };
+
     if (phase === "teaching") {
       speakAsync(dayConfig.teachingScript || "Let's learn something new.");
-    } else if (phase === "warmup" && currentIndex === 0) {
-      speakAsync("Let's do a quick warm up flash drill.");
-    } else if (phase === "practice" && currentIndex === 0) {
-      speakAsync("Now let's practice what we just learned.");
-    } else if (phase === "quiz" && currentIndex === 0) {
-      speakAsync("Time for the daily quiz. Do your best!");
-    } else if (phase === "test" && currentIndex === 0) {
-      speakAsync("It's test day! Take your time and focus.");
+    } else {
+      let intro = null;
+      let problemText = queue[currentIndex]?.equation?.replace("= ?", ""); // Say '4 + 4' instead of '4 + 4 equals question mark'
+      if (problemText && !problemText.includes("?")) problemText = "What is " + problemText; // Normal math
+      if (queue[currentIndex]?.equation?.includes("comes")) problemText = queue[currentIndex]?.equation; // Word problem support
+
+      if (phase === "warmup" && currentIndex === 0) intro = "Let's do a quick warm up flash drill.";
+      if (phase === "practice" && currentIndex === 0) intro = "Now let's practice what we just learned.";
+      if (phase === "quiz" && currentIndex === 0) intro = "Time for the daily quiz. Do your best!";
+      if (phase === "test" && currentIndex === 0) intro = "It's test day! Take your time and focus.";
+
+      sequenceSpeech(intro, problemText);
     }
-  }, [phase, currentIndex, dayConfig, speakAsync]);
+  }, [phase, currentIndex, dayConfig, queue, speakAsync]);
 
   // Submit Answer Logic
   const submitAnswer = () => {
@@ -244,7 +260,28 @@ export default function MathModule({ profileId, gradeLevel = 1, onRoundComplete 
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [phase, feedback, userInput, queue, currentIndex]); // Dependencies important so closures grab latest state!
 
-  if (phase === "booting" || !dayConfig) return <div className="flex-1 bg-sky-50 flex items-center justify-center font-bold text-sky-400">Loading Map...</div>;
+  if (phase === "booting" || !dayConfig) return <div className="flex-1 bg-sky-50 flex items-center justify-center font-bold text-sky-400">Loading Math...</div>;
+
+  if (phase === "ready") {
+    return (
+      <div className="flex-1 bg-sky-50 flex flex-col items-center justify-center">
+        <div className="bg-white p-12 rounded-[3rem] shadow-xl border-4 border-sky-100 flex flex-col items-center max-w-lg text-center mx-4">
+          <Calculator className="w-20 h-20 text-sky-500 mb-6" />
+          <h1 className="text-4xl font-black text-slate-800 mb-4">Math Flow</h1>
+          <p className="text-xl text-slate-500 font-medium mb-10">Day {ledger.day} is ready to begin.</p>
+          <button 
+            onClick={() => {
+              // Intentionally play a tiny silent sound or load audio context if needed
+              setPhase(nextPhaseAfterReady);
+            }}
+            className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-black text-3xl py-6 rounded-full shadow-lg active:scale-95 transition-all flex items-center justify-center gap-3"
+          >
+            Start <ArrowRight className="w-8 h-8" />
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-sky-50 relative pb-24">
