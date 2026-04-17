@@ -59,7 +59,7 @@ export default function ParentClient({ profiles }) {
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-slate-600 mb-1">4-Digit PIN</label>
-                  <input name="pin" required type="text" maxLength="4" pattern="\\d{4}" className="w-full border border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="1234" />
+                  <input name="pin" required type="text" maxLength="4" pattern="[0-9]{4}" title="Must be exactly 4 numbers" className="w-full border border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="1234" />
                 </div>
               </div>
               <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 rounded-xl transition-all shadow-md mt-4">

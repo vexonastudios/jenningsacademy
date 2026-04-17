@@ -16,7 +16,7 @@ export async function addChild(formData) {
   const avatarColor = colors[Math.floor(Math.random() * colors.length)];
   const initials = name.charAt(0).toUpperCase();
 
-  const { error } = await supabase.from('profiles').insert([
+  const { data: newProfile, error: profileError } = await supabase.from('profiles').insert([
     {
        parent_id: userId,
        name,
@@ -24,12 +24,29 @@ export async function addChild(formData) {
        pin_code: pin,
        avatar_url: avatarColor, 
     }
-  ]);
+  ]).select().single();
 
-  if (error) {
-     console.error("Supabase insert error:", error);
-     throw new Error(error.message);
+  if (profileError) {
+     console.error("Supabase insert error:", profileError);
+     throw new Error(profileError.message);
   }
+
+  // Generate a recommended starter plan for today
+  const defaultModules = [
+    { id: "mod1", type: "Math", iconType: "Calculator", color: "text-blue-600 bg-blue-100" },
+    { id: "mod2", type: "Spelling", iconType: "Type", color: "text-purple-600 bg-purple-100" },
+    { id: "mod3", type: "Reading", iconType: "BookOpen", color: "text-amber-600 bg-amber-100" }
+  ];
+
+  const todayStr = new Date().toISOString().split('T')[0];
+
+  await supabase.from('daily_plans').insert([
+    {
+       profile_id: newProfile.id,
+       target_date: todayStr,
+       modules: defaultModules
+    }
+  ]);
 
   // Tell Next.js to refresh the parent page to show the new child
   revalidatePath('/parent');
