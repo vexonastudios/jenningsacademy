@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { UserButton } from "@clerk/nextjs";
 import { PlusCircle, CalendarSync, Settings, TrendingUp, GripVertical, Settings2, Sparkles, BookOpen, Calculator, Type, Gamepad2, X, Link, Clock, Medal, ChevronRight, ChevronLeft, Play, Volume2, Lock, Pencil, Trash2, FileDown, Save, Flame } from "lucide-react";
 import { addChild, updateChild, deleteChild, publishPlan, savePlanAsTemplate } from "../actions";
@@ -64,11 +64,18 @@ export default function ParentClient({ profiles }) {
   const [playingVoice, setPlayingVoice] = useState(null);
   const [overviewView, setOverviewView] = useState("day");
   const [overviewOffset, setOverviewOffset] = useState(0);
-  const [editingChild, setEditingChild] = useState(null); // child object to edit
-  const [confirmDelete, setConfirmDelete] = useState(null); // child.id to delete
+  const [editingChild, setEditingChild] = useState(null);
+  const [confirmDelete, setConfirmDelete] = useState(null);
   const [saveTemplateModal, setSaveTemplateModal] = useState(false);
   const [templateName, setTemplateName] = useState("");
   const [publishing, setPublishing] = useState(false);
+  const [toasts, setToasts] = useState([]);
+
+  const addToast = useCallback((message, type = "success") => {
+    const id = Date.now();
+    setToasts(t => [...t, { id, message, type }]);
+    setTimeout(() => setToasts(t => t.filter(x => x.id !== id)), 3500);
+  }, []);
 
   const handlePlaySample = (voiceId, e) => {
     e.stopPropagation();
@@ -114,8 +121,8 @@ export default function ParentClient({ profiles }) {
     try {
       const todayStr = new Date().toISOString().split('T')[0];
       await publishPlan({ profileId: activeChild.id, modules: todaysPlan, targetDate: todayStr });
-      alert(`Plan published for ${activeChild.name}!`);
-    } catch(e) { alert("Failed to publish: " + e.message); }
+      addToast(`✅ Plan published for ${activeChild.name}!`);
+    } catch(e) { addToast("Failed to publish: " + e.message, "error"); }
     finally { setPublishing(false); }
   };
 
@@ -124,7 +131,7 @@ export default function ParentClient({ profiles }) {
     await savePlanAsTemplate({ name: templateName, modules: todaysPlan });
     setSaveTemplateModal(false);
     setTemplateName("");
-    alert("Template saved!");
+    addToast(`📁 Template "${templateName}" saved!`);
   };
 
   const handleDeleteChild = async (childId) => {
@@ -302,6 +309,32 @@ export default function ParentClient({ profiles }) {
           </div>
         </div>
       )}
+
+      {/* ── Toast Notifications ─────────────────────────────────────────── */}
+      <div className="fixed bottom-6 right-6 z-[9999] flex flex-col gap-3 pointer-events-none">
+        {toasts.map(toast => (
+          <div
+            key={toast.id}
+            className={`flex items-center gap-3 px-5 py-4 rounded-2xl shadow-2xl border backdrop-blur-xl text-sm font-semibold
+              pointer-events-auto animate-[slideIn_0.3s_ease]
+              ${toast.type === "error"
+                ? "bg-rose-50 border-rose-200 text-rose-700 shadow-rose-200/50"
+                : "bg-white border-slate-100 text-slate-700 shadow-slate-200/60"
+              }`}
+          >
+            <span className="text-lg leading-none">{toast.type === "error" ? "⚠️" : "✓"}</span>
+            <span>{toast.message}</span>
+          </div>
+        ))}
+      </div>
+
+      <style jsx global>{`
+        @keyframes slideIn {
+          from { opacity: 0; transform: translateX(24px); }
+          to   { opacity: 1; transform: translateX(0); }
+        }
+      `}</style>
+
       {isAddingChild && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm px-4">
           <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg p-8 relative max-h-[90vh] overflow-y-auto">
@@ -432,7 +465,7 @@ export default function ParentClient({ profiles }) {
                         </div>
                       </div>
                       <div className="flex items-center gap-1">
-                        <button title="Copy Link" className="p-1.5 text-indigo-400 hover:text-indigo-600 hover:bg-indigo-100 rounded-full transition-colors" onClick={(e) => { e.stopPropagation(); alert(`Link: https://app-jenningsacademy.vercel.app/path?profile=${child.id}`); }}>
+                        <button title="Copy Link" className="p-1.5 text-indigo-400 hover:text-indigo-600 hover:bg-indigo-100 rounded-full transition-colors" onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(`https://app-jenningsacademy.vercel.app/path?profile=${child.id}`); addToast(`🔗 Link copied for ${child.name}!`); }}>
                           <Link className="w-3.5 h-3.5" />
                         </button>
                         <button title="Edit" className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-100 rounded-full transition-colors" onClick={(e) => { e.stopPropagation(); setEditingChild(child); }}>
