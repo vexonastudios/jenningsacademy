@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import {
-  CheckCircle, ChevronRight, Trophy, Keyboard,
-  Eye, EyeOff, RotateCcw, Zap, BookOpen, Flame
+  CheckCircle, Trophy, Keyboard,
+  Eye, EyeOff, Zap, BookOpen, Volume2
 } from "lucide-react";
 import { useTypingEngine } from "./hooks/useTypingEngine";
 import KeyboardVisualizer from "./components/KeyboardVisualizer";
@@ -16,6 +16,48 @@ function passThreshold(grade) {
   if (g <= 3) return 78;
   if (g <= 6) return 82;
   return 87;
+}
+
+// ─── Shared TTS hook ──────────────────────────────────────────────────────────
+function useSpeech(voiceId) {
+  const audioRef   = useRef(null);
+  const [speaking, setSpeaking] = useState(false);
+
+  const speak = useCallback((text) => {
+    if (!voiceId || !text) return;
+    // Stop any current audio
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.onended = null;
+      audioRef.current.onerror = null;
+      audioRef.current = null;
+    }
+    setSpeaking(true);
+    try {
+      const audio = new Audio(
+        `/api/tts?voiceId=${encodeURIComponent(voiceId)}&text=${encodeURIComponent(text)}`
+      );
+      audioRef.current = audio;
+      audio.play().catch(() => {});
+      audio.onended = () => setSpeaking(false);
+      audio.onerror = () => setSpeaking(false);
+    } catch {
+      setSpeaking(false);
+    }
+  }, [voiceId]);
+
+  const stop = useCallback(() => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
+    setSpeaking(false);
+  }, []);
+
+  // Clean up on unmount
+  useEffect(() => () => { audioRef.current?.pause(); }, []);
+
+  return { speak, stop, speaking };
 }
 
 // ─── Phase progress bar ───────────────────────────────────────────────────────
@@ -96,6 +138,23 @@ function MetricsBar({ wpm, accuracy, isChallenge = false }) {
   );
 }
 
+// ─── Replay voice button ──────────────────────────────────────────────────────
+function SpeakButton({ onSpeak, speaking }) {
+  return (
+    <button
+      onClick={onSpeak}
+      disabled={speaking}
+      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition-all
+        ${speaking
+          ? "bg-indigo-900/40 border-indigo-700/40 text-indigo-400 cursor-not-allowed animate-pulse"
+          : "bg-slate-800 border-slate-700 text-slate-400 hover:text-white hover:border-slate-500"}`}
+      title="Hear it again">
+      <Volume2 className={`w-3.5 h-3.5 ${speaking ? "animate-pulse" : ""}`} />
+      {speaking ? "Playing…" : "Hear again"}
+    </button>
+  );
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // POSTURE SCREEN
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -106,20 +165,33 @@ const POSTURE_ITEMS = [
   { icon: "👁️",  label: "Eyes on the screen, not the keyboard" },
 ];
 
-function PostureScreen({ lessonNumber, lessonTitle, onNext }) {
+function PostureScreen({ lessonNumber, lessonTitle, voiceId, onNext }) {
   const [checked, setChecked] = useState([false, false, false, false]);
   const allChecked = checked.every(Boolean);
+  const { speak, speaking } = useSpeech(voiceId);
+
+  // Read the posture reminder on load
+  useEffect(() => {
+    const t = setTimeout(() =>
+      speak(`Lesson ${lessonNumber}: ${lessonTitle}. Before we start, let's check your posture. Feet flat on the floor. Sitting up straight. Wrists relaxed. Eyes on the screen, not the keyboard. Check each item, then press Let's Begin.`),
+    600);
+    return () => clearTimeout(t);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="flex flex-col h-full min-h-full">
       <PhaseBar phase="posture" />
       <div className="flex-1 flex flex-col items-center justify-center px-6 py-8">
         <div className="w-full max-w-lg">
-          <div className="text-center mb-8">
+          <div className="text-center mb-6">
             <p className="text-xs text-indigo-400 font-bold uppercase tracking-widest mb-1">
               Lesson {lessonNumber} · Daily Posture Check
             </p>
             <h2 className="text-3xl font-black text-white">{lessonTitle}</h2>
+            <div className="flex justify-center mt-3">
+              <SpeakButton onSpeak={() => speak(`Lesson ${lessonNumber}: ${lessonTitle}. Before we start, let's check your posture. Feet flat on the floor. Sitting up straight. Wrists relaxed. Eyes on the screen.`)} speaking={speaking} />
+            </div>
           </div>
 
           <div className="bg-slate-800/60 border border-slate-700/50 rounded-3xl p-6 space-y-4 mb-8">
@@ -162,7 +234,18 @@ function PostureScreen({ lessonNumber, lessonTitle, onNext }) {
 // ═══════════════════════════════════════════════════════════════════════════════
 // INSTRUCTION SCREEN
 // ═══════════════════════════════════════════════════════════════════════════════
-function InstructionScreen({ lesson, onNext }) {
+function InstructionScreen({ lesson, voiceId, onNext }) {
+  const { speak, speaking } = useSpeech(voiceId);
+
+  // Read the instruction body on load
+  useEffect(() => {
+    const t = setTimeout(() =>
+      speak(`${lesson.instruction.title}. ${lesson.instruction.body}`),
+    500);
+    return () => clearTimeout(t);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <div className="flex flex-col h-full min-h-full">
       <PhaseBar phase="instruction" />
@@ -173,6 +256,9 @@ function InstructionScreen({ lesson, onNext }) {
               {lesson.phaseLabel}
             </span>
             <h2 className="text-4xl font-black text-white mt-1">{lesson.instruction.title}</h2>
+            <div className="flex justify-center mt-3">
+              <SpeakButton onSpeak={() => speak(`${lesson.instruction.title}. ${lesson.instruction.body}`)} speaking={speaking} />
+            </div>
           </div>
 
           <div className="bg-slate-800/60 border border-slate-700/50 rounded-3xl p-7 mb-6">
@@ -216,9 +302,20 @@ function InstructionScreen({ lesson, onNext }) {
 // ═══════════════════════════════════════════════════════════════════════════════
 // DRILL SCREEN (warmup + practice drills)
 // ═══════════════════════════════════════════════════════════════════════════════
-function DrillScreen({ prompt, label, targetKeys, showKeyboard, onToggleKeyboard, onDrillComplete }) {
+function DrillScreen({ prompt, label, targetKeys, showKeyboard, voiceId, onToggleKeyboard, onDrillComplete }) {
   const engine        = useTypingEngine(prompt);
   const completedRef  = useRef(false);
+  const { speak, speaking } = useSpeech(voiceId);
+
+  // Read the drill intro on load
+  useEffect(() => {
+    const cleanLabel = label.replace(/[⚡]/g, "").trim();
+    const t = setTimeout(() =>
+      speak(`${cleanLabel}. Type the text below. You can use backspace to correct any errors. Press any key when you are ready.`),
+    400);
+    return () => clearTimeout(t);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Global key capture
   useEffect(() => {
@@ -231,9 +328,10 @@ function DrillScreen({ prompt, label, targetKeys, showKeyboard, onToggleKeyboard
   useEffect(() => {
     if (engine.isComplete && !completedRef.current) {
       completedRef.current = true;
-      setTimeout(() => onDrillComplete(engine.weakKeys), 800);
+      speak("Great job! Moving to the next step.");
+      setTimeout(() => onDrillComplete(engine.weakKeys), 1000);
     }
-  }, [engine.isComplete, engine.weakKeys, onDrillComplete]);
+  }, [engine.isComplete, engine.weakKeys, onDrillComplete, speak]);
 
   const lastEntry = engine.keystrokeLog[engine.keystrokeLog.length - 1] ?? null;
 
@@ -249,6 +347,10 @@ function DrillScreen({ prompt, label, targetKeys, showKeyboard, onToggleKeyboard
             <p className="text-slate-300 text-sm mt-0.5">Type the text below — backspace to correct errors</p>
           </div>
           <div className="flex items-center gap-2">
+            <SpeakButton
+              onSpeak={() => speak(`${label.replace(/[⚡]/g, "").trim()}. Type the text below. Backspace to correct errors.`)}
+              speaking={speaking}
+            />
             <MetricsBar wpm={engine.netWpm} accuracy={engine.accuracy} />
             <button onClick={onToggleKeyboard}
               className="p-2 rounded-xl bg-slate-800 border border-slate-700 text-slate-400 hover:text-white transition-colors"
@@ -291,29 +393,45 @@ function DrillScreen({ prompt, label, targetKeys, showKeyboard, onToggleKeyboard
 // ═══════════════════════════════════════════════════════════════════════════════
 const CHALLENGE_DURATION = 30;
 
-function ChallengeScreen({ lesson, threshold, showKeyboard, onToggleKeyboard, onChallengeComplete }) {
+function ChallengeScreen({ lesson, threshold, showKeyboard, voiceId, onToggleKeyboard, onChallengeComplete }) {
   const engine       = useTypingEngine(lesson.challenge.prompt);
   const [hasStarted, setHasStarted] = useState(false);
   const [timeLeft,   setTimeLeft]   = useState(CHALLENGE_DURATION);
   const [finished,   setFinished]   = useState(false);
+  const { speak, speaking } = useSpeech(voiceId);
 
   const finishedRef  = useRef(false);
   const engineRef    = useRef(engine);
   useEffect(() => { engineRef.current = engine; });
+
+  // Read challenge intro on load
+  useEffect(() => {
+    const t = setTimeout(() =>
+      speak(`Challenge round! You have ${CHALLENGE_DURATION} seconds. Type as accurately as you can. Press any key to start the timer.`),
+    400);
+    return () => clearTimeout(t);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const finish = useCallback(() => {
     if (finishedRef.current) return;
     finishedRef.current = true;
     setFinished(true);
     const eng = engineRef.current;
+    const accuracy = eng.accuracy;
+    const passed   = accuracy >= threshold;
+    speak(passed
+      ? `Great work! You scored ${accuracy} percent accuracy and ${eng.netWpm} words per minute. You passed!`
+      : `Good effort! You scored ${accuracy} percent. You need ${threshold} percent to advance. Keep practicing!`
+    );
     onChallengeComplete({
       wpm:      eng.netWpm,
-      accuracy: eng.accuracy,
+      accuracy,
       weakKeys: eng.weakKeys,
-      passed:   eng.accuracy >= threshold,
-      score:    eng.accuracy,
+      passed,
+      score:    accuracy,
     });
-  }, [threshold, onChallengeComplete]);
+  }, [threshold, onChallengeComplete, speak]);
 
   // Global key capture — starts timer on first printable key
   useEffect(() => {
@@ -340,6 +458,12 @@ function ChallengeScreen({ lesson, threshold, showKeyboard, onToggleKeyboard, on
     return () => clearInterval(id);
   }, [hasStarted, finished]);
 
+  // 10-second warning
+  useEffect(() => {
+    if (timeLeft === 10 && hasStarted && !finished) speak("Ten seconds remaining!");
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [timeLeft]);
+
   // Trigger finish when time or prompt runs out
   useEffect(() => { if (timeLeft === 0 && hasStarted) finish(); }, [timeLeft, hasStarted, finish]);
   useEffect(() => { if (engine.isComplete) finish(); }, [engine.isComplete, finish]);
@@ -362,6 +486,10 @@ function ChallengeScreen({ lesson, threshold, showKeyboard, onToggleKeyboard, on
             </p>
           </div>
           <div className="flex items-center gap-2">
+            <SpeakButton
+              onSpeak={() => speak(`Challenge round. ${CHALLENGE_DURATION} seconds. Type as accurately as you can. Press any key to start.`)}
+              speaking={speaking}
+            />
             <MetricsBar wpm={engine.netWpm} accuracy={engine.accuracy} isChallenge />
             <button onClick={onToggleKeyboard}
               className="p-2 rounded-xl bg-slate-800 border border-slate-700 text-slate-400 hover:text-white transition-colors">
@@ -411,9 +539,26 @@ function ChallengeScreen({ lesson, threshold, showKeyboard, onToggleKeyboard, on
 // ═══════════════════════════════════════════════════════════════════════════════
 // REVIEW SCREEN
 // ═══════════════════════════════════════════════════════════════════════════════
-function ReviewScreen({ lesson, results, accWeakKeys, threshold, lessonNumber, totalLessons, onFinish }) {
+function ReviewScreen({ lesson, results, accWeakKeys, threshold, lessonNumber, totalLessons, voiceId, onFinish }) {
   const { wpm, accuracy, passed } = results;
   const nextLesson = LESSONS[(lessonNumber + 1) % totalLessons];
+  const { speak, speaking } = useSpeech(voiceId);
+
+  // Read the review on load
+  useEffect(() => {
+    const topWeak = Object.entries(accWeakKeys)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 2)
+      .map(([k]) => k)
+      .join(", ");
+    const weakMsg = topWeak ? `Keys to keep practicing: ${topWeak}.` : "";
+    const msg = passed
+      ? `Lesson complete! You scored ${accuracy} percent accuracy at ${wpm} words per minute. Excellent work! ${weakMsg} Next lesson: ${nextLesson?.title ?? "coming soon"}.`
+      : `Good effort! You scored ${accuracy} percent accuracy at ${wpm} words per minute. You need ${threshold} percent to move on. ${weakMsg} Same lesson next time — you can do it!`;
+    const t = setTimeout(() => speak(msg), 500);
+    return () => clearTimeout(t);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Top 3 weak keys
   const topWeak = Object.entries(accWeakKeys)
@@ -441,6 +586,17 @@ function ReviewScreen({ lesson, results, accWeakKeys, threshold, lessonNumber, t
         <p className="text-slate-400 mt-1 text-center">
           {passed ? `You've mastered "${lesson.title}"` : `You need ${threshold}% to move on`}
         </p>
+        <div className="mt-3">
+          <SpeakButton
+            onSpeak={() => {
+              const msg = passed
+                ? `Lesson complete! ${accuracy} percent accuracy, ${wpm} words per minute. Great work!`
+                : `You scored ${accuracy} percent. You need ${threshold} percent to advance. Keep it up!`;
+              speak(msg);
+            }}
+            speaking={speaking}
+          />
+        </div>
       </div>
 
       {/* Stats cards */}
@@ -502,10 +658,10 @@ function ReviewScreen({ lesson, results, accWeakKeys, threshold, lessonNumber, t
 // ═══════════════════════════════════════════════════════════════════════════════
 // MAIN MODULE
 // ═══════════════════════════════════════════════════════════════════════════════
-export default function TypingModule({ grade, attempt, onRoundComplete, profileId }) {
+export default function TypingModule({ grade, attempt, onRoundComplete, profileId, voiceId }) {
   const [lessonNumber,    setLessonNumber]    = useState(null);
   const [phase,           setPhase]           = useState("loading");
-  const [drillStep,       setDrillStep]       = useState(0); // 0=warmup, 1=drill1, 2=drill2
+  const [drillStep,       setDrillStep]       = useState(0);
   const [accWeakKeys,     setAccWeakKeys]     = useState({});
   const [challengeResult, setChallengeResult] = useState(null);
   const [showKeyboard,    setShowKeyboard]    = useState(true);
@@ -535,15 +691,11 @@ export default function TypingModule({ grade, attempt, onRoundComplete, profileI
   const advance = (newPhase) => setPhase(newPhase);
 
   const handleDrillComplete = useCallback((weakKeys) => {
-    // Accumulate weak keys
     setAccWeakKeys(prev => {
       const merged = { ...prev };
-      Object.entries(weakKeys).forEach(([k, v]) => {
-        merged[k] = (merged[k] || 0) + v;
-      });
+      Object.entries(weakKeys).forEach(([k, v]) => { merged[k] = (merged[k] || 0) + v; });
       return merged;
     });
-    // Next drill or challenge
     const nextStep = drillStep + 1;
     if (nextStep < drillList.length) {
       setDrillStep(nextStep);
@@ -553,12 +705,9 @@ export default function TypingModule({ grade, attempt, onRoundComplete, profileI
   }, [drillStep, drillList.length]);
 
   const handleChallengeComplete = useCallback((results) => {
-    // Merge challenge weak keys too
     setAccWeakKeys(prev => {
       const merged = { ...prev };
-      Object.entries(results.weakKeys || {}).forEach(([k, v]) => {
-        merged[k] = (merged[k] || 0) + v;
-      });
+      Object.entries(results.weakKeys || {}).forEach(([k, v]) => { merged[k] = (merged[k] || 0) + v; });
       return merged;
     });
     setChallengeResult(results);
@@ -596,6 +745,7 @@ export default function TypingModule({ grade, attempt, onRoundComplete, profileI
       <PostureScreen
         lessonNumber={lessonNumber + 1}
         lessonTitle={lesson.title}
+        voiceId={voiceId}
         onNext={() => advance("instruction")}
       />
     );
@@ -606,6 +756,7 @@ export default function TypingModule({ grade, attempt, onRoundComplete, profileI
     return (
       <InstructionScreen
         lesson={lesson}
+        voiceId={voiceId}
         onNext={() => { setDrillStep(0); advance("drill"); }}
       />
     );
@@ -622,6 +773,7 @@ export default function TypingModule({ grade, attempt, onRoundComplete, profileI
         label={step.label}
         targetKeys={lesson.targetKeys}
         showKeyboard={showKeyboard}
+        voiceId={voiceId}
         onToggleKeyboard={() => setShowKeyboard(s => !s)}
         onDrillComplete={handleDrillComplete}
       />
@@ -636,6 +788,7 @@ export default function TypingModule({ grade, attempt, onRoundComplete, profileI
         lesson={lesson}
         threshold={threshold}
         showKeyboard={showKeyboard}
+        voiceId={voiceId}
         onToggleKeyboard={() => setShowKeyboard(s => !s)}
         onChallengeComplete={handleChallengeComplete}
       />
@@ -652,6 +805,7 @@ export default function TypingModule({ grade, attempt, onRoundComplete, profileI
         threshold={threshold}
         lessonNumber={lessonNumber}
         totalLessons={LESSONS.length}
+        voiceId={voiceId}
         onFinish={handleFinish}
       />
     );
