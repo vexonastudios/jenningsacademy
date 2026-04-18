@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Calculator, ArrowRight, Volume2, Target, Trophy, Flame } from "lucide-react";
+import { Calculator, ArrowRight, Volume2, Target, Trophy, Flame, BookOpen, Pencil, ClipboardCheck } from "lucide-react";
 import { generateProblem } from "./MathEngine";
 import { useSoundEffects } from "@/modules/_shared/useSoundEffects";
 import { GRADE_1_CURRICULUM } from "./curriculum/mathGrade1";
@@ -62,6 +62,46 @@ function useSpeechAsync(voiceId) {
 }
 
 // ── Storage Helpers ────────────────────────────────────────────────────────────
+function MathPhaseBar({ phase, isTestDay, isFirstDay }) {
+  const allPhases = isTestDay
+    ? [{ id: "test", label: "Final Test", icon: Trophy }]
+    : isFirstDay
+      ? [
+          { id: "teaching", label: "Lesson", icon: BookOpen },
+          { id: "practice", label: "Practice", icon: Pencil },
+          { id: "quiz", label: "Quiz", icon: ClipboardCheck },
+        ]
+      : [
+          { id: "warmup", label: "Warm-Up", icon: Flame },
+          { id: "teaching", label: "Lesson", icon: BookOpen },
+          { id: "practice", label: "Practice", icon: Pencil },
+          { id: "quiz", label: "Quiz", icon: Target },
+        ];
+
+  const idx = allPhases.findIndex((p) => p.id === phase);
+  
+  return (
+    <div className="flex items-center justify-center gap-2 pt-4 pb-2 shrink-0 flex-wrap">
+      {allPhases.map((p, i) => {
+        const Icon = p.icon;
+        const active = p.id === phase;
+        const done = i < idx; 
+        return (
+          <div key={p.id} className="flex items-center gap-1.5">
+            <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all
+              ${active ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/30"
+                : done ? "bg-emerald-800/40 text-emerald-400 border border-emerald-700/40"
+                : "bg-slate-800 text-slate-500"}`}>
+              <Icon className="w-3 h-3" /> {p.label}
+            </div>
+            {i < allPhases.length - 1 && <div className={`w-5 h-px ${done ? "bg-emerald-600" : "bg-slate-700"}`} />}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 const loadLedger = (profileId, grade) => {
   const blank = { day: 1, skills: {}, savedPhase: null, savedIndex: 0, savedQueue: [] };
   if (typeof window === "undefined") return blank;
@@ -373,21 +413,22 @@ export default function MathModule({ profileId, grade = 1, onRoundComplete }) {
     );
   }
 
+  const isFirstDay = Object.keys(ledger.skills).length === 0;
+
   return (
     <div className="flex flex-col min-h-screen bg-sky-50 relative pb-24">
-      {/* Header */}
-      <header className="w-full bg-white border-b border-sky-200 px-6 py-4 shadow-sm z-10 flex justify-between items-center relative">
-        <div className="flex items-center gap-3">
-          <div className="bg-sky-100 p-2 rounded-lg text-sky-700">
-            <Calculator className="w-6 h-6" />
+      {/* Dark Theme exact match of Spelling module Phase Header */}
+      <header className="w-full bg-[#0a0f25] border-b border-indigo-900/50 shadow-sm z-10 flex flex-col items-center justify-center pt-2 pb-0">
+        <MathPhaseBar phase={phase} isTestDay={dayConfig?.isTestDay} isFirstDay={isFirstDay} />
+        {phase !== "teaching" && phase !== "ready" && phase !== "booting" && queue.length > 0 && (
+          <div className="flex justify-center gap-1.5 py-3">
+            {queue.map((_, i) => (
+              <div key={i} className={`w-2.5 h-2.5 rounded-full transition-all ${i < currentIndex ? "bg-indigo-400 scale-90" : i === currentIndex ? "bg-[#818cf8] scale-125 shadow-[0_0_10px_rgba(129,140,248,0.5)]" : "bg-slate-700 opacity-50"}`} />
+            ))}
           </div>
-          <div>
-            <h1 className="text-2xl font-black text-slate-800 tracking-tight">Math Curriculum</h1>
-            <p className="text-sm font-bold text-sky-600 uppercase tracking-wider mt-0.5">
-              Day {ledger.day} • {phase.toUpperCase()}
-            </p>
-          </div>
-        </div>
+        )}
+        {/* Placeholder bottom padding if teaching so the header height stays nice */}
+        {(phase === "teaching" || phase === "ready" || phase === "booting") && <div className="py-3" />}
       </header>
 
       {/* Step-by-Step Explanation Panel — slides up on wrong answer */}
@@ -447,13 +488,6 @@ export default function MathModule({ profileId, grade = 1, onRoundComplete }) {
           /* Question Mode */
           <div className="w-full max-w-md flex flex-col items-center">
              
-             {/* Progress Bubbles */}
-             <div className="flex gap-2 mb-8">
-               {queue.map((_, i) => (
-                 <div key={i} className={`w-3 h-3 rounded-full ${i < currentIndex ? 'bg-sky-500' : i === currentIndex ? 'bg-sky-300 animate-pulse' : 'bg-slate-200'}`} />
-               ))}
-             </div>
-
              {/* The Equation */}
              <div className="bg-white rounded-[2rem] shadow-xl p-8 w-full border-4 border-slate-100 text-center relative overflow-hidden">
                 <h2 className={`font-black text-slate-800 mb-6 drop-shadow-sm ${queue[currentIndex]?.equation?.length > 30 ? 'text-2xl' : 'text-5xl'}`}>
