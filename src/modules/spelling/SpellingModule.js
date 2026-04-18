@@ -6,6 +6,7 @@ import {
   ArrowRight, BookOpen, Pencil, Trophy, Loader2, FileText, CheckCircle2
 } from "lucide-react";
 import { getSpellingContent } from "./content";
+import StreakMeter from "@/modules/_shared/StreakMeter";
 
 // ─── Deterministic shuffle (same order all day; different each new day) ──────
 function dayShuffle(arr) {
@@ -125,6 +126,8 @@ export default function SpellingModule({ grade, attempt, onRoundComplete, voiceI
   const [sentenceAttempts, setSentenceAttempts] = useState({});
   const [testResults, setTestResults]  = useState([]);
   const [isPlaying, setIsPlaying]      = useState(false);
+  const [streak, setStreak]            = useState(0);
+  const [showCombo, setShowCombo]      = useState(false);
 
   const inputRef = useRef(null);
   const audioRef = useRef(null);
@@ -195,9 +198,19 @@ export default function SpellingModule({ grade, attempt, onRoundComplete, voiceI
     if (phase === "sentence") setSentenceAttempts(p => ({ ...p, [cardIdx]: (p[cardIdx] || 0) + 1 }));
     if (phase === "final")    setTestResults(p => [...p, { ...w, typed, correct: isCorrect }]);
     if (isCorrect) {
+      setStreak(s => {
+        const next = s + 1;
+        if (next === 3 || next % 5 === 0) {
+          setShowCombo(true);
+          setTimeout(() => setShowCombo(false), 1500);
+        }
+        return next;
+      });
       speak(`Correct! ${w.word}.`);
       // Auto-advance after 1.5s on correct answers
       setTimeout(() => handleNext(), 1500);
+    } else {
+      setStreak(0);
     }
   };
 
@@ -324,7 +337,8 @@ export default function SpellingModule({ grade, attempt, onRoundComplete, voiceI
     const attemptsHere = sentenceAttempts[cardIdx] || 0;
 
     return (
-      <div className="flex flex-col h-full min-h-full">
+      <div className="flex flex-col h-full min-h-full relative overflow-x-hidden">
+        <StreakMeter streak={streak} showCombo={showCombo} />
         <PhaseBar phase="sentence" grade={grade} />
         <div className="flex justify-center gap-1 py-3 px-6">
           {sessionWords.map((_, i) => (
@@ -428,7 +442,8 @@ export default function SpellingModule({ grade, attempt, onRoundComplete, voiceI
     const w = sessionWords[cardIdx];
     const isPractice = phase === "practice";
     return (
-      <div className="flex flex-col h-full min-h-full">
+      <div className="flex flex-col h-full min-h-full relative overflow-x-hidden">
+        <StreakMeter streak={streak} showCombo={showCombo} />
         <PhaseBar phase={phase} grade={grade} />
         <div className="flex justify-center gap-1 py-3 px-6">
           {sessionWords.map((_, i) => (

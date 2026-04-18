@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import GrammarPhaseBar from "./GrammarPhaseBar";
 import { Volume2, Check } from "lucide-react";
 
-export default function ModeSentenceFix({ item, onNext, onSpeak, isSpeaking, grade }) {
+export default function ModeSentenceFix({ item, onNext, onMiss, onSpeak, isSpeaking, grade }) {
   const [hasFixedCap, setHasFixedCap] = useState(false);
   const [hasFixedPunc, setHasFixedPunc] = useState(false);
 
@@ -92,6 +92,7 @@ export default function ModeSentenceFix({ item, onNext, onSpeak, isSpeaking, gra
                      if (p === item.puncTarget) {
                         setHasFixedPunc(true);
                      } else {
+                        if (onMiss) onMiss();
                         if (!isSpeaking) onSpeak(`Not quite... Does it need a ${p === '.' ? 'period' : p === '?' ? 'question mark' : 'exclamation point'}?`);
                      }
                   }}

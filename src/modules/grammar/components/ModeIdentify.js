@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { CheckCircle2, XCircle, Volume2 } from "lucide-react";
 import GrammarPhaseBar from "./GrammarPhaseBar";
 
-export default function ModeIdentify({ item, onNext, onSpeak, isSpeaking, grade }) {
+export default function ModeIdentify({ item, onNext, onMiss, onSpeak, isSpeaking, grade }) {
   const [selectedWord, setSelectedWord] = useState(null);
   const [isCorrect, setIsCorrect] = useState(null);
 
@@ -37,6 +37,7 @@ export default function ModeIdentify({ item, onNext, onSpeak, isSpeaking, grade 
        }, 2000);
     } else {
        setIsCorrect(false);
+       if (onMiss) onMiss();
        if (!isSpeaking) onSpeak(`Oops! "${cleanWord}" is not the ${item.posTarget.toUpperCase()}. Keep trying!`);
     }
   };

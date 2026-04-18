@@ -7,6 +7,7 @@ import ModeSentenceFix from "./components/ModeSentenceFix";
 import ModeIdentify from "./components/ModeIdentify";
 import ModeScramble from "./components/ModeScramble";
 import GrammarReview from "./components/GrammarReview";
+import StreakMeter from "@/modules/_shared/StreakMeter";
 
 // Fisher-Yates shuffle
 function shuffle(array) {
@@ -23,6 +24,8 @@ export default function GrammarModule({ profileId, grade, onRoundComplete }) {
   const [loading, setLoading] = useState(true);
   const [sessionItems, setSessionItems] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [streak, setStreak] = useState(0);
+  const [showCombo, setShowCombo] = useState(false);
   
   // Audio state
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -56,7 +59,19 @@ export default function GrammarModule({ profileId, grade, onRoundComplete }) {
   };
 
   const handleNext = () => {
+     setStreak(s => {
+       const next = s + 1;
+       if (next === 3 || next % 5 === 0) {
+         setShowCombo(true);
+         setTimeout(() => setShowCombo(false), 1500);
+       }
+       return next;
+     });
      setCurrentIndex(i => i + 1);
+  };
+
+  const handleMiss = () => {
+     setStreak(0);
   };
 
   const handleComplete = () => {
@@ -87,15 +102,16 @@ export default function GrammarModule({ profileId, grade, onRoundComplete }) {
   const currentItem = sessionItems[currentIndex];
 
   return (
-    <div className="w-full h-full relative">
+    <div className="w-full h-full relative overflow-x-hidden">
+       <StreakMeter streak={streak} showCombo={showCombo} />
        {currentItem.type === "fix" && (
-           <ModeSentenceFix key={currentItem.id} item={currentItem} onNext={handleNext} onSpeak={speak} isSpeaking={isSpeaking} grade={grade} />
+           <ModeSentenceFix key={currentItem.id} item={currentItem} onNext={handleNext} onMiss={handleMiss} onSpeak={speak} isSpeaking={isSpeaking} grade={grade} />
        )}
        {currentItem.type === "identify" && (
-           <ModeIdentify key={currentItem.id} item={currentItem} onNext={handleNext} onSpeak={speak} isSpeaking={isSpeaking} grade={grade} />
+           <ModeIdentify key={currentItem.id} item={currentItem} onNext={handleNext} onMiss={handleMiss} onSpeak={speak} isSpeaking={isSpeaking} grade={grade} />
        )}
        {currentItem.type === "scramble" && (
-           <ModeScramble key={currentItem.id} item={currentItem} onNext={handleNext} onSpeak={speak} isSpeaking={isSpeaking} grade={grade} />
+           <ModeScramble key={currentItem.id} item={currentItem} onNext={handleNext} onMiss={handleMiss} onSpeak={speak} isSpeaking={isSpeaking} grade={grade} />
        )}
     </div>
   );

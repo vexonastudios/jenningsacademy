@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import GrammarPhaseBar from "./GrammarPhaseBar";
 import { Volume2, RotateCcw, Check } from "lucide-react";
 
-export default function ModeScramble({ item, onNext, onSpeak, isSpeaking, grade }) {
+export default function ModeScramble({ item, onNext, onMiss, onSpeak, isSpeaking, grade }) {
   const [bank, setBank] = useState([...item.words]); // words left to pick
   const [slots, setSlots] = useState([]); // words picked
   
@@ -28,6 +28,7 @@ export default function ModeScramble({ item, onNext, onSpeak, isSpeaking, grade 
                   onNext();
               }, 2500);
           } else {
+              if (onMiss) onMiss();
               if (!isSpeaking) onSpeak("That doesn't sound quite right. Try again!");
               // Auto reset after a moment
               setTimeout(() => {
