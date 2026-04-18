@@ -114,6 +114,10 @@ CREATE TABLE IF NOT EXISTS parent_settings (
 -- ==========================================
 -- Stores each child's best score per arcade game,
 -- allowing family leaderboard comparisons.
+-- Security is enforced at the API route level via Clerk auth()
+-- (same pattern as all other tables in this project).
+-- RLS is ENABLED but a service-role bypass policy is added so the
+-- Next.js server routes (which use the service_role key) can read/write freely.
 CREATE TABLE IF NOT EXISTS game_scores (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   profile_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
@@ -127,5 +131,20 @@ CREATE TABLE IF NOT EXISTS game_scores (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   UNIQUE(profile_id, game_id)      -- one best-score row per child per game
 );
+
+-- Enable RLS (required by Supabase best practices)
+ALTER TABLE public.game_scores ENABLE ROW LEVEL SECURITY;
+
+-- Grant full access to the postgres / service_role (used by the Next.js server).
+-- The anon / public role is intentionally excluded — all access goes through
+-- authenticated server routes where Clerk auth() is verified first.
+CREATE POLICY "service_role full access on game_scores"
+  ON public.game_scores
+  AS PERMISSIVE
+  FOR ALL
+  TO service_role
+  USING (true)
+  WITH CHECK (true);
+
 
 
