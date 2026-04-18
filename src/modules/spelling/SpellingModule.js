@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import {
   Volume2, ChevronRight, ChevronLeft, Check, RotateCcw,
-  ArrowRight, BookOpen, Pencil, Trophy, Loader2, FileText
+  ArrowRight, BookOpen, Pencil, Trophy, Loader2, FileText, CheckCircle2
 } from "lucide-react";
 import { getSpellingContent } from "./content";
 
@@ -148,10 +148,10 @@ export default function SpellingModule({ grade, attempt, onRoundComplete, voiceI
     const w = sessionWords[cardIdx];
     if (!w) return;
     let text = "";
-    if (phase === "study")    text = `The word is ${w.word}. ${w.word}. ${w.hint}. ${w.sentence ?? ""}`;
-    if (phase === "practice") text = `Practice word ${cardIdx + 1}. The word is ${w.word}. ${w.word}. ${w.hint}.`;
-    if (phase === "final")    text = `Test word ${cardIdx + 1} of ${sessionWords.length}. The word is ${w.word}. ${w.word}. ${w.hint}.`;
-    // Sentence phase: read the cloze sentence aloud so they hear context
+    if (phase === "study")    text = `The word is ${w.word}. ${w.hint}. ${w.sentence ?? ""}`;
+    // Practice and Final: say "Please spell: WORD" then definition after a brief pause
+    if (phase === "practice") text = `Please spell... ${w.word}. ... ${w.hint}.`;
+    if (phase === "final")    text = `Please spell... ${w.word}. ... ${w.hint}.`;
     if (phase === "sentence") text = `Fill in the missing word. ${w.sentence ?? w.hint}.`;
     if (text) { const t = setTimeout(() => speak(text), 400); return () => clearTimeout(t); }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -194,7 +194,11 @@ export default function SpellingModule({ grade, attempt, onRoundComplete, voiceI
     if (phase === "practice") setPracticeAttempts(p => ({ ...p, [cardIdx]: (p[cardIdx] || 0) + 1 }));
     if (phase === "sentence") setSentenceAttempts(p => ({ ...p, [cardIdx]: (p[cardIdx] || 0) + 1 }));
     if (phase === "final")    setTestResults(p => [...p, { ...w, typed, correct: isCorrect }]);
-    if (isCorrect) speak(`Correct! ${w.word}.`);
+    if (isCorrect) {
+      speak(`Correct! ${w.word}.`);
+      // Auto-advance after 1.5s on correct answers
+      setTimeout(() => handleNext(), 1500);
+    }
   };
 
   const handleRetry = () => { clearInput(); setTimeout(() => inputRef.current?.focus(), 50); };
@@ -252,7 +256,7 @@ export default function SpellingModule({ grade, attempt, onRoundComplete, voiceI
                 <p className="text-slate-300 italic text-base">&ldquo;{w.sentence}&rdquo;</p>
               </div>
             )}
-            <button onClick={() => speak(`The word is ${w.word}. ${w.word}. ${w.hint}. ${w.sentence ?? ""}`)}
+            <button onClick={() => speak(`The word is ${w.word}. ${w.hint}. ${w.sentence ?? ""}`)}
               disabled={isPlaying}
               className={`mt-6 w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl font-bold text-sm transition-all
                 ${isPlaying ? "bg-indigo-900/40 text-indigo-400 border border-indigo-700/40 cursor-not-allowed"
@@ -384,8 +388,10 @@ export default function SpellingModule({ grade, attempt, onRoundComplete, voiceI
               </div>
             ) : (
               <div className="space-y-4">
-                <p className="text-center text-slate-400 text-sm font-semibold">
-                  {letterResult.isCorrect ? "✅ Correct!" : "Here's what went wrong:"}
+                <p className="text-center text-slate-400 text-sm font-semibold flex items-center justify-center gap-2">
+                  {letterResult.isCorrect
+                    ? <><CheckCircle2 className="w-5 h-5 text-emerald-400" /><span className="text-emerald-400">Correct!</span></>
+                    : "Here's what went wrong:"}
                 </p>
                 <LetterBoxes typed={letterResult.typed} target={w.word} />
                 {letterResult.isCorrect ? (
@@ -438,9 +444,7 @@ export default function SpellingModule({ grade, attempt, onRoundComplete, voiceI
         <div className="flex-1 flex flex-col items-center justify-center px-6 py-4">
           <div className="w-full max-w-lg">
             <div className="flex justify-center mb-8">
-              <button onClick={() => speak(isPractice
-                ? `Practice word ${cardIdx + 1}. The word is ${w.word}. ${w.word}. ${w.hint}.`
-                : `Test word ${cardIdx + 1}. The word is ${w.word}. ${w.word}. ${w.hint}.`)}
+              <button onClick={() => speak(`Please spell... ${w.word}. ... ${w.hint}.`)}
                 disabled={isPlaying}
                 className={`w-24 h-24 rounded-full flex flex-col items-center justify-center gap-1.5 border-4 shadow-xl transition-all
                   ${isPlaying ? "bg-indigo-900/50 border-indigo-500/50 text-indigo-400 animate-pulse scale-110"
@@ -466,8 +470,10 @@ export default function SpellingModule({ grade, attempt, onRoundComplete, voiceI
               </div>
             ) : (
               <div className="space-y-4">
-                <p className="text-center text-slate-400 text-sm font-semibold">
-                  {letterResult.isCorrect ? "✅ Correct!" : "Here's what went wrong:"}
+                <p className="text-center text-slate-400 text-sm font-semibold flex items-center justify-center gap-2">
+                  {letterResult.isCorrect
+                    ? <><CheckCircle2 className="w-5 h-5 text-emerald-400" /><span className="text-emerald-400">Correct!</span></>
+                    : "Here's what went wrong:"}
                 </p>
                 <LetterBoxes typed={letterResult.typed} target={w.word} />
                 {letterResult.isCorrect ? (
