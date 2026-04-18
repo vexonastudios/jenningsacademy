@@ -57,7 +57,7 @@ export default function ChildPath() {
   const [profile, setProfile] = useState(null);
   
   const [plan, setPlan] = useState(null);
-  const [completedModules, setCompletedModules] = useState([]);
+  const [completedSessions, setCompletedSessions] = useState([]);
   const [loadingPlan, setLoadingPlan] = useState(true);
   
   const [celebration, setCelebration] = useState(null);
@@ -84,9 +84,9 @@ export default function ChildPath() {
       const offset = localDate.getTimezoneOffset();
       const localDateStr = new Date(localDate.getTime() - (offset * 60 * 1000)).toISOString().split('T')[0];
 
-      fetchTodayPlan(profile.id, localDateStr).then(({ plan, completedModuleTypes }) => {
+      fetchTodayPlan(profile.id, localDateStr).then(({ plan, completedSessions }) => {
         setPlan(plan);
-        setCompletedModules(completedModuleTypes);
+        setCompletedSessions(completedSessions);
         setLoadingPlan(false);
         speakGuide(`Welcome back, ${profile.name}! Ready to learn today? Let's go!`);
       }).catch(err => {
@@ -157,7 +157,10 @@ export default function ChildPath() {
         score: results.score ?? 0,
         timeSpent: results.timeSpentSeconds ?? 0,
       });
-      setCompletedModules(prev => [...prev, activeModule.mod.type]);
+      setCompletedSessions(prev => [
+        ...prev, 
+        { module_type: activeModule.mod.type, score: results.score ?? 0, time_spent_seconds: results.timeSpentSeconds ?? 0 }
+      ]);
       setCelebration({ message: `You finished ${activeModule.mod.type}! 🎉` });
       speakGuide(`Amazing work on ${activeModule.mod.type}! You are a superstar!`);
     } catch (e) {
@@ -305,7 +308,8 @@ export default function ChildPath() {
               {(() => {
                 let currentFound = false; // first uncomplete module becomes isCurrent
                 return plan.modules.map((mod, idx) => {
-                  const isCompleted = completedModules.includes(mod.type);
+                  const sessionScore = completedSessions.find(s => s.module_type === mod.type);
+                  const isCompleted = !!sessionScore;
                   const isCurrent = !isCompleted && !currentFound;
                   if (isCurrent) currentFound = true;
 
@@ -360,6 +364,18 @@ export default function ChildPath() {
                             </div>
                           )}
                         </div>
+                        
+                        {/* Module Completion Metrics */}
+                        {isCompleted && sessionScore && (
+                          <div className="flex items-center gap-3 mt-4 pt-4 border-t border-slate-100/50">
+                            <span className="bg-emerald-50 text-emerald-600 border border-emerald-100 px-3 py-1 rounded-full text-xs font-bold tracking-wide">
+                              Score: {sessionScore.score}%
+                            </span>
+                            <span className="bg-slate-50 text-slate-500 border border-slate-100 px-3 py-1 rounded-full text-xs font-bold tracking-wide flex items-center gap-1">
+                              ⏱ {Math.ceil(sessionScore.time_spent_seconds / 60)} min
+                            </span>
+                          </div>
+                        )}
                       </div>
                     </div>
                   );

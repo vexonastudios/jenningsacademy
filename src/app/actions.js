@@ -155,11 +155,9 @@ export async function fetchTodayPlan(profileId, clientDateStr) {
   // 2. Fetch all completed sessions strictly for this daily plan
   const { data: sessions } = await supabase
     .from('sessions')
-    .select('module_type')
+    .select('module_type, score, time_spent_seconds')
     .eq('daily_plan_id', plan.id)
     .eq('completed', true);
 
-  const completedModuleTypes = (sessions || []).map(s => s.module_type);
-
-  return { plan, completedModuleTypes };
+  return { plan, completedSessions: sessions || [] };
 }

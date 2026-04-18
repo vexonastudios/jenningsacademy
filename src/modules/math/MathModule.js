@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Calculator, ArrowRight, Volume2, Target, Trophy, Flame, BookOpen, Pencil, ClipboardCheck } from "lucide-react";
+import { Calculator, ArrowRight, Volume2, Target, Trophy, Flame, BookOpen, Pencil, ClipboardCheck, Medal, CheckCircle } from "lucide-react";
 import { generateProblem } from "./MathEngine";
 import { useSoundEffects } from "@/modules/_shared/useSoundEffects";
 import { GRADE_1_CURRICULUM } from "./curriculum/mathGrade1";
@@ -168,6 +168,7 @@ export default function MathModule({ profileId, grade = 1, onRoundComplete }) {
   const [userInput, setUserInput] = useState("");
   const [feedback, setFeedback] = useState(null); // null | 'correct' | 'wrong'
   const [explanationSteps, setExplanationSteps] = useState(null); // null | string[]
+  const [quizMistakes, setQuizMistakes] = useState(0); // Track during quiz phase
 
   // Initialize Queues
   useEffect(() => {
@@ -242,9 +243,28 @@ export default function MathModule({ profileId, grade = 1, onRoundComplete }) {
     saveLedger(profileId, grade, ledger);
   }, [ledger, profileId, grade]);
 
+  // Phase Transitions & Ambient Audio Cues
+  useEffect(() => {
+    if (phase === "teaching") {
+      playChime();
+      speakAsync(dayConfig?.teachingScript || "Let's learn something new today.");
+    } else if (phase === "warmup" && currentIndex === 0) {
+      if (!ledger.savedPhase || ledger.savedPhase === "booting") {
+         speakAsync("Before we learn something new, let's do a quick warm-up on what you already know.");
+      }
+    } else if (phase === "quiz_intro") {
+      playChime();
+      speakAsync("You're doing great! Let's take a short quiz to see what you remember. Hit start when you're ready!");
+    } else if (phase === "quiz_results") {
+      playComplete();
+      const finalScore = Math.max(0, Math.round(((queue.length - quizMistakes) / Math.max(1, queue.length)) * 100));
+      speakAsync(`Quiz complete! You scored ${finalScore} percent! Hit continue to finish the day.`);
+    }
+  }, [phase, dayConfig, speakAsync, playChime, playComplete, currentIndex, ledger.savedPhase, quizMistakes, queue.length]);
+
   // Persist current state to ledger whenever it changes (for resume-on-reopen)
   useEffect(() => {
-    const resumablePhases = ["warmup", "teaching", "practice", "quiz", "test"];
+    const resumablePhases = ["warmup", "teaching", "practice", "quiz", "test", "quiz_intro"];
     if (!resumablePhases.includes(phase)) return;
     setLedger(prev => {
       // prevent re-renders if nothing changed
@@ -299,6 +319,10 @@ export default function MathModule({ profileId, grade = 1, onRoundComplete }) {
 
     setFeedback(isCorrect ? "correct" : "wrong");
 
+    if (!isCorrect && (phase === "quiz" || phase === "test")) {
+      setQuizMistakes(m => m + 1);
+    }
+
     if (isCorrect) {
       playCorrect();
       speakAsync("Correct!").then(() => advanceNext());
@@ -334,30 +358,30 @@ export default function MathModule({ profileId, grade = 1, onRoundComplete }) {
       if (phase === "warmup") {
          setPhase("teaching");
       } else if (phase === "practice") {
-         // Generate daily quiz: 30 items
          const mixed = shuffle([
-             ...generateNewSkillProblems(dayConfig.newSkills, 10), // 10 new
-             ...selectWeightedProblems(ledger.skills, 20) // 20 review
+             ...generateNewSkillProblems(dayConfig.newSkills, 10),
+             ...selectWeightedProblems(ledger.skills, 20)
          ]);
          setQueue(mixed);
          setCurrentIndex(0);
+         setQuizMistakes(0);
+         setPhase("quiz_intro");
+      } else if (phase === "quiz_intro") {
          setPhase("quiz");
       } else if (phase === "quiz" || phase === "test") {
-         // Day complete!
+         setPhase("quiz_results");
+      } else if (phase === "quiz_results") {
          stop();
-         playComplete();
+         const finalScore = Math.max(0, Math.round(((queue.length - quizMistakes) / Math.max(1, queue.length)) * 100));
          const nextLedger = { ...ledger, day: ledger.day + 1, savedPhase: null, savedIndex: 0, savedQueue: [] };
          setLedger(nextLedger);
-         onRoundComplete({ score: 100, metadata: { dayCompleted: ledger.day } });
+         onRoundComplete({ score: finalScore, metadata: { dayCompleted: ledger.day } });
       }
     }
   };
 
   const skipTeaching = () => {
     stop();
-    // Speaking the teaching script happens HERE — after user gesture, so browser allows audio
-    speakAsync(dayConfig.teachingScript || "Let's learn.");
-    playChime();
 
     if (dayConfig.newSkills && dayConfig.newSkills.length > 0) {
       setQueue(generateNewSkillProblems(dayConfig.newSkills, 10));
@@ -500,6 +524,42 @@ export default function MathModule({ profileId, grade = 1, onRoundComplete }) {
                 className="mt-12 bg-sky-500 hover:bg-sky-600 text-white font-black text-2xl py-4 px-12 rounded-full shadow-lg transition-transform active:scale-95 flex items-center gap-3"
               >
                 <ArrowRight className="w-6 h-6" /> I'm Ready — Let's Practice!
+              </button>
+           </div>
+        ) : phase === "quiz_intro" ? (
+           <div className="bg-white rounded-[2rem] shadow-xl p-10 w-full max-w-lg text-center border-4 border-indigo-100 flex flex-col items-center">
+              <div className="bg-indigo-100 text-indigo-700 p-4 rounded-full mb-6">
+                <Medal className="w-12 h-12" />
+              </div>
+              <h2 className="text-4xl font-black text-slate-800 mb-4">Quiz Time!</h2>
+              <p className="text-xl text-slate-600 font-medium leading-relaxed mb-10">
+                You've got this. Take your time and remember what you just learned.
+              </p>
+              <button 
+                onClick={advanceNext}
+                className="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-black text-2xl py-5 rounded-[2rem] shadow-lg transition-transform active:scale-95 flex items-center justify-center gap-3"
+              >
+                 Start Quiz <ArrowRight className="w-7 h-7" />
+              </button>
+           </div>
+        ) : phase === "quiz_results" ? (
+           <div className="bg-white rounded-[2rem] shadow-xl p-10 w-full max-w-lg text-center border-4 border-emerald-100 flex flex-col items-center animate-[slideUp_0.4s_ease-out]">
+              <div className="bg-emerald-100 text-emerald-600 p-6 rounded-full mb-6 relative">
+                 <CheckCircle className="w-16 h-16 relative z-10" />
+                 <div className="absolute inset-0 bg-emerald-400/20 blur-xl rounded-full" />
+              </div>
+              <h2 className="text-4xl font-black text-slate-800 mb-2">Quiz Complete!</h2>
+              <div className="text-6xl font-black my-8 bg-clip-text text-transparent bg-gradient-to-br from-emerald-400 to-emerald-600">
+                {Math.max(0, Math.round(((queue.length - quizMistakes) / Math.max(1, queue.length)) * 100))}%
+              </div>
+              <p className="text-lg text-slate-500 font-medium mb-10 tracking-wide">
+                Great job completing today's math module!
+              </p>
+              <button 
+                onClick={advanceNext}
+                className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-black text-2xl py-5 rounded-[2rem] shadow-[0_10px_30px_rgba(16,185,129,0.3)] transition-transform active:scale-95 flex items-center justify-center gap-3"
+              >
+                 Finish Day <ArrowRight className="w-7 h-7" />
               </button>
            </div>
         ) : (
