@@ -252,7 +252,11 @@ export default function ParentClient({ profiles, initialPlans = [] }) {
   }));
 
   const handleAddModule = async (mod) => {
-    const updated = [...todaysPlan, { ...mod, id: `p${Date.now()}` }];
+    const updated = [...todaysPlan, { 
+      ...mod, 
+      id: `p${Date.now()}`,
+      active_days: mod.active_days || activeChild?.school_days || ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']
+    }];
     setTodaysPlan(updated);
     if (activeChild) {
       const todayStr = new Date().toISOString().split('T')[0];

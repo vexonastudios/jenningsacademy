@@ -14,26 +14,33 @@ export async function getOrGenerateDailyPlan(profileId, dateStr) {
     .eq("target_date", dateStr)
     .single();
 
-  if (existingPlan) return existingPlan;
+  // Evaluate day in local time to avoid timezone wrap
+  const d = new Date(dateStr + "T12:00:00Z");
+  const currentDayShort = d.toLocaleDateString("en-US", { weekday: "short" });
+
+  if (existingPlan) {
+    // Hot-fix for polluted existing plans: filter them on the fly
+    const { data: existingProfile } = await supabase.from("profiles").select("school_days").eq("id", profileId).single();
+    existingPlan.modules = existingPlan.modules.filter(m => {
+      const validDays = m.active_days || existingProfile?.school_days || ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+      return validDays.includes(currentDayShort);
+    });
+    return existingPlan;
+  }
 
   // 2. No plan exists; Generate one from the master_plan
   const { data: profile } = await supabase
     .from("profiles")
-    .select("master_plan")
+    .select("master_plan, school_days")
     .eq("id", profileId)
     .single();
 
   const masterPlan = profile?.master_plan || [];
 
-  // 3. Filter modules so only the ones assigned for 'today' make it into the daily_plan
-  // Date string needs to be evaluated in local time context if possible, 
-  // but standardizing to UTC/server short string:
-  const d = new Date(dateStr + "T12:00:00Z"); // middle of day to avoid timezone wrap
-  const currentDayShort = d.toLocaleDateString("en-US", { weekday: "short" });
-
-  const activeModules = masterPlan.filter(m => 
-    !m.active_days || m.active_days.includes(currentDayShort)
-  );
+  const activeModules = masterPlan.filter(m => {
+    const validDays = m.active_days || profile?.school_days || ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+    return validDays.includes(currentDayShort);
+  });
 
   // 4. Insert into DB
   const { data: newPlan, error } = await supabase

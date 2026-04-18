@@ -313,7 +313,10 @@ export default function HubClient({ safeProfiles, planMap, totalChildren, totalM
             {safeProfiles.map((child) => {
               const modules = planMap[child.id] || [];
               const currentDayShort = new Date().toLocaleDateString("en-US", { weekday: "short" });
-              const activeModules = modules.filter(m => !m.active_days || m.active_days.includes(currentDayShort));
+              const activeModules = modules.filter(m => {
+                const validDays = m.active_days || child?.school_days || ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+                return validDays.includes(currentDayShort);
+              });
               const todayStrStrict = new Date().toISOString().split("T")[0];
               const childSessions = completedSessions?.filter(s => s.profile_id === child.id && s.created_at?.startsWith(todayStrStrict)) || [];
               
@@ -372,7 +375,10 @@ export default function HubClient({ safeProfiles, planMap, totalChildren, totalM
                       <span className="text-xs text-slate-300 font-medium italic">No plan set</span>
                     ) : (() => {
                       const currentDayShort = new Date().toLocaleDateString("en-US", { weekday: "short" });
-                      const activeModules = modules.filter(m => !m.active_days || m.active_days.includes(currentDayShort));
+                      const activeModules = modules.filter(m => {
+                        const validDays = m.active_days || child?.school_days || ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+                        return validDays.includes(currentDayShort);
+                      });
                       
                       return activeModules.length === 0 ? (
                         <span className="text-xs text-slate-300 font-medium italic">Rest day</span>
@@ -467,7 +473,10 @@ export default function HubClient({ safeProfiles, planMap, totalChildren, totalM
                       </td>
                       {overviewView === "week" ? weekDays.map((d, dIdx) => {
                         const childModules = planMap[child.id] || [];
-                        const activeMods = childModules.filter(m => !m.active_days || m.active_days.includes(d.label));
+                        const activeMods = childModules.filter(m => {
+                          const validDays = m.active_days || activeChildProfile?.school_days || ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+                          return validDays.includes(d.label);
+                        });
                         const doneThisDay = completedSessions?.filter(s => s.profile_id === child.id && s.created_at?.startsWith(d.iso)) || [];
                         const unqDone = new Set(doneThisDay.map(s => s.module_type)).size;
                         const realPct = activeMods.length > 0 ? Math.round((unqDone / activeMods.length) * 100) : null;
