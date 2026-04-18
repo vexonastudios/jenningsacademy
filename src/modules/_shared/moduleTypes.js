@@ -61,6 +61,20 @@ export const MODULE_REGISTRY = {
     component: () => import("@/modules/feedAnimals/FeedAnimalsModule"),
   },
 
+  Shapes: {
+    id: "Shapes",
+    label: "Shapes Adventure",
+    description: "Interactive discovery of core shapes and their attributes",
+    color: "text-emerald-600 bg-emerald-100",
+    iconCode: "Shapes", // Using lucide-react Shapes icon
+    supportedGrades: [1, 2],
+    estimatedMinutes: 10,
+    minimumPassScore: null,
+    timeLimitSeconds: null,
+    component: () => import("@/modules/shapes/ShapesModule"),
+  },
+
+
   Audiobook: {
     id: "Audiobook",
     label: "Audiobook",
