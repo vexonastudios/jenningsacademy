@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Calculator, ArrowRight, Volume2, Target, Trophy, Flame } from "lucide-react";
 import { generateProblem } from "./MathEngine";
+import { useSoundEffects } from "@/modules/_shared/useSoundEffects";
 import { GRADE_1_CURRICULUM } from "./curriculum/mathGrade1";
 import { GRADE_2_CURRICULUM } from "./curriculum/mathGrade2";
 import { GRADE_3_CURRICULUM } from "./curriculum/mathGrade3";
@@ -112,6 +113,7 @@ function generateNewSkillProblems(newSkillsTags, requiredCount) {
 // ── Main UI Component ──────────────────────────────────────────────────────────
 export default function MathModule({ profileId, grade = 1, onRoundComplete }) {
   const { speakAsync, stop } = useSpeechAsync("alloy");
+  const { playCorrect, playWrong, playComplete, playChime } = useSoundEffects();
   const [ledger, setLedger] = useState(() => loadLedger(profileId, grade));
   
   const [phase, setPhase] = useState("booting"); // booting -> ready -> warmup -> teaching -> practice -> quiz -> test -> review_complete
@@ -178,31 +180,33 @@ export default function MathModule({ profileId, grade = 1, onRoundComplete }) {
     saveLedger(profileId, grade, ledger);
   }, [ledger, profileId, grade]);
 
-  // Audio driver
+  // Audio driver — teaching is handled manually on button click; questions are read here
   useEffect(() => {
-    if (!dayConfig || phase === "booting" || phase === "ready") return;
+    if (!dayConfig || phase === "booting" || phase === "ready" || phase === "teaching") return;
     
-    // Quick delay function to sequence speech cleanly
     const sequenceSpeech = async (intro, problemText) => {
       if (intro) await speakAsync(intro);
       if (problemText) await speakAsync(problemText);
     };
 
-    if (phase === "teaching") {
-      speakAsync(dayConfig.teachingScript || "Let's learn something new.");
+    let intro = null;
+    // Build readable text from the equation — strip "= ?" at end, handle word problems naturally
+    let rawEq = queue[currentIndex]?.equation ?? "";
+    let problemText = rawEq.replace("= ?", "").trim();
+    if (rawEq.includes("comes") || rawEq.includes("%") || rawEq.includes("→") || rawEq.includes("√")) {
+      problemText = rawEq; // read word-style problems verbatim
+    } else if (problemText && !rawEq.includes("?")) {
+      problemText = "What is " + problemText.replace("×", "times").replace("÷", "divided by").replace("^" , " to the power of ");
     } else {
-      let intro = null;
-      let problemText = queue[currentIndex]?.equation?.replace("= ?", ""); // Say '4 + 4' instead of '4 + 4 equals question mark'
-      if (problemText && !problemText.includes("?")) problemText = "What is " + problemText; // Normal math
-      if (queue[currentIndex]?.equation?.includes("comes")) problemText = queue[currentIndex]?.equation; // Word problem support
-
-      if (phase === "warmup" && currentIndex === 0) intro = "Let's do a quick warm up flash drill.";
-      if (phase === "practice" && currentIndex === 0) intro = "Now let's practice what we just learned.";
-      if (phase === "quiz" && currentIndex === 0) intro = "Time for the daily quiz. Do your best!";
-      if (phase === "test" && currentIndex === 0) intro = "It's test day! Take your time and focus.";
-
-      sequenceSpeech(intro, problemText);
+      problemText = rawEq.replace("= ?", "").replace("?","").trim();
     }
+
+    if (phase === "warmup" && currentIndex === 0) intro = "Let's do a quick warm-up drill.";
+    if (phase === "practice" && currentIndex === 0) intro = "Now let's practice what we just learned.";
+    if (phase === "quiz" && currentIndex === 0) intro = "Time for the daily quiz. Do your best!";
+    if (phase === "test" && currentIndex === 0) intro = "It's test day! Take your time and focus.";
+
+    sequenceSpeech(intro, problemText);
   }, [phase, currentIndex, dayConfig, queue, speakAsync]);
 
   // Submit Answer Logic
@@ -223,8 +227,10 @@ export default function MathModule({ profileId, grade = 1, onRoundComplete }) {
     setFeedback(isCorrect ? "correct" : "wrong");
 
     if (isCorrect) {
+      playCorrect();
       speakAsync("Correct!").then(() => advanceNext());
     } else {
+      playWrong();
       speakAsync(`Oops. The answer is ${problem.answer}. Try harder next time.`).then(() => advanceNext());
     }
   };
@@ -251,6 +257,7 @@ export default function MathModule({ profileId, grade = 1, onRoundComplete }) {
       } else if (phase === "quiz" || phase === "test") {
          // Day complete!
          stop();
+         playComplete();
          const nextLedger = { ...ledger, day: ledger.day + 1 };
          setLedger(nextLedger);
          onRoundComplete({ score: 100, metadata: { dayCompleted: ledger.day } });
@@ -260,13 +267,15 @@ export default function MathModule({ profileId, grade = 1, onRoundComplete }) {
 
   const skipTeaching = () => {
     stop();
+    // Speaking the teaching script happens HERE — after user gesture, so browser allows audio
+    speakAsync(dayConfig.teachingScript || "Let's learn.");
+    playChime();
+
     if (dayConfig.newSkills && dayConfig.newSkills.length > 0) {
-      // Go to Practice (testing new skills)
-      setQueue(generateNewSkillProblems(dayConfig.newSkills, 10)); // 10 practice problems
+      setQueue(generateNewSkillProblems(dayConfig.newSkills, 10));
       setCurrentIndex(0);
       setPhase("practice");
     } else {
-      // Skip straight to Quiz, generating a pure Review Quiz (30 items)
       setQueue(selectWeightedProblems(ledger.skills, 30));
       setCurrentIndex(0);
       setPhase("quiz");
@@ -336,18 +345,19 @@ export default function MathModule({ profileId, grade = 1, onRoundComplete }) {
         
         {phase === "teaching" ? (
            <div className="bg-white rounded-[2rem] shadow-xl p-10 w-full text-center border-4 border-sky-100 flex flex-col items-center">
-              <div className="bg-sky-100 text-sky-800 p-4 rounded-full mb-6">
-                <Volume2 className="w-10 h-10 animate-pulse" />
+              <div className="bg-sky-100 text-sky-800 p-4 rounded-full mb-4 animate-pulse">
+                <Volume2 className="w-10 h-10" />
               </div>
+              <p className="text-xs font-bold text-sky-400 uppercase tracking-widest mb-6">Listen carefully...</p>
               <h2 className="text-4xl font-black text-slate-800 mb-8">{dayConfig.teachingVisual}</h2>
               <p className="text-2xl text-slate-600 font-medium leading-relaxed max-w-2xl">
                 {dayConfig.teachingScript}
               </p>
               <button 
                 onClick={skipTeaching}
-                className="mt-12 bg-sky-500 hover:bg-sky-600 text-white font-black text-2xl py-4 px-12 rounded-full shadow-lg transition-transform active:scale-95"
+                className="mt-12 bg-sky-500 hover:bg-sky-600 text-white font-black text-2xl py-4 px-12 rounded-full shadow-lg transition-transform active:scale-95 flex items-center gap-3"
               >
-                Let's Practice!
+                <ArrowRight className="w-6 h-6" /> I'm Ready — Let's Practice!
               </button>
            </div>
         ) : (
