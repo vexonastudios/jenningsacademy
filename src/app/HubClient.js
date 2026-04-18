@@ -387,16 +387,50 @@ export default function HubClient({ safeProfiles, planMap, totalChildren, totalM
                         const isDone = !!sessionForMod;
                         const timeSecs = sessionForMod?.time_spent_seconds || 0;
                         const timeMins = timeSecs > 0 ? Math.round(timeSecs / 60) : null;
+                        
+                        let gradeLetter = "";
+                        let gradeColorClass = "bg-emerald-50 text-emerald-700 border border-emerald-200";
+                        let checkColor = "text-emerald-500";
+                        let timeColor = "text-emerald-500";
+                        
+                        // Treat a score of exactly 0 as 'not graded' (like Rewards), meaning it defaults to the standard green check.
+                        if (isDone && sessionForMod?.score !== undefined && sessionForMod.score > 0) {
+                          const s = sessionForMod.score;
+                          if (s >= 90) {
+                              gradeLetter = "A";
+                              // Keep emerald colors
+                          } else if (s >= 80) {
+                              gradeLetter = "B";
+                              gradeColorClass = "bg-yellow-50 text-yellow-700 border border-yellow-200";
+                              checkColor = "text-yellow-600";
+                              timeColor = "text-yellow-600";
+                          } else if (s >= 70) {
+                              gradeLetter = "C";
+                              gradeColorClass = "bg-orange-50 text-orange-700 border border-orange-200";
+                              checkColor = "text-orange-500";
+                              timeColor = "text-orange-600";
+                          } else if (s >= 60) {
+                              gradeLetter = "D";
+                              gradeColorClass = "bg-rose-50 text-rose-700 border border-rose-200";
+                              checkColor = "text-rose-500";
+                              timeColor = "text-rose-600";
+                          } else {
+                              gradeLetter = "F";
+                              gradeColorClass = "bg-red-50 text-red-700 border border-red-200";
+                              checkColor = "text-red-500";
+                              timeColor = "text-red-600";
+                          }
+                        }
+
                         return (
-                          <span key={i} className={`text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all ${
-                            isDone
-                              ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                              : MODULE_COLORS[m.type] || "bg-slate-100 text-slate-600"
+                          <span key={i} className={`text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all min-w-0 ${
+                            isDone ? gradeColorClass : MODULE_COLORS[m.type] || "bg-slate-100 text-slate-600"
                           }`}>
-                            {isDone && <span className="text-emerald-500">✓</span>}
-                            {m.type}
-                            {isDone && timeMins && (
-                              <span className="text-emerald-400 font-normal">{timeMins}m</span>
+                            {isDone && <span className={checkColor}>✓</span>}
+                            <span className="truncate max-w-[100px] sm:max-w-none">{m.type}</span>
+                            {isDone && gradeLetter && <span className={`${checkColor} font-black ml-0.5`}>{gradeLetter}</span>}
+                            {isDone && timeMins > 0 && (
+                              <span className={`${timeColor} font-medium opacity-80 border-l border-current pl-1.5 ml-0.5`}>{timeMins}m</span>
                             )}
                           </span>
                         );
