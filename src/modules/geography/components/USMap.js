@@ -7,7 +7,7 @@ import { useCallback } from "react";
  * Interactive SVG US Map.
  * @param {Array<string>} highlightIds - Array of lowercase state IDs to highlight brightly (e.g. ['tx']).
  * @param {Array<string>} dimIds - Array of lowercase state IDs that should be dimmed out (not part of current test).
- * @param {string} mode - "learn" (shows outlines clearly) or "test" (hides outlines to make guessing harder).
+ * @param {string} mode - "learn" or "test".
  * @param {Function} onLocationClick - Triggered with the internal USA.locations object: {id, name, path}.
  */
 export default function USMap({ 
@@ -32,13 +32,13 @@ export default function USMap({
           const isDim = dimIds.includes(location.id);
           
           let fillColor = mode === "test" ? "#cbd5e1" : "#e2e8f0"; // slate-300 or slate-200
-          let strokeColor = mode === "test" ? "#cbd5e1" : "#ffffff";
-          let strokeWidth = mode === "test" ? "0.5" : "1";
+          let strokeColor = "#ffffff";
+          let strokeWidth = "1";
           let cursor = "pointer";
 
           if (isDim) {
             fillColor = "#f1f5f9"; // slate-100 very dim
-            strokeColor = mode === "test" ? "#f1f5f9" : "#ffffff";
+            strokeColor = "#ffffff";
             cursor = "default";
           }
 
