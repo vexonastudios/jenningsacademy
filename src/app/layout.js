@@ -15,7 +15,11 @@ import { ClerkProvider } from "@clerk/nextjs";
 
 export const metadata = {
   title: "Jennings Academy",
-  description: "A unified guided learning platform",
+  description: "A unified guided learning platform for homeschool families.",
+  icons: {
+    icon: "/logo.png",
+    apple: "/logo@2x.png",
+  },
 };
 
 export default function RootLayout({ children }) {

@@ -89,10 +89,20 @@ export default async function Home() {
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-slate-50 to-cyan-50 font-[family-name:var(--font-geist-sans)]">
       
       {/* ── Top Nav ── */}
-      <header className="flex items-center justify-between px-6 py-5 max-w-7xl mx-auto">
-        <div>
-          <h1 className="text-2xl font-black text-slate-800 tracking-tight">Jennings Academy</h1>
-          <p className="text-slate-400 text-sm font-medium">Good morning! Here's where your family stands today.</p>
+      <header className="flex items-center justify-between px-6 py-4 max-w-7xl mx-auto">
+        <div className="flex items-center gap-3">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/logo.png"
+            alt="Jennings Academy"
+            width={48}
+            height={48}
+            className="h-12 w-auto drop-shadow-sm"
+          />
+          <div>
+            <h1 className="text-xl font-black text-slate-800 tracking-tight leading-tight">Jennings Academy</h1>
+            <p className="text-slate-400 text-xs font-medium">Good morning! Here's where your family stands today.</p>
+          </div>
         </div>
         <div className="flex items-center gap-3">
           <Link href="/parent" className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold px-4 py-2.5 rounded-xl shadow-lg shadow-indigo-500/20 transition-[colors,transform,shadow] hover:-translate-y-0.5">

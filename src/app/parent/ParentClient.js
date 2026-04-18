@@ -426,9 +426,8 @@ export default function ParentClient({ profiles, initialPlans = [] }) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50 flex flex-col items-center justify-center px-6 font-[family-name:var(--font-geist-sans)]">
         <div className="text-center max-w-lg">
-          <div className="bg-indigo-600 w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-2xl shadow-indigo-500/30">
-            <Sparkles className="w-10 h-10 text-white" />
-          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.png" alt="Jennings Academy" className="h-24 w-auto mx-auto mb-6 drop-shadow-md" />
           <h1 className="text-4xl font-black text-slate-800 mb-4">Welcome to Jennings Academy!</h1>
           <p className="text-slate-400 text-lg leading-relaxed mb-10">
             Let's get started by adding your first student. You'll set up their profile, pick a guide voice, and we'll build their learning path together.
@@ -711,12 +710,11 @@ export default function ParentClient({ profiles, initialPlans = [] }) {
       )}
 
       {/* Premium Header */}
-      <nav className="flex justify-between items-center px-8 py-6 bg-white border-b border-slate-100 sticky top-0 z-50">
+      <nav className="flex justify-between items-center px-8 py-4 bg-white border-b border-slate-100 sticky top-0 z-50">
         <div className="flex items-center gap-3">
-          <div className="bg-indigo-600 p-2 rounded-xl shadow-indigo-600/20 shadow-lg">
-            <Sparkles className="w-5 h-5 text-white" />
-          </div>
-          <h1 className="text-xl font-bold bg-gradient-to-r from-indigo-900 to-slate-700 bg-clip-text text-transparent cursor-pointer">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.png" alt="Jennings Academy" className="h-10 w-auto drop-shadow-sm" />
+          <h1 className="text-lg font-bold bg-gradient-to-r from-indigo-900 to-slate-700 bg-clip-text text-transparent">
             Jennings Academy
           </h1>
         </div>

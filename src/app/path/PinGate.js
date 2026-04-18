@@ -51,11 +51,10 @@ export default function PinGate({ profileId, profileName, onSuccess }) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-sky-50 to-white flex flex-col items-center justify-center px-6">
       {/* Logo */}
-      <div className="flex items-center gap-3 mb-10">
-        <div className="bg-indigo-600 p-3 rounded-2xl shadow-lg shadow-indigo-500/30">
-          <Sparkles className="w-7 h-7 text-white" />
-        </div>
-        <span className="text-2xl font-black text-indigo-900 tracking-tight">Jennings Academy</span>
+      <div className="flex flex-col items-center gap-2 mb-10">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/logo.png" alt="Jennings Academy" className="h-20 w-auto drop-shadow-lg" />
+        <span className="text-xl font-black text-indigo-900 tracking-tight">Jennings Academy</span>
       </div>
 
       {/* Card */}
