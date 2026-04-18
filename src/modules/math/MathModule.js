@@ -63,7 +63,7 @@ function useSpeechAsync(voiceId) {
 
 // ── Storage Helpers ────────────────────────────────────────────────────────────
 const loadLedger = (profileId, grade) => {
-  const blank = { day: 1, skills: {} };
+  const blank = { day: 1, skills: {}, savedPhase: null };
   if (typeof window === "undefined") return blank;
   const stored = localStorage.getItem(`math_ledger_g${grade}_${profileId}`);
   return stored ? JSON.parse(stored) : blank;
@@ -158,27 +158,55 @@ export default function MathModule({ profileId, grade = 1, onRoundComplete }) {
     if(ledgerMutated) setLedger(nextLedger);
 
     if (today.isTestDay) {
-        setQueue(selectWeightedProblems(nextLedger.skills, 50)); // Friday Test (scaled up to 50)
+        setQueue(selectWeightedProblems(nextLedger.skills, 50));
         setNextPhaseAfterReady("test");
         setPhase("ready");
     } else {
-        // Normal Day Bootup: Starts at warmup IF there are prior skills tracked
-        const priorSkills = Object.keys(ledger.skills);
-        if (priorSkills.length === 0) {
-            // First day ever -> Skip to teaching
+        const priorSkills = Object.keys(nextLedger.skills);
+        // ── RESUME: if the student exited mid-session, jump back to their saved phase ──
+        const saved = ledger.savedPhase;
+        if (saved === "quiz" || saved === "practice" || saved === "test") {
+            // Rebuild the correct queue for the saved phase
+            if (saved === "quiz" || saved === "test") {
+                const mixed = shuffle([
+                    ...generateNewSkillProblems(today.newSkills, 10),
+                    ...selectWeightedProblems(nextLedger.skills, 20)
+                ]);
+                setQueue(mixed);
+            } else if (saved === "practice") {
+                setQueue(generateNewSkillProblems(today.newSkills, 10));
+            }
+            setNextPhaseAfterReady(saved);
+            setPhase("ready");
+        } else if (saved === "warmup") {
+            setQueue(selectWeightedProblems(nextLedger.skills, 20));
+            setNextPhaseAfterReady("warmup");
+            setPhase("ready");
+        } else if (priorSkills.length === 0) {
+            // First time ever
             setNextPhaseAfterReady("teaching");
             setPhase("ready");
         } else {
-            setQueue(selectWeightedProblems(nextLedger.skills, 20)); // Daily Speed Drill (scaled up to 20)
+            setQueue(selectWeightedProblems(nextLedger.skills, 20));
             setNextPhaseAfterReady("warmup");
             setPhase("ready");
         }
     }
-  }, [phase, ledger]);
+  }, [phase, ledger]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     saveLedger(profileId, grade, ledger);
   }, [ledger, profileId, grade]);
+
+  // Persist current phase to ledger whenever it changes (for resume-on-reopen)
+  useEffect(() => {
+    const resumablePhases = ["warmup", "teaching", "practice", "quiz", "test"];
+    if (!resumablePhases.includes(phase)) return;
+    setLedger(prev => {
+      if (prev.savedPhase === phase) return prev; // avoid infinite loop
+      return { ...prev, savedPhase: phase };
+    });
+  }, [phase]);
 
   // Audio driver — teaching is handled manually on button click; questions are read here
   useEffect(() => {
