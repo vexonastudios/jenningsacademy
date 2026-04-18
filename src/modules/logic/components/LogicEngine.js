@@ -77,7 +77,13 @@ function buildOptionsAudio(q, isExplain) {
   if (!opts || opts.length === 0) return "";
 
   const optTexts = opts.map(o => o.text);
-  const optionsString = optTexts.join(" ... or ... ");
+  let optionsString = "";
+  if (optTexts.length === 1) optionsString = optTexts[0];
+  else if (optTexts.length === 2) optionsString = `${optTexts[0]} ... or ${optTexts[1]}`;
+  else {
+    const last = optTexts.pop();
+    optionsString = `${optTexts.join("... ")} ... or ${last}`;
+  }
 
   if (source.question) {
     return `${source.question} ... ${optionsString}?`;
@@ -92,7 +98,7 @@ function buildOptionsAudio(q, isExplain) {
   if (q.type === "contradiction-hunt") {
       return `Do these state that ... ${optionsString}?`;
   }
-  return `Please choose ... ${optionsString}?`;
+  return `What do you think? Is it ... ${optionsString}?`;
 }
 
 export default function LogicEngine({ content, voiceId, onComplete }) {
@@ -111,9 +117,12 @@ export default function LogicEngine({ content, voiceId, onComplete }) {
   const q = content[currentIndex];
   const isChain = q.type === "build-chain";
 
+  // Intro Audio Sequence
   useEffect(() => {
+    let isActive = true;
     if (phase === "intro") {
       speakAsync(q.audioText).then(() => {
+        if (!isActive) return;
         setPhase("interaction");
         if (isChain) {
           setReorderedList([...q.parts]);
@@ -122,8 +131,17 @@ export default function LogicEngine({ content, voiceId, onComplete }) {
         }
       });
     }
+    return () => {
+      isActive = false;
+      // We intentionally do NOT call stop() here, as transitioning to "interaction"
+      // would instantly kill the queued options audio we just explicitly triggered.
+    };
+  }, [currentIndex, phase, q, speakAsync, isChain]);
+
+  // Clean up ALL audio when the engine unmounts entirely
+  useEffect(() => {
     return () => stop();
-  }, [currentIndex, phase, q, speakAsync, stop, isChain]);
+  }, [stop]);
 
   const handleOptionClick = (opt) => {
     if (phase !== "interaction" && phase !== "explain-back") return;
