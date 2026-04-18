@@ -22,6 +22,7 @@ export const LESSONS = [
     instruction: {
       title: 'Find Your Anchors',
       body: 'Feel the small bumps on the F and J keys? Those are your home base. Your LEFT index finger always rests on F. Your RIGHT index finger always rests on J. Every time you look away, return here first.',
+      image: '/typing_home_row.png'
     },
     warmupPrompt: null,
     drills: [

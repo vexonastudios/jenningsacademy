@@ -261,7 +261,13 @@ function InstructionScreen({ lesson, voiceId, onNext }) {
             </div>
           </div>
 
-          <div className="bg-slate-800/60 border border-slate-700/50 rounded-3xl p-7 mb-6">
+          <div className="bg-slate-800/60 border border-slate-700/50 rounded-3xl p-7 mb-6 overflow-hidden">
+            {lesson.instruction.image && (
+              <div className="flex justify-center mb-6">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={lesson.instruction.image} alt="Typing Finger Placement" className="rounded-2xl max-w-full h-auto shadow-md border-2 border-slate-700/40" style={{ maxHeight: '200px' }} />
+              </div>
+            )}
             <p className="text-slate-200 text-lg leading-relaxed">{lesson.instruction.body}</p>
           </div>
 
