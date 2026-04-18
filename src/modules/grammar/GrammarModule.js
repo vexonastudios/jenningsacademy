@@ -29,8 +29,11 @@ export default function GrammarModule({ profileId, grade, onRoundComplete }) {
   const audioRef = useRef(null);
 
   useEffect(() => {
-    // For MVP Phase 1 (Grades 1-3 focus), just take 3-4 random items
-    const clone = [...GRAMMAR_CURRICULUM];
+    // Filter curriculum by student grade, fallback to all if no matches
+    let filtered = GRAMMAR_CURRICULUM.filter(item => Number(item.grade) === Number(grade));
+    if (filtered.length === 0) filtered = GRAMMAR_CURRICULUM;
+
+    const clone = [...filtered];
     shuffle(clone);
     // Grab exactly 3 random tasks for the "Daily Chunk"
     setSessionItems(clone.slice(0, 3));
