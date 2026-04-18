@@ -67,6 +67,7 @@ export default function ChildPath() {
   // Active module: { mod (plan entry), registryEntry, Component (lazy-loaded) }
   const [activeModule, setActiveModule] = useState(null);
   const [loadingModule, setLoadingModule] = useState(false);
+  const [moduleProgress, setModuleProgress] = useState({});
 
   // Pull profileId from URL on mount
   useEffect(() => {
@@ -77,7 +78,13 @@ export default function ChildPath() {
   useEffect(() => {
     if (profile?.id) {
       setLoadingPlan(true);
-      fetchTodayPlan(profile.id).then(({ plan, completedModuleTypes }) => {
+      
+      // Compute local date string instead of UTC date!
+      const localDate = new Date();
+      const offset = localDate.getTimezoneOffset();
+      const localDateStr = new Date(localDate.getTime() - (offset * 60 * 1000)).toISOString().split('T')[0];
+
+      fetchTodayPlan(profile.id, localDateStr).then(({ plan, completedModuleTypes }) => {
         setPlan(plan);
         setCompletedModules(completedModuleTypes);
         setLoadingPlan(false);
@@ -89,6 +96,20 @@ export default function ChildPath() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile?.id]);
+
+  // Check for saved mid-session progress (e.g. Math phases)
+  useEffect(() => {
+    if (!profile?.id) return;
+    try {
+      const mathL = localStorage.getItem(`math_ledger_g${profile.grade_level || 1}_${profile.id}`);
+      if (mathL) {
+        const p = JSON.parse(mathL);
+        if (p.savedPhase) {
+          setModuleProgress(prev => ({ ...prev, "Math": p.savedPhase }));
+        }
+      }
+    } catch(e) {}
+  }, [profile?.id, activeModule]); // Re-check when returning from a module
 
   // Lock Mode
   const { isBlocked, setIsBlocked, returnToWork, parentUnlock, unlockError, setUnlockError, unlockCompleted, showParentExit, setShowParentExit } = useLockMode({
@@ -323,8 +344,15 @@ export default function ChildPath() {
                             </h2>
                           </div>
                           {isCurrent ? (
-                            <button onClick={() => handleStartModule(mod)} className="bg-indigo-600 text-white px-8 py-3.5 rounded-2xl font-bold shadow-lg shadow-indigo-600/30 hover:bg-indigo-500 transition-colors">
-                              Start Module
+                            <button onClick={() => handleStartModule(mod)} className="bg-indigo-600 text-white px-8 py-3.5 rounded-2xl font-bold shadow-lg shadow-indigo-600/30 hover:bg-indigo-500 transition-colors flex flex-col items-center">
+                              <span className="text-sm font-black tracking-wide">
+                                {moduleProgress[mod.type] ? "Continue" : "Start Module"}
+                              </span>
+                              {moduleProgress[mod.type] && (
+                                <span className="text-[10px] uppercase font-bold text-indigo-200 mt-0.5 tracking-widest">
+                                  {moduleProgress[mod.type]} Phase
+                                </span>
+                              )}
                             </button>
                           ) : (
                             <div className="bg-slate-100/50 text-slate-400 px-4 py-2 rounded-xl font-medium text-sm border border-slate-100">

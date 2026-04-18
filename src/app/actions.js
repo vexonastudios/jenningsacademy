@@ -144,8 +144,8 @@ export async function recordSession(payload) {
 
 // ─── FETCH TODAY'S PLAN & SESSIONS ─────────────────────────────────────────
 
-export async function fetchTodayPlan(profileId) {
-  const todayStr = new Date().toISOString().split('T')[0];
+export async function fetchTodayPlan(profileId, clientDateStr) {
+  const todayStr = clientDateStr || new Date().toISOString().split('T')[0];
 
   // 1. Get the generated active plan for today
   const plan = await getOrGenerateDailyPlan(profileId, todayStr);

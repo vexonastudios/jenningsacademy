@@ -352,7 +352,9 @@ export default function MathModule({ profileId, grade = 1, onRoundComplete }) {
         <div className="bg-white p-12 rounded-[3rem] shadow-xl border-4 border-sky-100 flex flex-col items-center max-w-lg text-center mx-4">
           <Calculator className="w-20 h-20 text-sky-500 mb-6" />
           <h1 className="text-4xl font-black text-slate-800 mb-4">Math Flow</h1>
-          <p className="text-xl text-slate-500 font-medium mb-10">Day {ledger.day} is ready to begin.</p>
+          <p className="text-xl text-slate-500 font-medium mb-10">
+            {ledger.savedPhase ? `Resume Day ${ledger.day} • ${ledger.savedPhase.toUpperCase()} Phase` : `Day ${ledger.day} is ready to begin.`}
+          </p>
           <button 
             onClick={() => {
               // Intentionally play a tiny silent sound or load audio context if needed
@@ -360,7 +362,7 @@ export default function MathModule({ profileId, grade = 1, onRoundComplete }) {
             }}
             className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-black text-3xl py-6 rounded-full shadow-lg active:scale-95 transition-all flex items-center justify-center gap-3"
           >
-            Start <ArrowRight className="w-8 h-8" />
+            {ledger.savedPhase ? "Continue" : "Start"} <ArrowRight className="w-8 h-8" />
           </button>
         </div>
       </div>
