@@ -55,8 +55,8 @@ function SortableModule({ module, idx, onRemove, childSchoolDays, onToggleDay })
       <div className="flex-1">
         <h3 className="font-bold text-slate-800">{module.type}</h3>
         <div className="flex flex-wrap gap-1 mt-1.5" onPointerDown={e => e.stopPropagation()}>
-          {childSchoolDays.map(day => {
-            const isActive = !module.active_days || module.active_days.includes(day);
+          {['Mon','Tue','Wed','Thu','Fri'].map(day => {
+            const isActive = module.active_days ? module.active_days.includes(day) : childSchoolDays.includes(day);
             return (
               <button
                 key={day}
@@ -65,6 +65,25 @@ function SortableModule({ module, idx, onRemove, childSchoolDays, onToggleDay })
                   isActive 
                     ? 'bg-slate-800 text-white border-slate-800 hover:bg-slate-700' 
                     : 'bg-white text-slate-400 border-slate-200 hover:border-slate-300 hover:text-slate-500'
+                }`}
+              >
+                {day}
+              </button>
+            );
+          })}
+          {/* Weekend days — always off by default, opt-in only */}
+          <span className="mx-1 text-slate-200 select-none">|</span>
+          {['Sat','Sun'].map(day => {
+            const isActive = module.active_days?.includes(day);
+            return (
+              <button
+                key={day}
+                onClick={() => onToggleDay && onToggleDay(module.id, day)}
+                title={`Toggle ${day} (weekend)`}
+                className={`text-[10px] font-bold px-2 py-0.5 rounded-full border transition-colors ${
+                  isActive 
+                    ? 'bg-amber-500 text-white border-amber-500 hover:bg-amber-400' 
+                    : 'bg-white text-slate-300 border-slate-100 hover:border-amber-300 hover:text-amber-500'
                 }`}
               >
                 {day}
