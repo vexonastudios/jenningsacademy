@@ -74,6 +74,18 @@ export const MODULE_REGISTRY = {
     component: () => import("@/modules/shapes/ShapesModule"),
   },
 
+  Grammar: {
+    id: "Grammar",
+    label: "GrammarFlow",
+    description: "Structured grammar, sentence building, and targeted editing practice",
+    color: "text-orange-600 bg-orange-100",
+    iconCode: "PenTool", // Using lucide-react PenTool icon
+    supportedGrades: [1, 2, 3, 4, 5, 6, 7, 8],
+    estimatedMinutes: 15,
+    minimumPassScore: null,
+    timeLimitSeconds: null,
+    component: () => import("@/modules/grammar/GrammarModule"),
+  },
 
   Audiobook: {
     id: "Audiobook",
