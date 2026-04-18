@@ -89,13 +89,13 @@ export default function GrammarModule({ profileId, grade, onRoundComplete }) {
   return (
     <div className="w-full h-full relative">
        {currentItem.type === "fix" && (
-           <ModeSentenceFix item={currentItem} onNext={handleNext} onSpeak={speak} isSpeaking={isSpeaking} grade={grade} />
+           <ModeSentenceFix key={currentItem.id} item={currentItem} onNext={handleNext} onSpeak={speak} isSpeaking={isSpeaking} grade={grade} />
        )}
        {currentItem.type === "identify" && (
-           <ModeIdentify item={currentItem} onNext={handleNext} onSpeak={speak} isSpeaking={isSpeaking} grade={grade} />
+           <ModeIdentify key={currentItem.id} item={currentItem} onNext={handleNext} onSpeak={speak} isSpeaking={isSpeaking} grade={grade} />
        )}
        {currentItem.type === "scramble" && (
-           <ModeScramble item={currentItem} onNext={handleNext} onSpeak={speak} isSpeaking={isSpeaking} grade={grade} />
+           <ModeScramble key={currentItem.id} item={currentItem} onNext={handleNext} onSpeak={speak} isSpeaking={isSpeaking} grade={grade} />
        )}
     </div>
   );
