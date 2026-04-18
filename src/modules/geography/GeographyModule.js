@@ -139,27 +139,45 @@ export default function GeographyModule({ profileId, onRoundComplete }) {
 
     if (phase === "review" && reviewQueue[currentIndex]) {
       const state = reviewQueue[currentIndex];
-      const name = isCapitalDay ? `The capital of ${state.name} is ${STATE_CAPITALS[state.id]}` : state.name;
+      const name = isCapitalDay
+        ? `The capital of ${state.name} is ${STATE_CAPITALS[state.id]}`
+        : state.name;
       if (currentIndex === 0) {
-        speakAsync(`Let's review. The highlighted state is ${name}. Hit next to review the next one.`);
+        if (reviewQueue.length === 1) {
+          speakAsync(`Alright, let's do a quick review first. The highlighted state is ${name}... notice exactly where it sits on the map. Got it? Go ahead and hit Next.`);
+        } else {
+          speakAsync(`Let's start with a quick review of ${reviewQueue.length} states you've seen before. First up... ${name}. Find it on the map, then hit Next to keep going.`);
+        }
       } else {
-        speakAsync(name);
+        speakAsync(`${name}... take a look at where it is, then hit Next.`);
       }
     } else if (phase === "new" && newQueue[currentIndex]) {
       const state = newQueue[currentIndex];
-      const name = isCapitalDay ? `The capital of ${state.name} is ${STATE_CAPITALS[state.id]}` : state.name;
+      const name = isCapitalDay
+        ? `The capital of ${state.name} is ${STATE_CAPITALS[state.id]}`
+        : state.name;
       if (currentIndex === 0) {
-        speakAsync(`Let's learn. The highlighted state is ${name}. Hit next to see the next one.`);
+        if (newQueue.length === 1) {
+          speakAsync(`Now let's learn something new. This highlighted state is ${name}. Look at where it is on the map... got it? Hit Next when you're ready.`);
+        } else {
+          speakAsync(`Great! Now let's learn ${newQueue.length} new states. The highlighted one is ${name}. Notice where it is on the map, then hit Next and we'll review the rest one by one.`);
+        }
+      } else if (currentIndex === newQueue.length - 1) {
+        speakAsync(`Last one! This is ${name}. Look at where it sits, then hit Next and we will test you on everything you just saw.`);
       } else {
-        speakAsync(name);
+        speakAsync(`${name}... notice where it is, then hit Next.`);
       }
     } else if (phase === "test" && testQueue[currentIndex]) {
       const state = testQueue[currentIndex];
-      const targetStr = isCapitalDay ? `the state whose capital is ${STATE_CAPITALS[state.id]}` : state.name;
+      const targetStr = isCapitalDay
+        ? `the state whose capital is ${STATE_CAPITALS[state.id]}`
+        : state.name;
       if (currentIndex === 0) {
-        speakAsync(`Now let's see what you remember. Tap ${targetStr} on the map.`);
+        speakAsync(`Alright, time to put your memory to the test! Tap ${targetStr} on the map.`);
+      } else if (currentIndex === testQueue.length - 1) {
+        speakAsync(`Last one! Tap ${targetStr}.`);
       } else {
-        speakAsync(`Tap ${targetStr} on the map.`);
+        speakAsync(`Now tap ${targetStr}.`);
       }
     }
   }, [phase, currentIndex, reviewQueue, newQueue, testQueue, speakAsync, ledger.day]);
