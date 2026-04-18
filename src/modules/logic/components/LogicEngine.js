@@ -101,12 +101,12 @@ function buildOptionsAudio(q, isExplain) {
   return `What do you think? Is it ... ${optionsString}?`;
 }
 
-export default function LogicEngine({ content, voiceId, onComplete }) {
+export default function LogicEngine({ content, voiceId, isTestMode, onComplete }) {
   const { speakAsync, stop } = useSpeechAsync(voiceId);
 
   // Flow State
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [phase, setPhase] = useState("intro"); // intro -> interaction -> feedback -> (explain-back) -> feedback
+  const [phase, setPhase] = useState("intro"); // intro -> interaction -> feedback -> (explain-back) -> feedback -> test-transition -> complete
   const [selectedOpt, setSelectedOpt] = useState(null);
   const [showingExplain, setShowingExplain] = useState(false);
   const [reorderedList, setReorderedList] = useState(null);
@@ -154,6 +154,14 @@ export default function LogicEngine({ content, voiceId, onComplete }) {
     if (isCorrect && !showingExplain) {
       setScoreAcc(s => s + 1);
     }
+    
+    if (isTestMode) {
+      setPhase("test-transition");
+      setTimeout(() => {
+         nextQuestionCore(true);
+      }, 1200);
+      return;
+    }
 
     setPhase(showingExplain ? "explain-feedback" : "feedback");
     
@@ -169,13 +177,23 @@ export default function LogicEngine({ content, voiceId, onComplete }) {
     setSelectedOpt({ isCorrect, feedback: isCorrect ? "Excellent chain." : "That structure is technically flawed." });
     if (isCorrect) setScoreAcc(s => s + 1);
     
+    if (isTestMode) {
+      setPhase("test-transition");
+      setTimeout(() => {
+         nextQuestionCore(true);
+      }, 1200);
+      return;
+    }
+    
     setPhase("feedback");
     speakAsync(isCorrect ? "Excellent chain." : "That structure is flawed. The claim should be supported by evidence to yield a conclusion.");
   };
 
-  const nextQuestion = () => {
+  const nextQuestion = () => nextQuestionCore(false);
+
+  const nextQuestionCore = (skipExplain) => {
     stop();
-    if (phase === "feedback" && q.explainBack && selectedOpt?.isCorrect) {
+    if (!skipExplain && phase === "feedback" && q.explainBack && selectedOpt?.isCorrect) {
       // Go to explain back
       setPhase("explain-back");
       setShowingExplain(true);
@@ -192,12 +210,55 @@ export default function LogicEngine({ content, voiceId, onComplete }) {
       setShowingExplain(false);
       setReorderedList(null);
     } else {
-      onComplete({ score: Math.round((scoreAcc / content.length) * 100) });
+      setPhase("complete");
+      const finalScore = Math.max(0, Math.round((scoreAcc / content.length) * 100));
+      if (isTestMode) {
+         speakAsync(`Test complete! You scored ${finalScore} percent.`);
+      } else {
+         speakAsync(`Great job! You finished today's logic lesson.`);
+      }
     }
   };
 
   const isInteraction = phase === "interaction" || phase === "explain-back";
   const isFeedback = phase === "feedback" || phase === "explain-feedback";
+
+  if (phase === "complete") {
+    const finalScore = Math.max(0, Math.round((scoreAcc / content.length) * 100));
+    return (
+      <div className="flex flex-col flex-1 w-full max-w-2xl mx-auto px-6 py-8 items-center justify-center">
+         <div className="bg-white rounded-3xl p-10 shadow-xl border-4 border-indigo-50 text-center w-full min-h-[300px] flex flex-col items-center justify-center animate-[slideUp_0.4s_ease-out]">
+            {isTestMode ? (
+               <>
+                 <h2 className="text-4xl font-black text-slate-800 mb-4">Test Complete!</h2>
+                 <div className="text-6xl font-black bg-clip-text text-transparent bg-gradient-to-br from-indigo-500 to-purple-600 my-8">
+                   {finalScore}%
+                 </div>
+                 <p className="text-lg text-slate-500 font-medium mb-10">
+                   Great job showing what you've learned.
+                 </p>
+               </>
+            ) : (
+               <>
+                 <div className="bg-emerald-100 text-emerald-600 p-6 rounded-full mb-6">
+                    <CheckCircle2 className="w-16 h-16" />
+                 </div>
+                 <h2 className="text-4xl font-black text-slate-800 mb-4">Lesson Complete!</h2>
+                 <p className="text-lg text-slate-500 font-medium mb-10">
+                   You crushed today's reasoning challenges!
+                 </p>
+               </>
+            )}
+            <button 
+              onClick={() => onComplete({ score: finalScore })}
+              className="w-full max-w-sm bg-indigo-600 hover:bg-indigo-700 text-white font-black text-2xl py-5 rounded-[2rem] shadow-lg transition-transform active:scale-95 flex items-center justify-center gap-3"
+            >
+               Finish Day <ArrowRight className="w-7 h-7" />
+            </button>
+         </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col flex-1 w-full max-w-2xl mx-auto px-6 py-8">
@@ -245,15 +306,21 @@ export default function LogicEngine({ content, voiceId, onComplete }) {
             </div>
           )}
 
-          {isInteraction && !isChain && (showingExplain ? q.explainBack.options : q.options).map((opt, i) => (
-            <button
-              key={i}
-              onClick={() => handleOptionClick(opt)}
-              className="w-full p-4 rounded-xl border-2 border-transparent bg-indigo-50 hover:bg-indigo-100 text-indigo-900 font-semibold text-lg transition-colors text-left"
-            >
-              {opt.text}
-            </button>
-          ))}
+          {isInteraction && !isChain && (showingExplain ? q.explainBack.options : q.options).map((opt, i) => {
+            const isSelected = selectedOpt === opt;
+            const styleClass = phase === "test-transition" && isSelected 
+                ? "bg-indigo-500 text-white border-indigo-600" 
+                : "bg-indigo-50 hover:bg-indigo-100 text-indigo-900 border-transparent";
+            return (
+              <button
+                key={i}
+                onClick={() => handleOptionClick(opt)}
+                className={`w-full p-4 rounded-xl border-2 font-semibold text-lg transition-colors text-left ${styleClass}`}
+              >
+                {opt.text}
+              </button>
+            );
+          })}
 
           {isInteraction && isChain && (
             <>

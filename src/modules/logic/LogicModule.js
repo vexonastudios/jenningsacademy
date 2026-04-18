@@ -8,23 +8,38 @@ import { DEDUCTION_STUDIO_CONTENT } from "./content/deductionStudio";
 
 export default function LogicModule({ grade, attempt, voiceId, profileId, onRoundComplete }) {
   
+  const isTestDay = new Date().getDay() === 5;
+
   // Select curriculum based on grade tier
   const { content, title, subtitle } = useMemo(() => {
+    let source = TRUTH_AND_WISDOM_CONTENT;
+    let t = "Truth & Wisdom";
+    let s = "Foundations of Reasoning";
+    
     if (grade >= 1 && grade <= 5) {
-      return { content: TRUTH_AND_WISDOM_CONTENT, title: "Truth & Wisdom", subtitle: "Foundations of Reasoning" };
+      source = TRUTH_AND_WISDOM_CONTENT;
+    } else if (grade >= 6 && grade <= 8) {
+      source = FALLACY_DETECTIVE_CONTENT;
+      t = "Fallacy Detective";
+      s = "Argument Lab";
+    } else {
+      // Grades 9-12 (and fallback)
+      source = DEDUCTION_STUDIO_CONTENT;
+      t = "Build the Argument";
+      s = "Deduction Studio";
     }
-    if (grade >= 6 && grade <= 8) {
-      return { content: FALLACY_DETECTIVE_CONTENT, title: "Fallacy Detective", subtitle: "Argument Lab" };
-    }
-    // Grades 9-12 (and fallback)
-    return { content: DEDUCTION_STUDIO_CONTENT, title: "Build the Argument", subtitle: "Deduction Studio" };
-  }, [grade]);
+    
+    // Pick subset: 8 questions for Friday tests, 4 for daily practice
+    const shuffled = [...source].sort(() => 0.5 - Math.random());
+    return { content: shuffled.slice(0, isTestDay ? 8 : 4), title: t, subtitle: s };
+  }, [grade, isTestDay]);
 
   const handleComplete = (metrics) => {
     onRoundComplete({
-      score: metrics.score,
+      score: isTestDay ? metrics.score : null, // Only record official score on Fridays
       metadata: {
         logicTier: title,
+        isTest: isTestDay,
         ...metrics
       }
     });
@@ -41,6 +56,11 @@ export default function LogicModule({ grade, attempt, voiceId, profileId, onRoun
             <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider mt-0.5">{subtitle}</p>
           </div>
           <div className="flex items-center gap-3">
+            {isTestDay && (
+              <div className="bg-amber-100 text-amber-700 font-bold px-3 py-1 rounded-full text-sm animate-pulse">
+                Weekly Test
+              </div>
+            )}
             <div className="bg-rose-100 text-rose-700 font-bold px-3 py-1 rounded-full text-sm">
               Grade {grade}
             </div>
@@ -53,6 +73,7 @@ export default function LogicModule({ grade, attempt, voiceId, profileId, onRoun
         <LogicEngine 
           content={content} 
           voiceId={voiceId} 
+          isTestMode={isTestDay}
           onComplete={handleComplete} 
         />
       </main>

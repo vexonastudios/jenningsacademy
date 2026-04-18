@@ -67,7 +67,7 @@ export const TRUTH_AND_WISDOM_CONTENT = [
     scenario: "Analyze these two statements.\nStatement 1: God promised in the Bible that He will never leave us.\nStatement 2: When we make mistakes, God abandons us.",
     audioText: "Analyze these two statements. Statement 1: God promised in the Bible that He will never leave us. Statement 2: When we make mistakes, God abandons us.",
     options: [
-      { text: "Both can be true", feedback: "If God never leaves us, can He also abandon us?", is   isCorrect: false },
+      { text: "Both can be true", feedback: "If God never leaves us, can He also abandon us?", isCorrect: false },
       { text: "They conflict (Contradiction)", feedback: "Correct! If God promised to never leave us, then Statement 2 cannot possibly be true.", isCorrect: true },
       { text: "One is too vague", feedback: "They are actually very specific statements.", isCorrect: false }
     ]
