@@ -103,8 +103,10 @@ export async function publishPlan(payload) {
 
   if (masterErr) throw new Error(masterErr.message);
 
+  // Instead of deleting the daily plan (which cascade-wipes the child's sessions for the day),
+  // we update it in place. If they haven't started today, it does nothing and gets auto-generated later.
   await supabase.from('daily_plans')
-    .delete()
+    .update({ modules })
     .eq('profile_id', profileId)
     .eq('target_date', targetDate);
 
