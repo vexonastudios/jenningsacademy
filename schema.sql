@@ -109,3 +109,23 @@ CREATE TABLE IF NOT EXISTS parent_settings (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- ==========================================
+-- PHASE 6: Game Reward Scores
+-- ==========================================
+-- Stores each child's best score per arcade game,
+-- allowing family leaderboard comparisons.
+CREATE TABLE IF NOT EXISTS game_scores (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  profile_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
+  game_id TEXT NOT NULL,           -- e.g. 'word-runner'
+  score INTEGER DEFAULT 0,
+  level INTEGER DEFAULT 1,
+  won BOOLEAN DEFAULT FALSE,
+  difficulty TEXT DEFAULT 'Medium',
+  level_time FLOAT,
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(profile_id, game_id)      -- one best-score row per child per game
+);
+
+

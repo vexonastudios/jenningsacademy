@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Word Runner – Vexona Studios</title>
+  <meta name="description" content="Word Runner – a co-op action platformer where you jump on answer blocks to solve questions and defeat enemies!">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="runner.css">
+</head>
+<body>
+
+  <div class="wr-layout">
+    <!-- Header -->
+    <header class="wr-header">
+      <div class="header-left">
+        <a href="index.html" class="hub-btn">← Hub</a>
+        <div>
+          <h1 class="wr-title">Word Runner</h1>
+          <div class="wr-sub">Co-op Action Platformer</div>
+        </div>
+      </div>
+      <div class="header-center">
+        <div class="lives-badge p1-badge">
+          <div class="badge-label">P1</div>
+          <div class="badge-hearts" id="p1HeartsHud">♥ ♥ ♥</div>
+        </div>
+        <div class="score-block">
+          <div class="score-label">SCORE</div>
+          <div class="score-val" id="scoreDisplay">0</div>
+        </div>
+        <div class="lives-badge p2-badge">
+          <div class="badge-label">P2</div>
+          <div class="badge-hearts" id="p2HeartsHud">♥ ♥ ♥</div>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="level-badge" id="levelBadge">LVL 1</div>
+        <button id="fullscreenBtn" class="hub-btn" style="margin-left: 14px;">&#x26F6; Fullscreen</button>
+      </div>
+    </header>
+
+    <!-- Canvas Area -->
+    <div class="wr-canvas-wrapper" id="canvasContainer">
+      <canvas id="runnerCanvas" width="1200" height="600"></canvas>
+
+      <!-- Setup Overlay -->
+      <div id="gameSetup" class="wr-overlay">
+        <div class="wr-modal">
+          <div class="modal-icon">🏃</div>
+          <h2>Word Runner</h2>
+          <p>Run, jump, and stomp enemies! Hit the <strong>correct answer block</strong> from below to open gates and advance. Answer wrong and lose a life — make it count!</p>
+
+          <div class="controls-grid">
+            <div class="ctrl-card p1-card">
+              <div class="ctrl-title">Player 1</div>
+              <div class="ctrl-keys">
+                <span class="key">↑</span> Jump<br>
+                <span class="key">←</span><span class="key">→</span> Move
+              </div>
+            </div>
+            <div class="ctrl-card p2-card">
+              <div class="ctrl-title">Player 2</div>
+              <div class="ctrl-keys">
+                <span class="key">W</span> Jump<br>
+                <span class="key">A</span><span class="key">D</span> Move
+              </div>
+            </div>
+          </div>
+
+          <div class="difficulty-row">
+            <label class="diff-label">Curriculum</label>
+            <div class="diff-options">
+              <label class="diff-opt"><input type="radio" name="diff" value="Easy"> <span>Easy</span><small>Addition & Spelling</small></label>
+              <label class="diff-opt selected"><input type="radio" name="diff" value="Medium" checked> <span>Medium</span><small>Multiplication & Grammar</small></label>
+              <label class="diff-opt"><input type="radio" name="diff" value="Hard"> <span>Hard</span><small>Algebra & Vocabulary</small></label>
+            </div>
+          </div>
+
+          <div class="mode-row">
+            <label class="diff-label">Players</label>
+            <div class="diff-options">
+              <label class="diff-opt selected"><input type="radio" name="mode" value="1" checked> <span>1 Player</span><small>Solo run</small></label>
+              <label class="diff-opt"><input type="radio" name="mode" value="2"> <span>2 Players</span><small>Co-op local</small></label>
+            </div>
+          </div>
+
+          <button id="startMissionBtn" class="start-btn">▶ Start Level 1</button>
+        </div>
+      </div>
+
+      <!-- End Overlay -->
+      <div id="gameEnd" class="wr-overlay" style="display:none">
+        <div class="wr-modal">
+          <div class="modal-icon" id="endIcon">🎉</div>
+          <h2 id="endTitle">Level Complete!</h2>
+          <p id="endMessage">You passed all the word gates!</p>
+          <div class="end-stats" id="endStats"></div>
+          <button id="playAgainBtn" class="start-btn" style="margin-top:24px">Next Level →</button>
+          <button id="retryBtn" class="secondary-btn">↺ Retry Level</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="runner.js?v=proto1"></script>
+</body>
+</html>
