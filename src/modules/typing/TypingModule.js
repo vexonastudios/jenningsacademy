@@ -395,9 +395,9 @@ function DrillScreen({ prompt, label, targetKeys, showKeyboard, voiceId, onToggl
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// CHALLENGE SCREEN (timed 30s sprint)
+// CHALLENGE SCREEN (timed 60s sprint)
 // ═══════════════════════════════════════════════════════════════════════════════
-const CHALLENGE_DURATION = 30;
+const CHALLENGE_DURATION = 60;
 
 function ChallengeScreen({ lesson, threshold, showKeyboard, voiceId, onToggleKeyboard, onChallengeComplete }) {
   const engine       = useTypingEngine(lesson.challenge.prompt);
@@ -466,7 +466,7 @@ function ChallengeScreen({ lesson, threshold, showKeyboard, voiceId, onToggleKey
 
   // 10-second warning
   useEffect(() => {
-    if (timeLeft === 10 && hasStarted && !finished) speak("Ten seconds remaining!");
+    if (timeLeft === 30 && hasStarted && !finished) speak("Thirty seconds remaining! Keep going!");
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timeLeft]);
 
