@@ -127,6 +127,7 @@ export default function MathModule({ profileId, grade = 1, onRoundComplete }) {
   // Answering State
   const [userInput, setUserInput] = useState("");
   const [feedback, setFeedback] = useState(null); // null | 'correct' | 'wrong'
+  const [explanationSteps, setExplanationSteps] = useState(null); // null | string[]
 
   // Initialize Queues
   useEffect(() => {
@@ -259,8 +260,23 @@ export default function MathModule({ profileId, grade = 1, onRoundComplete }) {
       speakAsync("Correct!").then(() => advanceNext());
     } else {
       playWrong();
-      speakAsync(`Oops. The answer is ${problem.answer}. Try harder next time.`).then(() => advanceNext());
+      const steps = problem.steps || [];
+      // Read the steps aloud sequentially, then show the panel
+      const readSteps = async () => {
+        await speakAsync(`Not quite. The answer is ${problem.answer}. Here is how to solve it.`);
+        for (const step of steps) {
+          await speakAsync(step);
+        }
+      };
+      setExplanationSteps(steps.length > 0 ? steps : [`The answer is ${problem.answer}.`]);
+      readSteps();
     }
+  };
+
+  const dismissExplanation = () => {
+    stop();
+    setExplanationSteps(null);
+    advanceNext();
   };
 
   const advanceNext = () => {
@@ -367,6 +383,39 @@ export default function MathModule({ profileId, grade = 1, onRoundComplete }) {
           </div>
         </div>
       </header>
+
+      {/* Step-by-Step Explanation Panel — slides up on wrong answer */}
+      {explanationSteps && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/60 backdrop-blur-sm px-4 pb-6">
+          <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-lg border-4 border-rose-100 overflow-hidden animate-[slideUp_0.3s_ease-out]">
+            <div className="bg-rose-50 px-8 pt-8 pb-4 flex items-center gap-4">
+              <div className="bg-rose-100 p-3 rounded-full">
+                <Volume2 className="w-7 h-7 text-rose-500 animate-pulse" />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-rose-400 uppercase tracking-widest">Let me explain</p>
+                <h3 className="text-xl font-black text-slate-800">Here's how to solve it</h3>
+              </div>
+            </div>
+            <div className="px-8 py-6 space-y-3">
+              {explanationSteps.map((step, i) => (
+                <div key={i} className="flex items-start gap-3">
+                  <span className="bg-sky-100 text-sky-700 font-black text-sm w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">{i + 1}</span>
+                  <p className="text-lg font-semibold text-slate-700 leading-snug">{step}</p>
+                </div>
+              ))}
+            </div>
+            <div className="px-8 pb-8">
+              <button
+                onClick={dismissExplanation}
+                className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-black text-2xl py-4 rounded-2xl shadow-md active:scale-95 transition-all"
+              >
+                Got it — Next Question →
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col items-center justify-center w-full max-w-4xl mx-auto px-4 py-8">
