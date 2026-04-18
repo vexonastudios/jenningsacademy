@@ -197,8 +197,14 @@ export const REWARD_GAMES = [
     iframeSrc: "/games/word-runner/runner.html",
     scoreMessageType: "WORD_RUNNER_SCORE",
   },
-  // Future games — add entries here:
-  // { id: "math-blaster", label: "Math Blaster", emoji: "🚀", ... },
+  {
+    id: "skytyper",
+    label: "Sky Typer Squadron",
+    description: "Type fast to shoot down enemy planes in this arcade classic!",
+    emoji: "✈️",
+    iframeSrc: "/games/skytyper/sky-typer.html",
+    scoreMessageType: "SKY_TYPER_SCORE",
+  },
 ];
 
 export function getRewardGameById(id) {
