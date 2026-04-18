@@ -4,7 +4,7 @@ import { useState, useCallback } from "react";
 import Link from "next/link";
 import { 
   CalendarSync, Settings2, TrendingUp, Flame, ChevronRight, BookOpen, 
-  ChevronLeft, Copy, Check, X, Printer, Mail, Type
+  ChevronLeft, Copy, Check, X, Printer, Mail, Type, GraduationCap
 } from "lucide-react";
 
 // ─── Spelling Mastery Chart ───────────────────────────────────────────────────
@@ -615,12 +615,12 @@ export default function HubClient({ safeProfiles, planMap, totalChildren, totalM
       )}
 
       {/* ── Quick Action Cards ── */}
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-3">
         <Link href="/parent" className="group bg-white rounded-[1.5rem] border border-slate-100 shadow-lg shadow-slate-200/40 p-6 flex items-center gap-5 hover:-translate-y-1 transition-[transform,shadow] hover:shadow-indigo-200/60">
           <div className="w-14 h-14 rounded-2xl bg-indigo-100 text-indigo-600 flex items-center justify-center shrink-0 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
             <CalendarSync className="w-7 h-7" />
           </div>
-          <div>
+          <div className="flex-1 min-w-0">
             <h3 className="font-black text-slate-800 text-base">Manage Plans</h3>
             <p className="text-slate-400 text-sm mt-0.5">Build, reorder, and publish each child's daily learning schedule.</p>
           </div>
@@ -631,11 +631,22 @@ export default function HubClient({ safeProfiles, planMap, totalChildren, totalM
           <div className="w-14 h-14 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center shrink-0 group-hover:bg-purple-600 group-hover:text-white transition-colors">
             <Settings2 className="w-7 h-7" />
           </div>
-          <div>
+          <div className="flex-1 min-w-0">
             <h3 className="font-black text-slate-800 text-base">Student Profiles</h3>
             <p className="text-slate-400 text-sm mt-0.5">Edit child settings, guide voice, lock mode, and profile photos.</p>
           </div>
           <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-purple-500 ml-auto transition-colors" />
+        </Link>
+
+        <Link href="/parent/report-card" className="group bg-white rounded-[1.5rem] border border-slate-100 shadow-lg shadow-slate-200/40 p-6 flex items-center gap-5 hover:-translate-y-1 transition-[transform,shadow] hover:shadow-emerald-200/60">
+          <div className="w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+            <GraduationCap className="w-7 h-7" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="font-black text-slate-800 text-base">Report Cards</h3>
+            <p className="text-slate-400 text-sm mt-0.5">View grades, averages, and session history for each student.</p>
+          </div>
+          <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-emerald-500 ml-auto transition-colors" />
         </Link>
       </div>
 
