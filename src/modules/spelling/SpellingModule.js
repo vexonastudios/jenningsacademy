@@ -208,8 +208,8 @@ export default function SpellingModule({ grade, attempt, onRoundComplete, voiceI
     if (cardIdx < sessionWords.length - 1) {
       setCardIdx(i => i + 1);
     } else {
-      if (phase === "practice") hasSentence ? startSentence() : setPhase("review_practice");
-      if (phase === "sentence") setPhase("review_practice");
+      if (phase === "practice") setPhase("review_practice");
+      if (phase === "sentence") setPhase("review_sentence");
       if (phase === "final")    setPhase("review");
     }
   };
@@ -290,7 +290,8 @@ export default function SpellingModule({ grade, attempt, onRoundComplete, voiceI
   // ═══════════════════════════════════════════════════════════════════════════
   // PRACTICE COMPLETE INTERMISSION
   // ═══════════════════════════════════════════════════════════════════════════
-  if (phase === "review_practice") {
+  if (phase === "review_practice" || phase === "review_sentence") {
+    const isReadyForFinal = phase === "review_sentence" || !hasSentence;
     return (
       <div className="flex flex-col items-center justify-center min-h-full py-16 px-6 text-center">
         <div className="w-24 h-24 rounded-full bg-emerald-500/20 border-4 border-emerald-400 flex items-center justify-center mb-8 shadow-[0_0_50px_rgba(52,211,153,0.3)]">
@@ -299,16 +300,16 @@ export default function SpellingModule({ grade, attempt, onRoundComplete, voiceI
         <h2 className="text-4xl font-black text-white mb-3">Practice Complete!</h2>
         <p className="text-slate-400 text-lg mb-2">You practiced all {sessionWords.length} words.</p>
         <p className="text-slate-500 text-sm mb-10">
-          {hasSentence
+          {!isReadyForFinal
             ? "Now let's see the words in sentences — fill in the blanks!"
             : "Now it's time for the real test. This one counts."}
         </p>
-        <button onClick={hasSentence ? startSentence : startFinal}
+        <button onClick={!isReadyForFinal ? startSentence : startFinal}
           className="flex items-center gap-3 bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xl px-10 py-5 rounded-2xl shadow-lg shadow-indigo-600/30 hover:-translate-y-1 transition-all">
-          {hasSentence ? <><FileText className="w-6 h-6" /> Sentence Practice</> : <><Trophy className="w-6 h-6" /> Begin Final Test</>}
+          {!isReadyForFinal ? <><FileText className="w-6 h-6" /> Sentence Practice</> : <><Trophy className="w-6 h-6" /> Begin Final Test</>}
         </button>
         <p className="text-slate-600 text-xs mt-4">
-          {hasSentence ? "Fill in the blanks using context clues." : "You need 80% or above to master this word set."}
+          {!isReadyForFinal ? "Fill in the blanks using context clues." : "You need 80% or above to master this word set."}
         </p>
       </div>
     );
