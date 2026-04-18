@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Trophy, Star, Clock, Gamepad2, ChevronRight, RefreshCw, Medal, Zap } from "lucide-react";
+import { getRewardGameById } from "@/modules/_shared/moduleTypes";
 
-const GAME_ID = "word-runner";
 const GAME_TIMER_MINUTES = 15; // Parent-configurable — default 15 min
 
 function getRankBadge(rank) {
@@ -13,7 +13,9 @@ function getRankBadge(rank) {
   return { icon: `#${rank + 1}`, color: "text-slate-400 bg-slate-800 border-slate-700" };
 }
 
-export default function RewardModule({ profileId, profile, planId, grade, onRoundComplete }) {
+export default function RewardModule({ profileId, profile, planId, grade, onRoundComplete, rewardGame: rewardGameId = "word-runner" }) {
+  const gameConfig = getRewardGameById(rewardGameId);
+  const GAME_ID = gameConfig.id;
   const [phase, setPhase]               = useState("intro");   // intro | playing | done
   const [timeLeft, setTimeLeft]         = useState(GAME_TIMER_MINUTES * 60);
   const [scores, setScores]             = useState([]);
@@ -43,7 +45,7 @@ export default function RewardModule({ profileId, profile, planId, grade, onRoun
   // ── postMessage listener from the iframe ──────────────────────────────────
   useEffect(() => {
     const handler = async (e) => {
-      if (e.data?.type !== "WORD_RUNNER_SCORE") return;
+      if (e.data?.type !== gameConfig.scoreMessageType) return;
       const { score, won, level, levelTime, difficulty } = e.data;
       setLastResult(e.data);
 
@@ -132,10 +134,10 @@ export default function RewardModule({ profileId, profile, planId, grade, onRoun
           <div className="relative bg-gradient-to-br from-slate-800 to-slate-900 border-2 border-emerald-500/30 rounded-3xl overflow-hidden p-8 shadow-2xl shadow-emerald-900/20">
             <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/5 to-transparent" />
             <div className="relative">
-              <div className="text-7xl mb-4 text-center">🏃</div>
-              <h2 className="text-4xl font-black text-white text-center mb-2">Word Runner</h2>
+              <div className="text-7xl mb-4 text-center">{gameConfig.emoji}</div>
+              <h2 className="text-4xl font-black text-white text-center mb-2">{gameConfig.label}</h2>
               <p className="text-slate-400 text-center text-base mb-6">
-                Run, jump, and stomp enemies! Hit the correct answer blocks to open gates and race to the finish.
+                {gameConfig.description}
               </p>
               <div className="flex flex-wrap justify-center gap-3 mb-8">
                 {["Math", "Spelling", "Grammar", "Co-op"].map(tag => (
@@ -224,7 +226,7 @@ export default function RewardModule({ profileId, profile, planId, grade, onRoun
         <div className="flex-1 relative">
           <iframe
             ref={iframeRef}
-            src="/games/word-runner/runner.html"
+            src={gameConfig.iframeSrc}
             className="w-full h-full border-0"
             title="Word Runner"
             allow="autoplay"

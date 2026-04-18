@@ -177,3 +177,31 @@ export function getModulesForGrade(grade) {
 export function getModuleByType(type) {
   return MODULE_REGISTRY[type] ?? null;
 }
+
+/**
+ * REWARD_GAMES — All available arcade/reward games parents can assign.
+ * Each entry has an `id` (passed as `rewardGame` prop to RewardModule),
+ * a display label, description, emoji, and the iframe src path.
+ *
+ * To add a new reward game:
+ *   1. Drop its files in public/games/[game-id]/
+ *   2. Add an entry here
+ *   3. Done — it automatically appears in the parent plan editor picker.
+ */
+export const REWARD_GAMES = [
+  {
+    id: "word-runner",
+    label: "Word Runner",
+    description: "Run, jump, and stomp enemies while answering word gates!",
+    emoji: "🏃",
+    iframeSrc: "/games/word-runner/runner.html",
+    scoreMessageType: "WORD_RUNNER_SCORE",
+  },
+  // Future games — add entries here:
+  // { id: "math-blaster", label: "Math Blaster", emoji: "🚀", ... },
+];
+
+export function getRewardGameById(id) {
+  return REWARD_GAMES.find(g => g.id === id) ?? REWARD_GAMES[0];
+}
+

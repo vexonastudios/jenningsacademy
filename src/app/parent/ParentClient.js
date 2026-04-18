@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import { UserButton } from "@clerk/nextjs";
 import { PlusCircle, CalendarSync, Settings, TrendingUp, GripVertical, Settings2, Sparkles, BookOpen, Calculator, Type, Gamepad2, Keyboard, Star, Map, X, Link, Clock, Medal, ChevronRight, ChevronLeft, Play, Volume2, Lock, Pencil, Trash2, FileDown, Save, Flame, Camera } from "lucide-react";
 import { addChild, updateChild, deleteChild, publishPlan, savePlanAsTemplate } from "../actions";
-import { getModulesForGrade } from "@/modules/_shared/moduleTypes";
+import { getModulesForGrade, REWARD_GAMES } from "@/modules/_shared/moduleTypes";
 import Avatar from "@/components/Avatar";
 import {
   DndContext, closestCenter,
@@ -29,7 +29,7 @@ const ICON_MAP = {
 };
 
 // ── Sortable module row ───────────────────────────────────────────────────────
-function SortableModule({ module, idx, onRemove, childSchoolDays, onToggleDay }) {
+function SortableModule({ module, idx, onRemove, childSchoolDays, onToggleDay, onChangeRewardGame }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: module.id });
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -54,6 +54,20 @@ function SortableModule({ module, idx, onRemove, childSchoolDays, onToggleDay })
       </div>
       <div className="flex-1">
         <h3 className="font-bold text-slate-800">{module.type}</h3>
+        {/* Reward game selector — only shown when type is Reward Unlock */}
+        {module.type === "Reward Unlock" && (
+          <div onPointerDown={e => e.stopPropagation()} className="mt-2">
+            <select
+              value={module.reward_game || "word-runner"}
+              onChange={e => onChangeRewardGame && onChangeRewardGame(module.id, e.target.value)}
+              className="text-xs font-bold bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg px-3 py-1.5 cursor-pointer hover:border-emerald-400 transition-colors outline-none focus:ring-2 focus:ring-emerald-300"
+            >
+              {REWARD_GAMES.map(g => (
+                <option key={g.id} value={g.id}>{g.emoji} {g.label}</option>
+              ))}
+            </select>
+          </div>
+        )}
         <div className="flex flex-wrap gap-1 mt-1.5" onPointerDown={e => e.stopPropagation()}>
           {['Mon','Tue','Wed','Thu','Fri'].map(day => {
             const isActive = module.active_days ? module.active_days.includes(day) : childSchoolDays.includes(day);
@@ -320,6 +334,22 @@ export default function ParentClient({ profiles, initialPlans = [] }) {
         await publishPlan({ profileId: activeChild.id, modules: updated, targetDate: todayStr });
       } catch {
         // Silent failure for inline toggles to prevent toast spam
+      }
+    }
+  };
+
+  const handleChangeRewardGame = async (moduleId, gameId) => {
+    const updated = todaysPlan.map(mod =>
+      mod.id === moduleId ? { ...mod, reward_game: gameId } : mod
+    );
+    setTodaysPlan(updated);
+    if (activeChild) {
+      const todayStr = new Date().toISOString().split('T')[0];
+      try {
+        await publishPlan({ profileId: activeChild.id, modules: updated, targetDate: todayStr });
+        addToast("🎮 Reward game updated!", "save");
+      } catch {
+        addToast("Couldn't save — try again", "error");
       }
     }
   };
@@ -891,6 +921,7 @@ export default function ParentClient({ profiles, initialPlans = [] }) {
                             onRemove={handleRemoveModule}
                             childSchoolDays={activeChild.school_days || ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']}
                             onToggleDay={handleToggleDay}
+                            onChangeRewardGame={handleChangeRewardGame}
                           />
                         ))}
                       </div>

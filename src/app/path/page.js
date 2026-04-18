@@ -247,6 +247,8 @@ export default function ChildPath() {
                 attempt={attempt}
                 voiceId={profile?.voice_id ?? null}
                 profileId={profile?.id ?? null}
+                profile={profile}
+                rewardGame={activeModule.mod.reward_game ?? "word-runner"}
                 onRoundComplete={onRoundComplete}
               />
             </Suspense>
