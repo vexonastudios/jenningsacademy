@@ -63,10 +63,10 @@ function useSpeechAsync(voiceId) {
 
 // ── Storage Helpers ────────────────────────────────────────────────────────────
 const loadLedger = (profileId, grade) => {
-  const blank = { day: 1, skills: {}, savedPhase: null };
+  const blank = { day: 1, skills: {}, savedPhase: null, savedIndex: 0, savedQueue: [] };
   if (typeof window === "undefined") return blank;
   const stored = localStorage.getItem(`math_ledger_g${grade}_${profileId}`);
-  return stored ? JSON.parse(stored) : blank;
+  return stored ? { ...blank, ...JSON.parse(stored) } : blank;
 };
 
 const saveLedger = (profileId, grade, data) => {
@@ -164,27 +164,30 @@ export default function MathModule({ profileId, grade = 1, onRoundComplete }) {
         setPhase("ready");
     } else {
         const priorSkills = Object.keys(nextLedger.skills);
-        // ── RESUME: if the student exited mid-session, jump back to their saved phase ──
         const saved = ledger.savedPhase;
-        if (saved === "quiz" || saved === "practice" || saved === "test") {
-            // Rebuild the correct queue for the saved phase
-            if (saved === "quiz" || saved === "test") {
-                const mixed = shuffle([
-                    ...generateNewSkillProblems(today.newSkills, 10),
-                    ...selectWeightedProblems(nextLedger.skills, 20)
-                ]);
-                setQueue(mixed);
-            } else if (saved === "practice") {
-                setQueue(generateNewSkillProblems(today.newSkills, 10));
+        if (["warmup", "practice", "quiz", "test"].includes(saved)) {
+            // Restore exact queue + index so they resume right where they left off
+            if (ledger.savedQueue && ledger.savedQueue.length > 0) {
+                setQueue(ledger.savedQueue);
+                setCurrentIndex(ledger.savedIndex || 0);
+            } else {
+                // Fallback if no queue was saved: rebuild
+                if (saved === "quiz" || saved === "test") {
+                    const mixed = shuffle([
+                        ...generateNewSkillProblems(today.newSkills, 10),
+                        ...selectWeightedProblems(nextLedger.skills, 20)
+                    ]);
+                    setQueue(mixed);
+                } else if (saved === "practice") {
+                    setQueue(generateNewSkillProblems(today.newSkills, 10));
+                } else if (saved === "warmup") {
+                    setQueue(selectWeightedProblems(nextLedger.skills, 20));
+                }
+                setCurrentIndex(0);
             }
             setNextPhaseAfterReady(saved);
             setPhase("ready");
-        } else if (saved === "warmup") {
-            setQueue(selectWeightedProblems(nextLedger.skills, 20));
-            setNextPhaseAfterReady("warmup");
-            setPhase("ready");
-        } else if (priorSkills.length === 0) {
-            // First time ever
+        } else if (saved === "teaching" || priorSkills.length === 0) {
             setNextPhaseAfterReady("teaching");
             setPhase("ready");
         } else {
@@ -199,15 +202,16 @@ export default function MathModule({ profileId, grade = 1, onRoundComplete }) {
     saveLedger(profileId, grade, ledger);
   }, [ledger, profileId, grade]);
 
-  // Persist current phase to ledger whenever it changes (for resume-on-reopen)
+  // Persist current state to ledger whenever it changes (for resume-on-reopen)
   useEffect(() => {
     const resumablePhases = ["warmup", "teaching", "practice", "quiz", "test"];
     if (!resumablePhases.includes(phase)) return;
     setLedger(prev => {
-      if (prev.savedPhase === phase) return prev; // avoid infinite loop
-      return { ...prev, savedPhase: phase };
+      // prevent re-renders if nothing changed
+      if (prev.savedPhase === phase && prev.savedIndex === currentIndex && prev.savedQueue === queue) return prev;
+      return { ...prev, savedPhase: phase, savedIndex: currentIndex, savedQueue: queue };
     });
-  }, [phase]);
+  }, [phase, currentIndex, queue]);
 
   // Audio driver — teaching is handled manually on button click; questions are read here
   useEffect(() => {
@@ -302,7 +306,7 @@ export default function MathModule({ profileId, grade = 1, onRoundComplete }) {
          // Day complete!
          stop();
          playComplete();
-         const nextLedger = { ...ledger, day: ledger.day + 1 };
+         const nextLedger = { ...ledger, day: ledger.day + 1, savedPhase: null, savedIndex: 0, savedQueue: [] };
          setLedger(nextLedger);
          onRoundComplete({ score: 100, metadata: { dayCompleted: ledger.day } });
       }
