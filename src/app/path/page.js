@@ -105,7 +105,7 @@ export default function ChildPath() {
       if (mathL) {
         const p = JSON.parse(mathL);
         if (p.savedPhase) {
-          setModuleProgress(prev => ({ ...prev, "Math": p.savedPhase }));
+          setModuleProgress(prev => ({ ...prev, "MathFlow": p.savedPhase }));
         }
       }
     } catch(e) {}
