@@ -392,21 +392,39 @@ export default function MathModule({ profileId, grade = 1, onRoundComplete }) {
 
   if (phase === "ready") {
     return (
-      <div className="flex-1 bg-sky-50 flex flex-col items-center justify-center">
-        <div className="bg-white p-12 rounded-[3rem] shadow-xl border-4 border-sky-100 flex flex-col items-center max-w-lg text-center mx-4">
-          <Calculator className="w-20 h-20 text-sky-500 mb-6" />
-          <h1 className="text-4xl font-black text-slate-800 mb-4">Math Flow</h1>
-          <p className="text-xl text-slate-500 font-medium mb-10">
-            {ledger.savedPhase ? `Resume Day ${ledger.day} • ${ledger.savedPhase.toUpperCase()} Phase` : `Day ${ledger.day} is ready to begin.`}
-          </p>
+      <div className="flex-1 bg-sky-50 flex flex-col items-center justify-center p-4">
+        <div className="bg-white p-12 rounded-[3rem] shadow-2xl shadow-sky-900/10 border-4 border-sky-100 flex flex-col items-center w-full max-w-lg text-center transition-all duration-500 animate-[slideUp_0.4s_ease-out]">
+          <div className="bg-sky-100 p-6 rounded-[2rem] shadow-inner mb-6 relative group">
+            <div className="absolute inset-0 bg-sky-400/20 rounded-[2rem] blur-xl group-hover:bg-sky-400/30 transition-all opacity-50" />
+            <Calculator className="w-16 h-16 text-sky-500 relative z-10" />
+          </div>
+          <h1 className="text-5xl font-black tracking-tight text-slate-800 mb-6 drop-shadow-sm">Math Flow</h1>
+          
+          <div className="flex flex-col items-center gap-3 mb-10">
+            {ledger.savedPhase ? (
+              <>
+                <p className="text-lg font-bold text-slate-400 tracking-wide">RESUMING DAY {ledger.day}</p>
+                <div className="bg-indigo-50 text-indigo-500 px-5 py-2.5 rounded-2xl text-sm font-black tracking-widest uppercase border-2 border-indigo-100 shadow-sm flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
+                  {ledger.savedPhase} Phase
+                </div>
+              </>
+            ) : (
+              <div className="bg-sky-50 text-sky-600 px-6 py-2.5 rounded-2xl text-sm font-bold tracking-wide border-2 border-sky-100 shadow-sm">
+                Day {ledger.day} is ready to begin
+              </div>
+            )}
+          </div>
           <button 
             onClick={() => {
               // Intentionally play a tiny silent sound or load audio context if needed
               setPhase(nextPhaseAfterReady);
             }}
-            className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-black text-3xl py-6 rounded-full shadow-lg active:scale-95 transition-all flex items-center justify-center gap-3"
+            className="w-full bg-gradient-to-b from-emerald-400 to-emerald-500 hover:from-emerald-300 hover:to-emerald-400 text-white font-black text-3xl py-6 rounded-[2rem] shadow-[0_10px_30px_rgba(16,185,129,0.3)] active:scale-95 transition-all flex items-center justify-center gap-3 group relative overflow-hidden"
           >
-            {ledger.savedPhase ? "Continue" : "Start"} <ArrowRight className="w-8 h-8" />
+            <div className="absolute inset-0 bg-white/20 w-0 group-hover:w-full transition-all duration-300 ease-out" />
+            <span className="relative z-10">{ledger.savedPhase ? "Continue" : "Start"}</span>
+            <ArrowRight className="w-8 h-8 relative z-10 group-hover:translate-x-2 transition-transform duration-300" />
           </button>
         </div>
       </div>
