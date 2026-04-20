@@ -13,10 +13,14 @@ import { GRADE_6_CURRICULUM } from "./curriculum/mathGrade6";
 import { GRADE_7_CURRICULUM } from "./curriculum/mathGrade7";
 import { GRADE_8_CURRICULUM } from "./curriculum/mathGrade8";
 import { GRADE_9_CURRICULUM, GRADE_10_CURRICULUM } from "./curriculum/mathGrade9";
+import { GRADE_K_CURRICULUM } from "./curriculum/mathGradeK";
+import { GRADE_11_CURRICULUM } from "./curriculum/mathGrade11";
+import { GRADE_12_CURRICULUM } from "./curriculum/mathGrade12";
 import GeometryCanvas from "./components/GeometryCanvas";
 import StreakMeter from "@/modules/_shared/StreakMeter";
 
 const CURRICULUM_MAP = {
+  0: GRADE_K_CURRICULUM,
   1: GRADE_1_CURRICULUM,
   2: GRADE_2_CURRICULUM,
   3: GRADE_3_CURRICULUM,
@@ -27,8 +31,8 @@ const CURRICULUM_MAP = {
   8: GRADE_8_CURRICULUM,
   9: GRADE_9_CURRICULUM,
   10: GRADE_10_CURRICULUM,
-  11: GRADE_10_CURRICULUM,
-  12: GRADE_10_CURRICULUM,
+  11: GRADE_11_CURRICULUM,
+  12: GRADE_12_CURRICULUM,
 };
 
 // ── IMPROVEMENT #5: TTS hook now accepts the child's profile voiceId ───────────

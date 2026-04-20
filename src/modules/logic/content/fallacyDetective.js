@@ -106,5 +106,176 @@ export const FALLACY_DETECTIVE_CONTENT = [
       { id: "conclusion", text: "Therefore, the roads will be icy." }
     ],
     correctOrder: ["claim", "evidence", "conclusion"]
+  },
+  {
+    type: "spot-flaw",
+    scenario: "If we let students choose their own book for the library project, next they'll want to choose the teachers, and before we know it, students will be running the whole school in total chaos!",
+    audioText: "If we let students choose their own book for the library project, next they'll want to choose the teachers, and before we know it, students will be running the whole school in total chaos!",
+    options: [
+      { text: "Circular Reasoning", feedback: "Is the conclusion just repeating the premise?", isCorrect: false },
+      { text: "Slippery Slope", feedback: "Correct! The speaker connects a small harmless step to a massive disaster without any logical proof.", isCorrect: true },
+      { text: "Red Herring", feedback: "Does the speaker completely change the subject? No, they predict the future wildly.", isCorrect: false }
+    ],
+    explainBack: {
+      question: "Why is a Slippery Slope bad logic?",
+      options: [
+        { text: "Because small steps usually don't cause massive, unconnected disasters.", isCorrect: true },
+        { text: "Because the speaker's voice is too loud.", isCorrect: false }
+      ]
+    }
+  },
+  {
+    type: "spot-flaw",
+    scenario: "No one has ever proven that aliens do NOT live on the rings of Saturn. Therefore, alien civilizations definitely exist on Saturn's rings!",
+    audioText: "No one has ever proven that aliens do NOT live on the rings of Saturn. Therefore, alien civilizations definitely exist on Saturn's rings!",
+    options: [
+      { text: "Appeal to Ignorance", feedback: "Exactly. Just because something hasn't been proven false doesn't automatically make it true.", isCorrect: true },
+      { text: "Hasty Generalization", feedback: "They aren't generalizing from a small sample. They are relying on a lack of evidence.", isCorrect: false },
+      { text: "False Dilemma", feedback: "Are they giving only two choices? No.", isCorrect: false }
+    ]
+  },
+  {
+    type: "spot-flaw",
+    scenario: "Alice: 'You really shouldn't eat so much junk food, it's bad for you.' Bob: 'Why should I listen to you? You ate three donuts yesterday!'",
+    audioText: "Alice: 'You really shouldn't eat so much junk food, it's bad for you.' Bob: 'Why should I listen to you? You ate three donuts yesterday!'",
+    options: [
+      { text: "Straw Man", feedback: "Did Bob twist Alice's words?", isCorrect: false },
+      { text: "Tu Quoque (You Also)", feedback: "Correct! Bob attacked Alice's hypocrisy instead of dealing with her argument. Even if Alice is a hypocrite, junk food is still bad for you.", isCorrect: true },
+      { text: "Circular Reasoning", feedback: "Bob is not restating his own conclusion.", isCorrect: false }
+    ]
+  },
+  {
+    type: "spot-flaw",
+    scenario: "People have believed that the earth is flat for thousands of years. It's a very old belief, so there must be some truth to it.",
+    audioText: "People have believed that the earth is flat for thousands of years. It's a very old belief, so there must be some truth to it.",
+    options: [
+      { text: "Appeal to Tradition", feedback: "Correct! Just because something has been around a long time does not make it true.", isCorrect: true },
+      { text: "Ad Hominem", feedback: "Is there a personal attack here?", isCorrect: false },
+      { text: "Red Herring", feedback: "Is the subject being changed to distract you?", isCorrect: false }
+    ]
+  },
+  {
+    type: "fair-unfair",
+    scenario: "Senator Jones says: 'We need to invest more in our military defense.' The news reporter states: 'Senator Jones wants to start World War III and loves violence!'",
+    audioText: "Senator Jones says: 'We need to invest more in our military defense.' The news reporter states: 'Senator Jones wants to start World War III and loves violence!'",
+    options: [
+      { text: "Straw Man fallacy (Distorted)", feedback: "Correct! The reporter wildly exaggerated the Senator's view to make him look evil.", isCorrect: true },
+      { text: "Fair representation", feedback: "Is wanting strong defense the exact same as wanting World War III?", isCorrect: false }
+    ]
+  },
+  {
+    type: "missing-piece",
+    scenario: "Tom argues: 'You either have to buy me a new video game console, or I will be bored for the rest of my life!'",
+    audioText: "Tom argues: 'You either have to buy me a new video game console, or I will be bored for the rest of my life!'",
+    question: "This is a False Dilemma. What is the missing flaw in Tom's logic?",
+    options: [
+      { text: "He forgets there are thousands of other ways to not be bored, like reading, going outside, or playing a board game.", feedback: "Spot on! There are always more than two extreme options in life.", isCorrect: true },
+      { text: "He forgot to say please.", feedback: "Manners are good, but what is logically wrong?", isCorrect: false }
+    ]
+  },
+  {
+    type: "build-chain",
+    scenario: "Drag the parts of the argument into a Modus Tollens structure.",
+    audioText: "A Modus Tollens argument takes the form: If P, then Q. Not Q. Therefore, Not P.",
+    parts: [
+      { id: "evidence", text: "It is not cloudy." },
+      { id: "claim", text: "If it is raining, then it must be cloudy." },
+      { id: "conclusion", text: "Therefore, it is not raining." }
+    ],
+    correctOrder: ["claim", "evidence", "conclusion"]
+  },
+  {
+    type: "spot-flaw",
+    scenario: "The new movie 'Galactic Wars' must be the greatest movie ever made because it made a billion dollars on opening weekend!",
+    audioText: "The new movie 'Galactic Wars' must be the greatest movie ever made because it made a billion dollars on opening weekend!",
+    options: [
+      { text: "Appeal to Popularity", feedback: "Correct! Just because many people paid to see it does not mean the plot or acting was good.", isCorrect: true },
+      { text: "Circular Reasoning", feedback: "Are they restating the conclusion? No, they are pointing to money.", isCorrect: false },
+      { text: "False Dilemma", feedback: "Are there only two choices presented?", isCorrect: false }
+    ]
+  },
+  {
+    type: "spot-flaw",
+    scenario: "Dr. Gregory says the new bridge design is structurally unsafe. Mayor Higgins says: 'Ignore Dr. Gregory. He wears ugly shirts and drives a rusty car!'",
+    audioText: "Dr. Gregory says the new bridge design is structurally unsafe. Mayor Higgins says: 'Ignore Dr. Gregory. He wears ugly shirts and drives a rusty car!'",
+    options: [
+      { text: "Red Herring", feedback: "Close, it is distracting, but attack on clothing/cars is a specific type of fallacy.", isCorrect: false },
+      { text: "Ad Hominem", feedback: "Correct! An attack on the person rather than the engineering argument.", isCorrect: true },
+      { text: "Slippery Slope", feedback: "There are no extreme futures predicted here.", isCorrect: false }
+    ],
+    explainBack: {
+      question: "What does the car a man drives have to do with bridge engineering?",
+      options: [
+        { text: "Nothing at all.", isCorrect: true },
+        { text: "Engineers should drive nice cars.", isCorrect: false }
+      ]
+    }
+  },
+  {
+    type: "spot-flaw",
+    scenario: "To prove that ghosts exist, Susan says: 'Ghosts exist because I saw one, and I only see things that exist!'",
+    audioText: "To prove that ghosts exist, Susan says: 'Ghosts exist because I saw one, and I only see things that exist!'",
+    options: [
+      { text: "Circular Reasoning", feedback: "Correct! She is basically saying 'Ghosts exist because ghosts exist'.", isCorrect: true },
+      { text: "Hasty Generalization", feedback: "She isn't judging a whole population based on a sample.", isCorrect: false },
+      { text: "Appeal to Ignorance", feedback: "She relies on what she 'saw', not on what hasn't been disproven.", isCorrect: false }
+    ]
+  },
+  {
+    type: "missing-piece",
+    scenario: "Carl reads an article about a shark attack in Australia. The next day he reads about a shark attack in Florida. He declares: 'It is not safe to swim in any ocean, ever again!'",
+    audioText: "Carl reads an article about a shark attack in Australia. The next day he reads about a shark attack in Florida. He declares: 'It is not safe to swim in any ocean, ever again!'",
+    question: "This Hasty Generalization misses a key statistical piece of logic. What is it?",
+    options: [
+      { text: "Two incidents out of millions of swimmers around the world is too small a sample to fear all oceans.", feedback: "Perfect. A tiny sample does not equal a universal rule.", isCorrect: true },
+      { text: "He didn't check what kind of shark it was.", feedback: "The species doesn't matter as much as his tiny sample size.", isCorrect: false }
+    ]
+  },
+  {
+    type: "fair-unfair",
+    scenario: "Mother asks: 'Did you clean your room like I asked?' Son answers: 'Why are you always trying to control my life and make me miserable?'",
+    audioText: "Mother asks: 'Did you clean your room like I asked?' Son answers: 'Why are you always trying to control my life and make me miserable?'",
+    options: [
+      { text: "Red Herring / Avoidance", feedback: "Correct! Instead of answering the question, the son deflects by attacking the mother's motives.", isCorrect: true },
+      { text: "Fair response", feedback: "Did the son answer the question respectfully?", isCorrect: false }
+    ]
+  },
+  {
+    type: "spot-flaw",
+    scenario: "I don't need to listen to your argument about morality because you read it in a book written by a controversial author.",
+    audioText: "I don't need to listen to your argument about morality because you read it in a book written by a controversial author.",
+    options: [
+      { text: "Genetic Fallacy", feedback: "Correct! Dismissing an argument purely because of where it originated from is poor logic. Even a bad source can state a true fact.", isCorrect: true },
+      { text: "Appeal to Popularity", feedback: "Does it claim a majority believe it? No.", isCorrect: false },
+      { text: "False Dilemma", feedback: "Does it give only two options?", isCorrect: false }
+    ]
+  },
+  {
+    type: "build-chain",
+    scenario: "Build a chain that exposes an Ad Hominem fallacy.",
+    audioText: "Let's arrange the steps of how an Ad Hominem fails logic.",
+    parts: [
+      { id: "p2", text: "The first person states a factual argument about taxes." },
+      { id: "p1", text: "The opponent ignores the argument completely." },
+      { id: "p3", text: "The opponent insults the first person's appearance to win the crowd." }
+    ],
+    correctOrder: ["p2", "p1", "p3"]
+  },
+  {
+    type: "spot-flaw",
+    scenario: "Teacher: 'We need to focus more on spelling this semester.' Parent: 'So you think math is completely useless and we shouldn't teach numbers at all?'",
+    audioText: "Teacher: 'We need to focus more on spelling this semester.' Parent: 'So you think math is completely useless and we shouldn't teach numbers at all?'",
+    options: [
+      { text: "Straw Man", feedback: "Correct! The parent twisted the teacher's desire for more spelling into a hatred for math, which the teacher never said.", isCorrect: true },
+      { text: "Circular Reasoning", feedback: "Is the parent restating a premise?", isCorrect: false },
+      { text: "Hasty Generalization", feedback: "Are they jumping to a conclusion about a group based on one person?", isCorrect: false }
+    ],
+    explainBack: {
+      question: "Why is this a Straw Man?",
+      options: [
+        { text: "Because wanting to improve one area does not mean you hate another area.", isCorrect: true },
+        { text: "Because math is actually very important.", isCorrect: false }
+      ]
+    }
   }
 ];

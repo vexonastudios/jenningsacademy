@@ -20,10 +20,19 @@ import { FINGER_MAP, ZONE_STYLES } from "../content/fingerZones";
  */
 
 const ROWS = [
-  ["q","w","e","r","t","y","u","i","o","p"],
-  ["a","s","d","f","g","h","j","k","l",";"],
-  ["z","x","c","v","b","n","m",",",".","/"],
+  ["`","1","2","3","4","5","6","7","8","9","0","-","=","bksp"],
+  ["tab","q","w","e","r","t","y","u","i","o","p","[","]","\\"],
+  ["caps","a","s","d","f","g","h","j","k","l",";","'","enter"],
+  ["shift-l","z","x","c","v","b","n","m",",",".","/","shift-r"],
 ];
+
+const rightHandKeys = ['y','h','n','u','j','m','i','k',',','o','l','.','p',';','/','\'','6','7','8','9','0','-','=','[',']','\\'];
+const leftHandKeys = ['q','a','z','w','s','x','e','d','c','r','f','v','t','g','b','1','2','3','4','5','`'];
+
+const shiftMappings = {
+  '~': '`', '!': '1', '@': '2', '#': '3', '$': '4', '%': '5', '^': '6', '&': '7', '*': '8', '(': '9', ')': '0', '_': '-', '+': '=',
+  '{': '[', '}': ']', '|': '\\', ':': ';', '"': "'", '<': ',', '>': '.', '?': '/'
+};
 
 export default function KeyboardVisualizer({ nextKey, lastKey, lastCorrect, compact = false }) {
   const [flash, setFlash] = useState(null); // { key, type: 'correct' | 'wrong' }
@@ -37,15 +46,34 @@ export default function KeyboardVisualizer({ nextKey, lastKey, lastCorrect, comp
     return () => clearTimeout(t);
   }, [lastKey, lastCorrect]);
 
-  const next  = nextKey?.toLowerCase();
-  const sz    = compact ? "w-7 h-7 text-[10px]" : "w-8 h-8 sm:w-9 sm:h-9 text-xs";
-  const gap   = compact ? "gap-1" : "gap-1.5";
+  const next  = nextKey;
+  let needsShiftL = false;
+  let needsShiftR = false;
+  let baseNext = next?.toLowerCase();
+
+  if (next && next === next.toUpperCase() && next.toLowerCase() !== next.toUpperCase()) {
+    // Upper case letter
+    if (rightHandKeys.includes(baseNext)) needsShiftL = true;
+    else if (leftHandKeys.includes(baseNext)) needsShiftR = true;
+  } else if (shiftMappings[next]) {
+    // Shifted symbol
+    baseNext = shiftMappings[next];
+    if (rightHandKeys.includes(baseNext)) needsShiftL = true;
+    else if (leftHandKeys.includes(baseNext)) needsShiftR = true;
+  }
+
+  const gap = compact ? "gap-1" : "gap-1.5";
 
   function KeyCell({ k }) {
     const zone  = FINGER_MAP[k] ?? null;
     const st    = zone ? ZONE_STYLES[zone] : null;
-    const isNext   = k === next;
-    const isFlash  = flash?.key === k;
+    
+    // Check if this key should be highlighted
+    const isNext = (k === baseNext) || 
+                   (k === "shift-l" && needsShiftL) || 
+                   (k === "shift-r" && needsShiftR);
+                   
+    const isFlash  = flash?.key === k; // Note: flash.key logic might need mapping for shifted characters if tracking exactly
     const flashType = flash?.type;
 
     let cls = "";
@@ -61,23 +89,34 @@ export default function KeyboardVisualizer({ nextKey, lastKey, lastCorrect, comp
       cls = "bg-slate-800/50 border-slate-700 text-slate-500";
     }
 
+    // Determine correct width
+    let wClass = compact ? "w-7" : "w-8 sm:w-9";
+    if (k === "bksp") wClass = compact ? "w-10" : "w-12 sm:w-16";
+    else if (k === "tab" || k === "\\") wClass = compact ? "w-10" : "w-12 sm:w-14";
+    else if (k === "caps") wClass = compact ? "w-12" : "w-14 sm:w-[70px]";
+    else if (k === "enter") wClass = compact ? "w-16" : "w-16 sm:w-20";
+    else if (k === "shift-l") wClass = compact ? "w-16" : "w-20 sm:w-24";
+    else if (k === "shift-r") wClass = compact ? "w-14" : "w-16 sm:w-24";
+    
+    const hClass = compact ? "h-7 text-[10px]" : "h-8 sm:h-9 text-xs";
+
     return (
-      <div className={`${sz} rounded-lg flex items-center justify-center font-black uppercase border transition-all duration-100 ${cls}`}>
-        {k}
+      <div className={`${wClass} ${hClass} rounded-lg flex items-center justify-center font-black uppercase border transition-all duration-100 ${cls}`}>
+        {k === "shift-l" || k === "shift-r" ? "SHIFT" : k}
       </div>
     );
   }
 
   // Finger zone legend (compact: hide)
-  const nextZone   = next ? FINGER_MAP[next] : null;
+  const nextZone   = baseNext ? FINGER_MAP[baseNext] : null;
   const nextStyle  = nextZone ? ZONE_STYLES[nextZone] : null;
 
   return (
-    <div className="flex flex-col items-center gap-3 select-none">
+    <div className="flex flex-col items-center gap-2 sm:gap-3 select-none">
       {/* Rows */}
-      <div className={`flex flex-col items-center ${gap}`}>
+      <div className={`flex flex-col items-center gap-1 sm:gap-1.5`}>
         {ROWS.map((row, ri) => (
-          <div key={ri} className={`flex ${gap} ${ri === 1 ? "pl-3" : ri === 2 ? "pl-6" : ""}`}>
+          <div key={ri} className={`flex ${gap}`}>
             {row.map(k => <KeyCell key={k} k={k} />)}
           </div>
         ))}
@@ -97,13 +136,15 @@ export default function KeyboardVisualizer({ nextKey, lastKey, lastCorrect, comp
       {nextStyle && (
         <div className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-slate-700 bg-slate-800/60">
           <span className="w-3 h-3 rounded-full shrink-0" style={{ background: nextStyle.hex }} />
-          <span className="text-xs font-bold text-slate-300">{nextStyle.label}</span>
+          <span className="text-xs font-bold text-slate-300">
+            {needsShiftL && "L. Pinky + "}{needsShiftR && "R. Pinky + "}{nextStyle.label}
+          </span>
         </div>
       )}
 
       {/* Zone legend */}
       {!compact && (
-        <div className="flex flex-wrap justify-center gap-x-3 gap-y-1 max-w-sm">
+        <div className="flex flex-wrap justify-center gap-x-3 gap-y-1 max-w-sm mt-1 sm:mt-2">
           {Object.entries(ZONE_STYLES).slice(0, 8).map(([zone, st]) => (
             <div key={zone} className="flex items-center gap-1">
               <span className="w-2 h-2 rounded-full shrink-0" style={{ background: st.hex }} />

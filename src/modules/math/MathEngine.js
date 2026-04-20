@@ -250,6 +250,80 @@ const generators = {
     return { equation:`x + y = ${x+y},  x - y = ${x-y}.  x = ?`, answer:x, type:"equation",
       steps:[`Add the two equations together.`, `(x+y) + (x-y) = ${x+y} + ${x-y}`, `2x = ${2*x}`, `x = ${x}`] };
   },
+
+  // Kindergarten (Grade 0)
+  counting_up_to_5: () => {
+    const start = rand(1, 3);
+    return { equation: `${start}, ${start+1}, ?`, answer: start+2, type: "equation", steps: [`Count up by 1.`, `${start}, ${start+1}, ${start+2}`] };
+  },
+  counting_up_to_10: () => {
+    const start = rand(4, 8);
+    return { equation: `${start}, ${start+1}, ?`, answer: start+2, type: "equation", steps: [`Count up by 1.`, `${start}, ${start+1}, ${start+2}`] };
+  },
+  number_recognition: () => {
+    const n = rand(1, 10);
+    return { equation: `What number is this: ${n}?`, answer: n, type: "word", steps: [`This is the number ${n}.`] };
+  },
+
+  // Grade 11
+  trig_sin_cos: () => {
+    const problems = [
+      { eq: "sin(0°)", ans: 0 },
+      { eq: "cos(0°)", ans: 1 },
+      { eq: "sin(90°)", ans: 1 },
+      { eq: "cos(90°)", ans: 0 },
+      { eq: "sin(180°)", ans: 0 },
+      { eq: "cos(180°)", ans: -1 }
+    ];
+    const p = choice(problems);
+    return { equation: `${p.eq} = ?`, answer: p.ans, type: "equation", steps: [`Think of the unit circle.`, `${p.eq} = ${p.ans}`] };
+  },
+  exponential_solve: () => {
+    const base = rand(2, 5);
+    const exp = rand(2, 4);
+    const result = Math.pow(base, exp);
+    return { equation: `${base}^x = ${result} → x = ?`, answer: exp, type: "equation", steps: [`What power of ${base} equals ${result}?`, `${base}^${exp} = ${result}`, `x = ${exp}`] };
+  },
+  logarithm_basic: () => {
+    const bases = [2, 3, 10];
+    const base = choice(bases);
+    const exp = rand(2, 4);
+    const result = Math.pow(base, exp);
+    return { equation: `log_${base}(${result}) = ?`, answer: exp, type: "equation", steps: [`What power is ${base} raised to to get ${result}?`, `${base}^${exp} = ${result}`, `Answer is ${exp}`] };
+  },
+  rational_solve: () => {
+    const x = rand(2, 10);
+    const num = rand(2, 5) * x;
+    return { equation: `${num} / x = ${num/x} → x = ?`, answer: x, type: "equation", steps: [`Multiply both sides by x.`, `${num/x} * x = ${num}`, `x = ${x}`] };
+  },
+
+  // Grade 12
+  derivative_power_rule: () => {
+    const coeff = rand(2, 5);
+    const pow = rand(2, 4);
+    const x = rand(1, 3);
+    const ans = coeff * pow * Math.pow(x, pow - 1);
+    return { equation: `f(x)=${coeff}x^${pow}. Find f'(${x}).`, answer: ans, type: "equation", steps: [`Power rule: f'(x) = ${coeff * pow}x^${pow - 1}`, `Plug in x=${x}:  ${coeff*pow}(${x})^${pow-1} = ${ans}`] };
+  },
+  integral_polynomial: () => {
+    const coeff = rand(2, 4);
+    const top = rand(2, 4); // integral from 0 to top
+    // ∫ coeff*x dx = (coeff/2) * x^2
+    const ans = (coeff / 2) * top * top;
+    return { equation: `Integral of ${coeff}x from 0 to ${top} = ?`, answer: ans, type: "equation", steps: [`Antiderivative of ${coeff}x is ${(coeff/2)}x^2.`, `Evaluate from 0 to ${top}: ${(coeff/2)}(${top})^2 - 0 = ${ans}`] };
+  },
+  probability_dice: () => {
+    // just random sum
+    return { equation: `Prob of flipping a coin and getting Heads? (Answer in %)`, answer: 50, type: "equation", steps: [`A coin has 2 sides, Heads is 1 side.`, `1/2 = 50%`] };
+  },
+  mean_average: () => {
+    const a = rand(2, 10);
+    const b = rand(2, 10);
+    const c = rand(2, 10);
+    const sum = a+b+c;
+    const ans = parseFloat((sum/3).toFixed(2));
+    return { equation: `Average of ${a}, ${b}, ${c} = ?`, answer: ans, type: "equation", steps: [`Average = Sum / Count`, `Sum = ${sum}. Count = 3.`, `Average = ${ans}`] };
+  }
 };
 
 export function generateProblem(skillTag) {

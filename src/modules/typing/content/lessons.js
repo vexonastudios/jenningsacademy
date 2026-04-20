@@ -307,4 +307,154 @@ export const LESSONS = [
       prompt: 'the quick brown fox jumps over the lazy dog the quick brown fox jumps over the lazy dog the quick brown fox jumps over the lazy dog',
     },
   },
+
+  // ── 13: The Shift Keys ────────────────────────────────────────────────────
+  {
+    id: 13,
+    title: 'Capital Letters',
+    subtitle: 'Using the Shift Keys',
+    phaseLabel: 'Capitals',
+    targetKeys: ['Shift_L', 'Shift_R'],
+    targetFinger: 'Pinky Fingers',
+    estimatedMinutes: 15,
+    instruction: {
+      title: 'The Shift Rule',
+      body: 'To type a capital letter on the LEFT hand, hold the RIGHT Shift key down with your right pinky. To type a capital letter on the RIGHT hand, hold the LEFT Shift key down with your left pinky. Never use the same hand to press Shift and the letter key!',
+    },
+    warmupPrompt: 'the quick brown fox jumps',
+    drills: [
+      { label: 'Drill 1 — Left Letters, Right Shift', prompt: 'A a S s D d F f G g T t R r E e W w Q q A S D F G Q W E R T A S D F' },
+      { label: 'Drill 2 — Right Letters, Left Shift', prompt: 'J j K k L l H h Y y U u I i O o P p M m N n J K L H Y U I O P N M' },
+      { label: 'Drill 3 — Names and Places',          prompt: 'James Mary Texas Paris London Monday Friday Jupiter Mars Saturn Earth' },
+      { label: 'Drill 4 — Sentences',                 prompt: 'The dog ran. He is fast. We went to Rome. April is spring. It is fine.' },
+    ],
+    challenge: {
+      prompt: 'The quick dog jumps. Mary and John went to Paris. Friday is the best day. Jupiter is huge. We love Texas. Apples are red.',
+    },
+  },
+
+  // ── 14: Core Punctuation ──────────────────────────────────────────────────
+  {
+    id: 14,
+    title: 'Core Punctuation',
+    subtitle: 'Periods, Commas, Quotes, and Questions',
+    phaseLabel: 'Punctuation',
+    targetKeys: ['.', ',', "'", '"', '?', '!'],
+    targetFinger: 'Right Ring & Pinky',
+    estimatedMinutes: 16,
+    instruction: {
+      title: 'Punctuating Your Sentences',
+      body: 'You already learned the semicolon, comma, and period. Now let us add the question mark (Shift + /), exclamation mark (Shift + 1), and quotes (Shift + \'). Remember: spaces go AFTER punctuation, not before it.',
+    },
+    warmupPrompt: 'The dog ran off to London.',
+    drills: [
+      { label: 'Drill 1 — Questions and Exclamations', prompt: 'What? Why? How? Stop! Go! Wow! Is that true? Yes it is! I am amazed!' },
+      { label: 'Drill 2 — Quotation Marks',            prompt: '"Hello," he said. "Stop!" she cried. "Why?" I asked. "I am here," he replied.' },
+      { label: 'Drill 3 — Apostrophes',                prompt: 'don\'t can\'t won\'t it\'s hasn\'t didn\'t shouldn\'t wouldn\'t Mary\'s dog' },
+      { label: 'Drill 4 — Full Sentences',             prompt: 'Wait, what are you doing? "I don\'t know!" she yelled. It\'s going to rain.' },
+    ],
+    challenge: {
+      prompt: '"Watch out!" John cried. The car didn\'t stop in time. Why did he run? It\'s raining heavily, isn\'t it? "Yes," Mary replied.',
+    },
+  },
+
+  // ── 15: The Number Row ────────────────────────────────────────────────────
+  {
+    id: 15,
+    title: 'The Number Row',
+    subtitle: 'Reaching for 1 through 0',
+    phaseLabel: 'Numbers',
+    targetKeys: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'],
+    targetFinger: 'All Fingers Reach Up',
+    estimatedMinutes: 18,
+    instruction: {
+      title: 'Reaching the Top Row',
+      body: 'The numbers 1-0 sit above the top alphabetical row. Left hand takes 1(pinky), 2(ring), 3(middle), 4,5(index). Right hand takes 6,7(index), 8(middle), 9(ring), 0(pinky). These are the biggest stretches you will make. Always return your hands to home row after typing a number.',
+    },
+    warmupPrompt: '10 days ago, I had 2 apples.',
+    drills: [
+      { label: 'Drill 1 — Left Hand Numbers',  prompt: '1 2 3 4 5 11 22 33 44 55 12 34 15 25 35 45 123 451 12345' },
+      { label: 'Drill 2 — Right Hand Numbers', prompt: '6 7 8 9 0 66 77 88 99 00 67 89 60 70 80 90 678 906 67890' },
+      { label: 'Drill 3 — Alternating',        prompt: '10 29 38 47 56 123 890 456 789 100 200 500 1999 2024' },
+      { label: 'Drill 4 — Context',            prompt: 'In 1492 Columbus sailed. I have 100 dogs. It is 2024. He is 9 years old.' },
+    ],
+    challenge: {
+      prompt: 'There are 365 days in a year. A leap year has 366. The speed limit is 55. I have 12 apples and 4 bananas. It costs 15 dollars.',
+    },
+  },
+
+  // ── 16: Advanced Symbols ──────────────────────────────────────────────────
+  {
+    id: 16,
+    title: 'Advanced Symbols',
+    subtitle: 'Shift + Number Row',
+    phaseLabel: 'Symbols',
+    targetKeys: ['!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '-', '=', '+'],
+    targetFinger: 'All Fingers Reach Up',
+    estimatedMinutes: 20,
+    instruction: {
+      title: 'The Symbol Row',
+      body: 'Holding shift while pressing the number keys produces symbols! Use opposite shift hands, just like capital letters. Left pinky holds Shift while you reach for (*) with right middle. This takes practice to memorize which number hides which symbol.',
+    },
+    warmupPrompt: 'I have 10 apples and 2 dogs.',
+    drills: [
+      { label: 'Drill 1 — Common Symbols',     prompt: '@ # $ % ^ & * ( ) _ + - = @ # $ % ^ & * ( ) _ + - =' },
+      { label: 'Drill 2 — Math & Code',        prompt: '1 + 1 = 2; 5 - 3 = 2; 4 * 2 = 8; (x + y) = z; user@email.com' },
+      { label: 'Drill 3 — Prices & Hash',      prompt: 'It costs $5.00! The discount is 50%. Tag it #awesome. He is 100% right.' },
+      { label: 'Drill 4 — Brackets',           prompt: '[hello] {world} (test) <tag> [12] {a, b} (5 + 5)' },
+    ],
+    challenge: {
+      prompt: 'Send an email to admin@test.com. Total cost: $45.99 (including 5% tax). Formula: (x + y) * (z - 2) = 100. Let\'s go! #MathIsFun',
+    },
+  },
+
+  // ── 17: Sentence Fluency ──────────────────────────────────────────────────
+  {
+    id: 17,
+    title: 'Paragraph Fluency I',
+    subtitle: 'Real-World Typing',
+    phaseLabel: 'Fluency',
+    targetKeys: [],
+    targetFinger: 'All Fingers',
+    estimatedMinutes: 15,
+    instruction: {
+      title: 'Putting it all together',
+      body: 'Now that you know the entire keyboard, it is time to practice real paragraphs. Focus on reading ahead slightly, letting your fingers naturally sequence the words without stopping. Keep a steady, drumming rhythm.',
+    },
+    warmupPrompt: 'Typing smoothly requires both practice and patience.',
+    drills: [
+      { label: 'Drill 1 — Short Sentences', prompt: 'The quick brown fox jumps. A lazy dog sleeps all day. We enjoy the sunny weather. She ran to the store very fast.' },
+      { label: 'Drill 2 — Complex Words',   prompt: 'extraordinary circumstances professional development beautiful environment specifically designed understanding completely' },
+      { label: 'Drill 3 — Paragraphs',      prompt: 'Learning to type is a skill that takes time. Do not rush. Make sure you sit up straight and keep your hands light. Mistakes are normal.' },
+      { label: 'Drill 4 — Numbers & Caps',  prompt: 'In 1969, NASA landed Apollo 11 on the Moon! Neil Armstrong and Buzz Aldrin were the first 2 humans to walk on it.' },
+    ],
+    challenge: {
+      prompt: 'Technology has changed the world since the year 2000. Over 5 billion people now use the Internet! Learning to type at 60 words per minute (WPM) is a huge advantage for students, writers, and programmers alike.',
+    },
+  },
+
+  // ── 18: Ultimate Mastery ──────────────────────────────────────────────────
+  {
+    id: 18,
+    title: 'Ultimate Mastery',
+    subtitle: 'The Final Exam',
+    phaseLabel: 'Fluency',
+    targetKeys: [],
+    targetFinger: 'All Fingers',
+    estimatedMinutes: 20,
+    instruction: {
+      title: 'The Final Test',
+      body: 'This lesson mixes everything together: complex words, capital letters, numbers, and heavy punctuation. Relax your shoulders, take a deep breath, and let muscle memory do the work. You are a typing master now!',
+    },
+    warmupPrompt: 'We are about to take the ultimate typing test. Stay calm.',
+    drills: [
+      { label: 'Drill 1 — Punctuation Heavy', prompt: '"Wait!" John shouted. "I forgot my 15% discount coupon!" Mary sighed, "Well, we have 10 minutes before the store closes."' },
+      { label: 'Drill 2 — Technical Text',    prompt: 'To calculate the area, use A = width * height. For example, a 10x20 room is 200 sq. feet. Contact support@math.org for help.' },
+      { label: 'Drill 3 — Rapid Fire',        prompt: 'Zebra xylophone quietly jumps! Over 9,000 foxes? Yes! Exact calculations yield exactly 100%.' },
+      { label: 'Drill 4 — The Long Paragraph',prompt: 'On July 4, 1776, the Declaration of Independence was adopted. It established the USA as a free nation. "Life, Liberty and the pursuit of Happiness" is a famous quote from it.' },
+    ],
+    challenge: {
+      prompt: '"Hello!" said the captain. Our flight gives us a gorgeous view of 3 different continents. Can you believe it? The altitude is 35,000 feet, and the outside temperature is -40 degrees Fahrenheit. The cost of a ticket was $450.99. Is it worth it? Absolutely!',
+    },
+  }
 ];

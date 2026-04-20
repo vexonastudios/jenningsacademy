@@ -40,7 +40,7 @@ function useSpeechAsync(voiceId) {
 // LocalStorage Helper
 const loadProgress = (profileId) => {
   const blank = { 
-    day: 6, // Starting at day 6 per the spec for the U.S. states core push MVP
+    day: 1, 
     states: {} 
   };
   USA.locations.forEach(l => {
@@ -86,32 +86,29 @@ export default function GeographyModule({ profileId, onRoundComplete }) {
     if (phase !== "booting") return;
 
     const currentDay = ledger.day;
-    const isCapitalDay = currentDay >= 26;
+    const dayConfig = GEOGRAPHY_GROUPS.find(g => g.dayId === currentDay);
+    const isCapitalDay = dayConfig ? dayConfig.type === "capital" : false;
     
     // Shuffle helper
     const shuffle = (arr) => arr.slice().sort(() => Math.random() - 0.5);
 
     let resolvedReviewQueue = [];
     let resolvedNewQueue = [];
+    const allStatesData = Object.entries(ledger.states).map(([id, data]) => ({id, ...data}));
 
-    if (isCapitalDay) {
-        const allStatesData = Object.entries(ledger.states).map(([id, data]) => ({id, ...data}));
-        const learning = allStatesData.filter(s => s.capitalStatus === 'Learning');
-        const unseen = allStatesData.filter(s => s.capitalStatus === 'Unseen');
-        
-        resolvedReviewQueue = shuffle(learning).slice(0, 5).map(s => USA.locations.find(l => l.id === s.id));
-        resolvedNewQueue = shuffle(unseen).slice(0, 10).map(s => USA.locations.find(l => l.id === s.id));
+    if (dayConfig?.isReview) {
+      const statusField = isCapitalDay ? 'capitalStatus' : 'status';
+      const introduced = allStatesData.filter(s => s[statusField] !== 'Unseen');
+      resolvedReviewQueue = shuffle(introduced).slice(0, 15).map(s => USA.locations.find(l => l.id === s.id));
+      resolvedNewQueue = [];
     } else {
-        const allStatesData = Object.entries(ledger.states).map(([id, data]) => ({id, ...data}));
-        const learning = allStatesData.filter(s => s.status === 'Learning');
-        const introduced = allStatesData.filter(s => s.status === 'Introduced');
-        
-        // Pick ~5 review states
-        const pool = shuffle([...learning, ...introduced]).slice(0, 5);
-        resolvedReviewQueue = pool.map(s => USA.locations.find(l => l.id === s.id));
-
-        const dayConfig = GEOGRAPHY_GROUPS.find(g => g.dayId === currentDay);
-        resolvedNewQueue = dayConfig ? dayConfig.stateIds.map(sid => USA.locations.find(l => l.id === sid)) : [];
+      const statusField = isCapitalDay ? 'capitalStatus' : 'status';
+      const learning = allStatesData.filter(s => s[statusField] === 'Learning');
+      const introduced = allStatesData.filter(s => s[statusField] === 'Introduced');
+      const pool = shuffle([...learning, ...introduced]).slice(0, 5);
+      resolvedReviewQueue = pool.map(s => USA.locations.find(l => l.id === s.id));
+      
+      resolvedNewQueue = dayConfig ? dayConfig.stateIds.map(sid => USA.locations.find(l => l.id === sid)) : [];
     }
 
     setReviewQueue(resolvedReviewQueue);
@@ -135,7 +132,8 @@ export default function GeographyModule({ profileId, onRoundComplete }) {
 
   // Audio orchestrator based on phase and index
   useEffect(() => {
-    const isCapitalDay = ledger.day >= 26;
+    const dayConfig = GEOGRAPHY_GROUPS.find(g => g.dayId === ledger.day);
+    const isCapitalDay = dayConfig ? dayConfig.type === "capital" : false;
 
     if (phase === "review" && reviewQueue[currentIndex]) {
       const state = reviewQueue[currentIndex];
@@ -221,7 +219,8 @@ export default function GeographyModule({ profileId, onRoundComplete }) {
     const updatedLedger = { ...ledger, states: { ...ledger.states } };
     const stateData = { ...updatedLedger.states[target.id] };
 
-    const isCapitalDay = ledger.day >= 26;
+    const dayConfig = GEOGRAPHY_GROUPS.find(g => g.dayId === ledger.day);
+    const isCapitalDay = dayConfig ? dayConfig.type === "capital" : false;
     
     if (location.id === target.id) {
       // Correct!
@@ -266,7 +265,8 @@ export default function GeographyModule({ profileId, onRoundComplete }) {
   if (phase === "booting") return <div className="flex-1 bg-slate-50 relative flex items-center justify-center font-bold text-slate-400">Loading Map...</div>;
 
   // Resolve Map Properties based on Phase
-  const isCapitalDay = ledger.day >= 26;
+  const dayConfig = GEOGRAPHY_GROUPS.find(g => g.dayId === ledger.day);
+  const isCapitalDay = dayConfig ? dayConfig.type === "capital" : false;
   let highlightIds = [];
   let dimIds = [];
   let mapMode = "learn";

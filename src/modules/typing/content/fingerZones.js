@@ -7,23 +7,26 @@
 // Key → finger zone ID
 export const FINGER_MAP = {
   // ── Left Pinky ────────────────────────────
-  q: 'l-pinky', a: 'l-pinky', z: 'l-pinky',
+  q: 'l-pinky', a: 'l-pinky', z: 'l-pinky', '1': 'l-pinky', '`': 'l-pinky',
+  'tab': 'l-pinky', 'caps': 'l-pinky', 'shift-l': 'l-pinky',
   // ── Left Ring ─────────────────────────────
-  w: 'l-ring',  s: 'l-ring',  x: 'l-ring',
+  w: 'l-ring',  s: 'l-ring',  x: 'l-ring', '2': 'l-ring',
   // ── Left Middle ───────────────────────────
-  e: 'l-middle',d: 'l-middle',c: 'l-middle',
+  e: 'l-middle',d: 'l-middle',c: 'l-middle', '3': 'l-middle',
   // ── Left Index ────────────────────────────
-  r: 'l-index', f: 'l-index', v: 'l-index',
-  t: 'l-index', g: 'l-index', b: 'l-index',
+  r: 'l-index', f: 'l-index', v: 'l-index', '4': 'l-index',
+  t: 'l-index', g: 'l-index', b: 'l-index', '5': 'l-index',
   // ── Right Index ───────────────────────────
-  y: 'r-index', h: 'r-index', n: 'r-index',
-  u: 'r-index', j: 'r-index', m: 'r-index',
+  y: 'r-index', h: 'r-index', n: 'r-index', '6': 'r-index',
+  u: 'r-index', j: 'r-index', m: 'r-index', '7': 'r-index',
   // ── Right Middle ──────────────────────────
-  i: 'r-middle',k: 'r-middle',',': 'r-middle',
+  i: 'r-middle',k: 'r-middle',',': 'r-middle', '8': 'r-middle',
   // ── Right Ring ────────────────────────────
-  o: 'r-ring',  l: 'r-ring',  '.': 'r-ring',
+  o: 'r-ring',  l: 'r-ring',  '.': 'r-ring', '9': 'r-ring',
   // ── Right Pinky ───────────────────────────
   p: 'r-pinky', ';': 'r-pinky', '/': 'r-pinky', "'": 'r-pinky',
+  '0': 'r-pinky', '-': 'r-pinky', '=': 'r-pinky', '[': 'r-pinky',
+  ']': 'r-pinky', '\\': 'r-pinky', 'bksp': 'r-pinky', 'enter': 'r-pinky', 'shift-r': 'r-pinky',
   // ── Thumbs ────────────────────────────────
   ' ': 'thumb',
 };
