@@ -245,5 +245,209 @@ export const DEDUCTION_STUDIO_CONTENT = [
       { id: "p3", text: "Therefore, the universe has a cause." } 
     ],
     correctOrder: ["p1", "p2", "p3"]
+  },
+  {
+    type: "missing-piece",
+    scenario: "Premise 1: All birds have feathers.\nPremise 2: A bat can fly.\nConclusion: Therefore, a bat must have feathers.",
+    audioText: "Premise 1: All birds have feathers. Premise 2: A bat can fly. Conclusion: Therefore, a bat must have feathers.",
+    question: "What is wrong with this deduction?",
+    options: [
+      { text: "The premises do not establish that ONLY birds can fly. A bat is a mammal.", feedback: "Spot on! The argument assumes flying implies being a bird, which is false.", isCorrect: true },
+      { text: "Nothing is wrong; it is a valid syllogism.", feedback: "Do all flying things have to be birds?", isCorrect: false }
+    ]
+  },
+  {
+    type: "contradiction-hunt",
+    scenario: "Analyze these statements.\nStatement A: Human knowledge is absolutely limited; we can never know any universal truths.\nStatement B: Statement A is a universal truth.",
+    audioText: "Analyze these statements. Statement A: Human knowledge is absolutely limited; we can never know any universal truths. Statement B: Statement A is a universal truth.",
+    options: [
+      { text: "Both can be true", feedback: "Can a universal truth state that there are no universal truths?", isCorrect: false },
+      { text: "They conflict (Contradiction)", feedback: "Exactly. The claim that 'there are no universal truths' is itself a universal truth, making it self-defeating.", isCorrect: true },
+      { text: "One is too vague", feedback: "They are very direct philosophical claims.", isCorrect: false }
+    ]
+  },
+  {
+    type: "spot-flaw",
+    scenario: "A historian argues: 'It is impossible to build the pyramids without modern machinery, therefore aliens must have built them.'",
+    audioText: "A historian argues: 'It is impossible to build the pyramids without modern machinery, therefore aliens must have built them.'",
+    options: [
+      { text: "Argument from Incredulity (or False Dilemma)", feedback: "Correct. Just because the historian cannot imagine how ancient people did it, doesn't mean aliens are the only other option.", isCorrect: true },
+      { text: "Ad Hominem", feedback: "He isn't attacking humans.", isCorrect: false },
+      { text: "Valid Deduction", feedback: "Does lack of imagination prove alien involvement?", isCorrect: false }
+    ]
+  },
+  {
+    type: "build-chain",
+    scenario: "Construct the Moral Argument for God's existence.",
+    audioText: "Construct the famous Moral Argument.",
+    parts: [
+      { id: "p1", text: "If God does not exist, objective moral values and duties do not exist." },
+      { id: "p2", text: "Objective moral values and duties do exist." },
+      { id: "p3", text: "Therefore, God exists." }
+    ],
+    correctOrder: ["p1", "p2", "p3"]
+  },
+  {
+    type: "contradiction-hunt",
+    scenario: "Analyze these laws of robotics.\nLaw 1: A robot may not injure a human being.\nLaw 2: A robot must obey all orders given by human beings, even to destroy another human.",
+    audioText: "Analyze these laws of robotics. Law 1: A robot may not injure a human being. Law 2: A robot must obey all orders given by human beings, even to destroy another human.",
+    options: [
+      { text: "Both can be true", feedback: "What happens if a human orders a robot to hurt someone?", isCorrect: false },
+      { text: "They conflict (Contradiction)", feedback: "Right. The laws will immediately crash if a human orders violence.", isCorrect: true },
+      { text: "One is an opinion", feedback: "Both are programmed rules.", isCorrect: false }
+    ]
+  },
+  {
+    type: "missing-piece",
+    scenario: "Premise 1: If an animal is a fish, it lives in the water.\nPremise 2: A whale lives in the water.\nConclusion: A whale is a fish.",
+    audioText: "Premise 1: If an animal is a fish, it lives in the water. Premise 2: A whale lives in the water. Conclusion: A whale is a fish.",
+    question: "Identify the formal logic error.",
+    options: [
+      { text: "Affirming the Consequent.", feedback: "Spot on! The rule only goes one way. Not everything that lives in water is a fish.", isCorrect: true },
+      { text: "Denying the Antecedent.", feedback: "The argument affirms the second part (the consequent), it doesn't deny the first.", isCorrect: false }
+    ]
+  },
+  {
+    type: "spot-flaw",
+    scenario: "A politician states, 'The unemployment rate went down the exact same month I took office. Clearly, my leadership fixed the economy instantly!'",
+    audioText: "A politician states, 'The unemployment rate went down the exact same month I took office. Clearly, my leadership fixed the economy instantly!'",
+    options: [
+      { text: "Post Hoc Ergo Propter Hoc (False Cause)", feedback: "Correct. Because B happened after A, he assumes A caused B. Economics takes months or years to shift.", isCorrect: true },
+      { text: "Straw Man", feedback: "He isn't debating an opponent.", isCorrect: false },
+      { text: "Valid Deduction", feedback: "Is one month enough time to measure a national economic policy?", isCorrect: false }
+    ]
+  },
+  {
+    type: "build-chain",
+    scenario: "Construct a Modus Tollens (Denying the Consequent) argument.",
+    audioText: "Construct a Modus Tollens argument.",
+    parts: [
+      { id: "p1", text: "If it is raining, the street will be wet." },
+      { id: "p2", text: "The street is not wet." },
+      { id: "p3", text: "Therefore, it is not raining." }
+    ],
+    correctOrder: ["p1", "p2", "p3"]
+  },
+  {
+    type: "contradiction-hunt",
+    scenario: "Statement A: 'There is no objective truth; truth is completely relative to the individual.'\nStatement B: 'It is an absolute fact that you should be tolerant of other cultures.'",
+    audioText: "Statement A: 'There is no objective truth; truth is completely relative to the individual.' Statement B: 'It is an absolute fact that you should be tolerant of other cultures.'",
+    options: [
+      { text: "Both can be true", feedback: "Can you demand absolute tolerance while denying absolute truth?", isCorrect: false },
+      { text: "They conflict (Contradiction)", feedback: "Exactly. You cannot claim an objective moral duty (tolerance) if you deny objective truth.", isCorrect: true },
+      { text: "One is an opinion", feedback: "They are both broad philosophical claims.", isCorrect: false }
+    ]
+  },
+  {
+    type: "spot-flaw",
+    scenario: "A debater asserts, 'Evolution is just a theory. Therefore, it is nothing more than a random guess with no evidence.'",
+    audioText: "A debater asserts, 'Evolution is just a theory. Therefore, it is nothing more than a random guess with no evidence.'",
+    options: [
+      { text: "Equivocation Fallacy", feedback: "Spot on! In science, 'theory' means a well-tested framework, but the debater is using the common meaning of 'guess'. The word has two definitions.", isCorrect: true },
+      { text: "Appeal to Authority", feedback: "No authority was cited.", isCorrect: false },
+      { text: "Red Herring", feedback: "He isn't changing the subject.", isCorrect: false }
+    ]
+  },
+  {
+    type: "missing-piece",
+    scenario: "Premise 1: Either we raise taxes, or the schools will go bankrupt.\nPremise 2: We cannot raise taxes.\nConclusion: The schools will go bankrupt.",
+    audioText: "Premise 1: Either we raise taxes, or the schools will go bankrupt. Premise 2: We cannot raise taxes. Conclusion: The schools will go bankrupt.",
+    question: "What logical trap is the first premise setting?",
+    options: [
+      { text: "It presents a False Dilemma.", feedback: "Correct. It assumes there are only two options, ignoring a third option like cutting spending in other areas.", isCorrect: true },
+      { text: "It affirms the Consequent.", feedback: "This is a disjunctive syllogism, not a conditional one.", isCorrect: false }
+    ]
+  },
+  {
+    type: "build-chain",
+    scenario: "Construct the Teleological Argument (Design Argument).",
+    audioText: "Construct the famous Design Argument.",
+    parts: [
+      { id: "p1", text: "Every complex design with a purpose has a designer." },
+      { id: "p2", text: "The universe is a highly complex design with a purpose." },
+      { id: "p3", text: "Therefore, the universe has a Designer." }
+    ],
+    correctOrder: ["p1", "p2", "p3"]
+  },
+  {
+    type: "spot-flaw",
+    scenario: "An astronomer says: 'We have searched for decades with radio telescopes and haven't heard from extra-terrestrials. Therefore, there is definitely no other life in the universe.'",
+    audioText: "An astronomer says: 'We have searched for decades with radio telescopes and haven't heard from extra-terrestrials. Therefore, there is definitely no other life in the universe.'",
+    options: [
+      { text: "Appeal to Ignorance", feedback: "Correct! Absence of evidence is not mathematically evidence of absence, especially in an infinite universe.", isCorrect: true },
+      { text: "Ad Hominem", feedback: "No personal attack was made.", isCorrect: false },
+      { text: "Circular Reasoning", feedback: "He isn't repeating himself.", isCorrect: false }
+    ]
+  },
+  {
+    type: "contradiction-hunt",
+    scenario: "Defendant's testimony: 'I was entirely alone in my apartment from 8 PM until midnight.'\nWitness testimony: 'I spoke with the defendant in the coffee shop at 9 PM.'",
+    audioText: "Defendant's testimony: 'I was entirely alone in my apartment from 8 PM until midnight.' Witness testimony: 'I spoke with the defendant in the coffee shop at 9 PM.'",
+    options: [
+      { text: "Both can be true", feedback: "Can a person be alone in an apartment and talking to someone in a coffee shop at the same time?", isCorrect: false },
+      { text: "They conflict (Contradiction)", feedback: "Exactly. Someone is lying.", isCorrect: true },
+      { text: "One is too vague", feedback: "The quotes are very specific.", isCorrect: false }
+    ]
+  },
+  {
+    type: "missing-piece",
+    scenario: "Premise 1: If a shape is a square, it has four sides.\nPremise 2: This shape is not a square.\nConclusion: Therefore, it does not have four sides.",
+    audioText: "Premise 1: If a shape is a square, it has four sides. Premise 2: This shape is not a square. Conclusion: Therefore, it does not have four sides.",
+    question: "Identify the formal logic error.",
+    options: [
+      { text: "Denying the Antecedent.", feedback: "Correct! Just because it's not a square doesn't mean it lacks four sides. It could be a rectangle.", isCorrect: true },
+      { text: "Affirming the Consequent.", feedback: "The argument denies the first part (the antecedent).", isCorrect: false }
+    ]
+  },
+  {
+    type: "spot-flaw",
+    scenario: "A college student argues: 'This poet's work is brilliant because it is deep and profound. It is deep because the words are so brilliant.'",
+    audioText: "A college student argues: 'This poet's work is brilliant because it is deep and profound. It is deep because the words are so brilliant.'",
+    options: [
+      { text: "Circular Reasoning (Begging the Question)", feedback: "Spot on. The student completely talks in a circle using synonyms without providing evidence.", isCorrect: true },
+      { text: "Straw Man", feedback: "The student isn't attacking an argument.", isCorrect: false },
+      { text: "Slippery Slope", feedback: "The student isn't claiming a chain reaction.", isCorrect: false }
+    ]
+  },
+  {
+    type: "contradiction-hunt",
+    scenario: "Statement A: Space is a complete and absolute vacuum, completely empty of all matter.\nStatement B: Space contains billions of stars, planets, gas clouds, and dust particles.",
+    audioText: "Statement A: Space is a complete and absolute vacuum, completely empty of all matter. Statement B: Space contains billions of stars, planets, gas clouds, and dust particles.",
+    options: [
+      { text: "Both can be true", feedback: "Can something be entirely empty and also contain stars?", isCorrect: false },
+      { text: "They conflict (Contradiction)", feedback: "Right. If space contains stars and dust, it cannot be an 'absolute' vacuum.", isCorrect: true },
+      { text: "One is a metaphor", feedback: "Both are scientific claims.", isCorrect: false }
+    ]
+  },
+  {
+    type: "build-chain",
+    scenario: "Construct a Modus Ponens (Affirming by Affirming) argument.",
+    audioText: "Construct a classic Modus Ponens argument.",
+    parts: [
+      { id: "p1", text: "If you have a password, you can log in." },
+      { id: "p2", text: "You have a password." },
+      { id: "p3", text: "Therefore, you can log in." }
+    ],
+    correctOrder: ["p1", "p2", "p3"]
+  },
+  {
+    type: "spot-flaw",
+    scenario: "A debater asserts: 'We shouldn't fund the space program. After all, the CEO of the rocket company was once caught speeding in his car!'",
+    audioText: "A debater asserts: 'We shouldn't fund the space program. After all, the CEO of the rocket company was once caught speeding in his car!'",
+    options: [
+      { text: "Red Herring / Ad Hominem", feedback: "Correct! The CEO's driving record has zero logical connection to whether space engineering is valuable.", isCorrect: true },
+      { text: "False Dilemma", feedback: "No 'either/or' options were presented.", isCorrect: false },
+      { text: "Appeal to Authority", feedback: "He isn't citing the CEO as an expert.", isCorrect: false }
+    ]
+  },
+  {
+    type: "missing-piece",
+    scenario: "Premise: This watch is incredibly complex, with gears turning perfectly together to tell time. It must have had a watchmaker.",
+    audioText: "Premise: This watch is incredibly complex, with gears turning perfectly together to tell time. It must have had a watchmaker.",
+    question: "This famous analogy compares a watch to what?",
+    options: [
+      { text: "The universe, arguing that the universe's complexity implies a Divine Creator.", feedback: "Exactly. This is William Paley's famous Teleological argument.", isCorrect: true },
+      { text: "The human mind, arguing that thoughts are mechanical.", feedback: "The analogy is usually applied to the design of the universe.", isCorrect: false }
+    ]
   }
 ];

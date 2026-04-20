@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Loader2 } from "lucide-react";
-import { GRAMMAR_CURRICULUM } from "./content/grammarCurriculum";
+import { GRAMMAR_CONTENT } from "./content";
 import ModeSentenceFix from "./components/ModeSentenceFix";
 import ModeIdentify from "./components/ModeIdentify";
 import ModeScramble from "./components/ModeScramble";
@@ -32,9 +32,8 @@ export default function GrammarModule({ profileId, grade, onRoundComplete }) {
   const audioRef = useRef(null);
 
   useEffect(() => {
-    // Filter curriculum by student grade, fallback to all if no matches
-    let filtered = GRAMMAR_CURRICULUM.filter(item => Number(item.grade) === Number(grade));
-    if (filtered.length === 0) filtered = GRAMMAR_CURRICULUM;
+    // Select curriculum directly, fallback to highest available if out of bounds
+    let filtered = GRAMMAR_CONTENT[grade] || GRAMMAR_CONTENT[4];
 
     const clone = [...filtered];
     shuffle(clone);

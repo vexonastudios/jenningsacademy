@@ -277,5 +277,225 @@ export const FALLACY_DETECTIVE_CONTENT = [
         { text: "Because math is actually very important.", isCorrect: false }
       ]
     }
+  },
+  {
+    type: "spot-flaw",
+    scenario: "Customer: 'This phone battery dies after two hours.' Salesman: 'Well, millions of people buy this phone, so it must be the best one on the market!'",
+    audioText: "Customer: 'This phone battery dies after two hours.' Salesman: 'Well, millions of people buy this phone, so it must be the best one on the market!'",
+    options: [
+      { text: "Bandwagon Fallacy", feedback: "Correct! The salesman argues that because many people buy it, it must be good, ignoring the actual complaint.", isCorrect: true },
+      { text: "Red Herring", feedback: "He is distracting, but using popularity as his specific argument.", isCorrect: false },
+      { text: "Ad Hominem", feedback: "The salesman doesn't attack the customer personally.", isCorrect: false }
+    ],
+    explainBack: {
+      question: "Why is the Bandwagon fallacy dangerous here?",
+      options: [
+        { text: "It uses group approval to ignore a real factual problem.", isCorrect: true },
+        { text: "It forces the customer to pay more money.", isCorrect: false }
+      ]
+    }
+  },
+  {
+    type: "fair-unfair",
+    scenario: "Mom: 'You cannot go to the concert on a school night.' Son: 'So you don't want me to ever have fun with my friends again?!'",
+    audioText: "Mom: 'You cannot go to the concert on a school night.' Son: 'So you don't want me to ever have fun with my friends again?!'",
+    options: [
+      { text: "Careful response", feedback: "The son overreacted massively to a specific boundary.", isCorrect: false },
+      { text: "Emotional and distorted response (Straw Man)", feedback: "Right. The son twisted a reasonable boundary on a school night into a claim that mom hates fun entirely.", isCorrect: true }
+    ]
+  },
+  {
+    type: "missing-piece",
+    scenario: "A politician claims, 'Crime went down the same year ice cream sales went down. Ice cream causes crime!'",
+    audioText: "A politician claims, 'Crime went down the same year ice cream sales went down. Ice cream causes crime!'",
+    question: "What logic rule did the politician forget?",
+    options: [
+      { text: "Correlation does not equal Causation.", feedback: "Precisely! Just because two things happen at the same time doesn't mean one causes the other.", isCorrect: true },
+      { text: "The Law of Non-Contradiction.", feedback: "There's no direct contradiction here, just a bad assumption of cause.", isCorrect: false }
+    ]
+  },
+  {
+    type: "build-chain",
+    scenario: "Build a chain showing the Slippery Slope fallacy.",
+    audioText: "Let's arrange the steps of a Slippery Slope fallacy.",
+    parts: [
+      { id: "p1", text: "If I let you skip this homework assignment..." },
+      { id: "p2", text: "You will start skipping all your homework and fail the class..." },
+      { id: "p3", text: "And then you'll never get a job and you'll end up living in a cardboard box!" }
+    ],
+    correctOrder: ["p1", "p2", "p3"]
+  },
+  {
+    type: "contradiction-hunt",
+    scenario: "Analyze these laws governing a new town.\nLaw A: Residents are completely forbidden from keeping pets of any kind.\nLaw B: All dogs kept by residents must wear a blue collar.",
+    audioText: "Analyze these laws governing a new town. Law A: Residents are completely forbidden from keeping pets of any kind. Law B: All dogs kept by residents must wear a blue collar.",
+    options: [
+      { text: "Both can be true", feedback: "If you are forbidden from keeping pets, can you keep a dog to put a collar on?", isCorrect: false },
+      { text: "They conflict (Contradiction)", feedback: "Exactly. The first law forbids pets. The second law regulates a pet. They contradict.", isCorrect: true },
+      { text: "One is too vague", feedback: "They are both very specific laws.", isCorrect: false }
+    ]
+  },
+  {
+    type: "spot-flaw",
+    scenario: "A student asks, 'Why did I fail the exam?' The teacher replies, 'Because you didn't pass it.'",
+    audioText: "A student asks, 'Why did I fail the exam?' The teacher replies, 'Because you didn't pass it.'",
+    options: [
+      { text: "Ad Hominem", feedback: "The teacher didn't insult the student.", isCorrect: false },
+      { text: "Circular Reasoning (Begging the Question)", feedback: "Spot on! 'Failed' and 'didn't pass' mean the exact same thing; the teacher didn't provide a real reason.", isCorrect: true },
+      { text: "Straw Man", feedback: "The teacher didn't exaggerate the student's argument.", isCorrect: false }
+    ],
+    explainBack: {
+      question: "How could the teacher give a logical answer?",
+      options: [
+        { text: "'Because you missed more than 15 calculation questions.'", isCorrect: true },
+        { text: "'Because you failed it repeatedly.'", isCorrect: false }
+      ]
+    }
+  },
+  {
+    type: "fair-unfair",
+    scenario: "Politician A says, 'We need to reduce military spending by 5% to balance the budget.' Politician B replies, 'My opponent wants to leave our country completely defenseless against terrorists!'",
+    audioText: "Politician A says, 'We need to reduce military spending by 5% to balance the budget.' Politician B replies, 'My opponent wants to leave our country completely defenseless against terrorists!'",
+    options: [
+      { text: "Careful and fair response", feedback: "Does a 5% cut leave a country 'completely defenseless'?", isCorrect: false },
+      { text: "Distorted response (Straw Man)", feedback: "Exactly. Politician B wildly exaggerated a small budget cut into total destruction.", isCorrect: true }
+    ]
+  },
+  {
+    type: "spot-flaw",
+    scenario: "An ad claims: 'Either you buy the new Turbo-Clean vacuum, or your house will remain a filthy, bacteria-filled dungeon forever!'",
+    audioText: "An ad claims: 'Either you buy the new Turbo-Clean vacuum, or your house will remain a filthy, bacteria-filled dungeon forever!'",
+    options: [
+      { text: "False Dilemma (Either/Or Fallacy)", feedback: "Spot on. The ad gives only two extreme choices, ignoring the fact that you can clean your house with a broom or an older vacuum.", isCorrect: true },
+      { text: "Hasty Generalization", feedback: "It isn't making an assumption based on a small sample.", isCorrect: false },
+      { text: "Appeal to Authority", feedback: "The ad isn't citing an expert.", isCorrect: false }
+    ]
+  },
+  {
+    type: "missing-piece",
+    scenario: "A historian claims, 'The Roman Empire fell entirely because they used lead pipes for their drinking water.'",
+    audioText: "A historian claims, 'The Roman Empire fell entirely because they used lead pipes for their drinking water.'",
+    question: "What logic principle is the historian ignoring regarding complex events?",
+    options: [
+      { text: "Fallacy of Single Cause.", feedback: "You got it! The fall of an empire involves politics, economics, and warfare, not just one single cause like pipes.", isCorrect: true },
+      { text: "Texas Sharpshooter Fallacy.", feedback: "This is not about cherry-picking data to fit a pattern.", isCorrect: false }
+    ]
+  },
+  {
+    type: "spot-flaw",
+    scenario: "A man on TV argues: 'You should definitely vote for Proposition 4, because my mechanic says it will improve our city's economy!'",
+    audioText: "A man on TV argues: 'You should definitely vote for Proposition 4, because my mechanic says it will improve our city's economy!'",
+    options: [
+      { text: "False Authority", feedback: "Correct! A car mechanic is a great source for car repairs, but not necessarily an expert on city economics.", isCorrect: true },
+      { text: "Bandwagon Fallacy", feedback: "The speaker is relying on one person, not a popular crowd.", isCorrect: false },
+      { text: "Slippery Slope", feedback: "There is no chain of worsening events described here.", isCorrect: false }
+    ],
+    explainBack: {
+      question: "Which expert would make this a stronger argument?",
+      options: [
+        { text: "A trained city economist.", isCorrect: true },
+        { text: "A very popular celebrity actor.", isCorrect: false }
+      ]
+    }
+  },
+  {
+    type: "build-chain",
+    scenario: "Arrange the statements to demonstrate Circular Reasoning.",
+    audioText: "Arrange the statements to demonstrate Circular Reasoning.",
+    parts: [
+      { id: "p1", text: "The new principal is the best principal we've ever had." },
+      { id: "p2", text: "How do you know he is the best?" },
+      { id: "p3", text: "Because nobody has ever been better than him." }
+    ],
+    correctOrder: ["p1", "p2", "p3"]
+  },
+  {
+    type: "spot-flaw",
+    scenario: "A debater argues: 'I see a few clouds in the sky. If we don't ban driving cars today, the earth will completely explode from pollution by tomorrow afternoon!'",
+    audioText: "A debater argues: 'I see a few clouds in the sky. If we don't ban driving cars today, the earth will completely explode from pollution by tomorrow afternoon!'",
+    options: [
+      { text: "Red Herring", feedback: "Red Herring changes the subject. This is a crazy exaggeration of consequence.", isCorrect: false },
+      { text: "Slippery Slope / Absurd Extrapolation", feedback: "Exactly. The debater jumps from seeing a few clouds directly to the planet exploding tomorrow.", isCorrect: true },
+      { text: "Ad Hominem", feedback: "No personal insults were made.", isCorrect: false }
+    ]
+  },
+  {
+    type: "contradiction-hunt",
+    scenario: "Analyze these statements.\nStatement 1: The chef's secret recipe has never been written down or spoken out loud.\nStatement 2: I found a copy of the chef's secret recipe typed in a book.",
+    audioText: "Analyze these statements. Statement 1: The chef's secret recipe has never been written down or spoken out loud. Statement 2: I found a copy of the chef's secret recipe typed in a book.",
+    options: [
+      { text: "They conflict (Contradiction)", feedback: "Right. If it was *never* written down, you cannot find it typed in a book.", isCorrect: true },
+      { text: "Both can be true", feedback: "Can something never written down be found in a book?", isCorrect: false },
+      { text: "One is an opinion", feedback: "Both make factual claims about existence.", isCorrect: false }
+    ]
+  },
+  {
+    type: "fair-unfair",
+    scenario: "A friend says, 'I can't go to the movies tonight because I promised my mom I would babysit.' Another friend replies, 'Oh, so you think spending time with your mom is better than us?'",
+    audioText: "A friend says, 'I can't go to the movies tonight because I promised my mom I would babysit.' Another friend replies, 'Oh, so you think spending time with your mom is better than us?'",
+    options: [
+      { text: "Fair evaluation", feedback: "The friend didn't say who in the group was 'better', they just stated a prior commitment.", isCorrect: false },
+      { text: "Unfair distortion (Straw Man)", feedback: "Correct. The second friend twisted an obligation to babysit into a personal insult about friendship.", isCorrect: true }
+    ]
+  },
+  {
+    type: "spot-flaw",
+    scenario: "Alex failed the science test. When his parents ask why, he says: 'Well, did you know that polar bears can smell seals from a mile away?'",
+    audioText: "Alex failed the science test. When his parents ask why, he says: 'Well, did you know that polar bears can smell seals from a mile away?'",
+    options: [
+      { text: "Red Herring", feedback: "Spot on! Alex is throwing out an interesting but completely irrelevant fact to distract from his failing grade.", isCorrect: true },
+      { text: "False Dilemma", feedback: "He didn't give two false options.", isCorrect: false },
+      { text: "Ad Hominem", feedback: "He didn't insult his parents.", isCorrect: false }
+    ]
+  },
+  {
+    type: "missing-piece",
+    scenario: "A commercial shows a very sick person taking Medicine A. The next scene shows them running a marathon. The narrator says, 'Medicine A cures everything!'",
+    audioText: "A commercial shows a very sick person taking Medicine A. The next scene shows them running a marathon. The narrator says, 'Medicine A cures everything!'",
+    question: "What logic flaw is the commercial hoping you will commit?",
+    options: [
+      { text: "Hasty Generalization", feedback: "Correct! You see one (possibly fake) case and are asked to believe it works perfectly for everyone, everywhere.", isCorrect: true },
+      { text: "Straw Man", feedback: "The commercial is not attacking a distorted argument.", isCorrect: false }
+    ]
+  },
+  {
+    type: "build-chain",
+    scenario: "Arrange the statements to demonstrate a False Dilemma (Either/Or) fallacy.",
+    audioText: "Arrange the statements to demonstrate a False Dilemma (Either/Or) fallacy.",
+    parts: [
+      { id: "p1", text: "We have two choices." },
+      { id: "p2", text: "Either we cancel the field trip entirely..." },
+      { id: "p3", text: "Or we force every student to pay 100 dollars today!" }
+    ],
+    correctOrder: ["p1", "p2", "p3"]
+  },
+  {
+    type: "spot-flaw",
+    scenario: "A man argues, 'Ghosts must be completely real! Why? Because you can't prove that they don't exist!'",
+    audioText: "A man argues, 'Ghosts must be completely real! Why? Because you can't prove that they don't exist!'",
+    options: [
+      { text: "Appeal to Ignorance", feedback: "Spot on! 'You can't prove it false, so it must be true' is a classic logic trap.", isCorrect: true },
+      { text: "Circular Reasoning", feedback: "He is moving the burden of proof, not repeating himself.", isCorrect: false },
+      { text: "Bandwagon Fallacy", feedback: "He isn't claiming that a crowd believes in ghosts.", isCorrect: false }
+    ]
+  },
+  {
+    type: "fair-unfair",
+    scenario: "A journalist writes: 'The mayor said we should repair the library roof. Thus, the mayor wants to bankrupt our city on luxury buildings!'",
+    audioText: "A journalist writes: 'The mayor said we should repair the library roof. Thus, the mayor wants to bankrupt our city on luxury buildings!'",
+    options: [
+      { text: "Careful reporting", feedback: "Is fixing a roof the same as bankrupting a city on luxury?", isCorrect: false },
+      { text: "Unfair Straw Man", feedback: "Right. The journalist twisted a basic maintenance repair into a massive luxury scandal.", isCorrect: true }
+    ]
+  },
+  {
+    type: "contradiction-hunt",
+    scenario: "Statement 1: John is holding a solid, uncarved square wooden block.\nStatement 2: John is holding a perfectly round, spherical wooden ball.",
+    audioText: "Statement 1: John is holding a solid, uncarved square wooden block. Statement 2: John is holding a perfectly round, spherical wooden ball.",
+    options: [
+      { text: "Both can be true", feedback: "Can a solid object be simultaneously perfectly square and perfectly round spherical?", isCorrect: false },
+      { text: "They conflict (Contradiction)", feedback: "Exactly right. Geometrically, something cannot be completely square and completely round at the same time and in the same way.", isCorrect: true },
+      { text: "One is an opinion", feedback: "Both are geometric claims of shape.", isCorrect: false }
+    ]
   }
 ];

@@ -235,5 +235,235 @@ export const TRUTH_AND_WISDOM_CONTENT = [
       { text: "Lily gave a careful response; John gave an emotional response", feedback: "Right! Lily stated a fact. John twisted the fact into a bad motive.", isCorrect: true },
       { text: "John gave a careful response; Lily gave an emotional response", feedback: "Look again. Which one is judging the teacher's heart unfairly?", isCorrect: false }
     ]
+  },
+  {
+    type: "spot-flaw",
+    scenario: "Tommy dropped his ice cream on the sidewalk. He yells: 'This is the worst day in the entire history of the world!'",
+    audioText: "Tommy dropped his ice cream on the sidewalk. He yells: 'This is the worst day in the entire history of the world!'",
+    options: [
+      { text: "He is using huge exaggeration.", feedback: "Spot on! Losing ice cream is sad, but it definitely isn't the worst day in world history.", isCorrect: true },
+      { text: "Good reasoning", feedback: "Think carefully. Are there worse things than dropping ice cream?", isCorrect: false },
+      { text: "He used circular reasoning.", feedback: "Circular reasoning repeats a claim. This is an exaggeration.", isCorrect: false }
+    ],
+    explainBack: {
+      question: "Which response would be more careful and wise?",
+      options: [
+        { text: "I am having bad luck forever.", isCorrect: false },
+        { text: "I am really sad that I dropped my treat.", isCorrect: true }
+      ]
+    }
+  },
+  {
+    type: "missing-piece",
+    scenario: "A little boy wants to buy a new bike. He says, 'I look at pictures of the bike every day, so I will definitely get it!'",
+    audioText: "A little boy wants to buy a new bike. He says, 'I look at pictures of the bike every day, so I will definitely get it!'",
+    question: "What is the boy missing in his reasoning?",
+    options: [
+      { text: "Just looking at pictures doesn't earn money to buy it.", feedback: "Exactly! He needs a plan to save money, not just look at pictures.", isCorrect: true },
+      { text: "He needs a bigger poster of the bike.", feedback: "A bigger picture won't pay for the bike.", isCorrect: false }
+    ]
+  },
+  {
+    type: "fair-unfair",
+    scenario: "Mom tells Jack he can only have one cookie before dinner. Jack says, 'You want me to starve to death!'",
+    audioText: "Mom tells Jack he can only have one cookie before dinner. Jack says, 'You want me to starve to death!'",
+    options: [
+      { text: "Careful response", feedback: "Jack is not choosing his words carefully.", isCorrect: false },
+      { text: "Emotional and distorted response", feedback: "Correct. Mom wants him to eat a healthy dinner, but Jack exaggerates her rule into something terrible.", isCorrect: true }
+    ]
+  },
+  {
+    type: "contradiction-hunt",
+    scenario: "Analyze these statements.\nStatement 1: The box is completely empty.\nStatement 2: The box has three shiny red apples inside.",
+    audioText: "Analyze these statements. Statement 1: The box is completely empty. Statement 2: The box has three shiny red apples inside.",
+    options: [
+      { text: "Both can be true", feedback: "If a box is empty, can it have apples in it?", isCorrect: false },
+      { text: "They conflict (Contradiction)", feedback: "Right! Empty means nothing is inside, so there cannot be apples in it.", isCorrect: true },
+      { text: "One is too vague", feedback: "These are very clear and direct statements.", isCorrect: false }
+    ]
+  },
+  {
+    type: "spot-flaw",
+    scenario: "My sister wore her yellow hat yesterday, and it rained. She wore it today, and it rained. If she wears her yellow hat tomorrow, it will cause a thunderstorm!",
+    audioText: "My sister wore her yellow hat yesterday, and it rained. She wore it today, and it rained. If she wears her yellow hat tomorrow, it will cause a thunderstorm!",
+    options: [
+      { text: "She confused coincidence with cause.", feedback: "Exactly. The hat doesn't control the weather just because two things happened on the same day.", isCorrect: true },
+      { text: "Good reasoning", feedback: "Do hats control the clouds?", isCorrect: false },
+      { text: "Not enough information", feedback: "We know the exact reason given, and it's a weak reason.", isCorrect: false }
+    ],
+    explainBack: {
+      question: "What is this kind of flawed thinking sometimes called?",
+      options: [
+        { text: "Superstition.", isCorrect: true },
+        { text: "Meteorology.", isCorrect: false }
+      ]
+    }
+  },
+  {
+    type: "fair-unfair",
+    scenario: "Teacher: 'Please walk in the hallway.' Student thinks: 'The teacher hates us running because she wants to ruin our fun.'",
+    audioText: "Teacher says, 'Please walk in the hallway.' Student thinks, 'The teacher hates us running because she wants to ruin our fun.'",
+    options: [
+      { text: "Careful response", feedback: "Is this student being fair to the teacher's motives?", isCorrect: false },
+      { text: "Emotional and distorted response", feedback: "Correct. The teacher wants everyone to be safe, but the student assumes she is just being mean.", isCorrect: true }
+    ]
+  },
+  {
+    type: "missing-piece",
+    scenario: "A girl says, 'I bought the fastest running shoes in the store, so I am going to win the gold medal in the race.'",
+    audioText: "A girl says, 'I bought the fastest running shoes in the store, so I am going to win the gold medal in the race.'",
+    question: "What is she forgetting?",
+    options: [
+      { text: "She forgets that winning requires hard work and practice, not just new shoes.", feedback: "You found it! Shoes don't run the race, the runner does.", isCorrect: true },
+      { text: "She assumes she bought the right color of shoes.", feedback: "The color doesn't change how fast the shoes can go.", isCorrect: false }
+    ]
+  },
+  {
+    type: "contradiction-hunt",
+    scenario: "Statement A: I never, ever eat vegetables.\nStatement B: Yesterday, I ate a giant bowl of broccoli for lunch.",
+    audioText: "Statement A: I never, ever eat vegetables. Statement B: Yesterday, I ate a giant bowl of broccoli for lunch.",
+    options: [
+      { text: "Both can be true", feedback: "Broccoli is a vegetable. Can you never eat vegetables but eat broccoli?", isCorrect: false },
+      { text: "They conflict (Contradiction)", feedback: "Right! Saying 'never' makes it impossible to eat broccoli without contradicting yourself.", isCorrect: true },
+      { text: "One is too vague", feedback: "They are very specific.", isCorrect: false }
+    ]
+  },
+  {
+    type: "spot-flaw",
+    scenario: "Leo tells his friend, 'You have to share your candy with me, or else you are not a true friend!'",
+    audioText: "Leo tells his friend, 'You have to share your candy with me, or else you are not a true friend!'",
+    options: [
+      { text: "He is using emotional blackmail to get his way.", feedback: "Spot on. Real friendship is not built on forcing people to give you things.", isCorrect: true },
+      { text: "Good reasoning", feedback: "Is threatening friendship a fair way to get candy?", isCorrect: false },
+      { text: "He made a hasty generalization.", feedback: "This isn't a generalization, this is an unfair threat.", isCorrect: false }
+    ],
+    explainBack: {
+      question: "Which response would be kinder?",
+      options: [
+        { text: "I'm telling the teacher you won't share.", isCorrect: false },
+        { text: "Could I please have a piece of candy?", isCorrect: true }
+      ]
+    }
+  },
+  {
+    type: "fair-unfair",
+    scenario: "Coach tells the team they lost because they didn't practice hard enough. A player says, 'The coach just wanted the other team to win.'",
+    audioText: "Coach tells the team they lost because they didn't practice hard enough. A player says, 'The coach just wanted the other team to win.'",
+    options: [
+      { text: "Careful response", feedback: "The player is ignoring the truth about practice.", isCorrect: false },
+      { text: "Emotional and distorted response", feedback: "Correct. The coach points out a fact about practice, but the player twists it into a weird conspiracy.", isCorrect: true }
+    ]
+  },
+  {
+    type: "missing-piece",
+    scenario: "Dad says, 'We have a car full of gas and we know what state we want to visit. The road trip will be perfect.'",
+    audioText: "Dad says, 'We have a car full of gas and we know what state we want to visit. The road trip will be perfect.'",
+    question: "What is Dad missing in his planning?",
+    options: [
+      { text: "He needs a map or directions to exactly where they are going.", feedback: "Excellent! Knowing the state isn't enough; you must know the exact way.", isCorrect: true },
+      { text: "He needs to drive faster.", feedback: "Driving faster won't help if you don't know the way.", isCorrect: false }
+    ]
+  },
+  {
+    type: "contradiction-hunt",
+    scenario: "Statement 1: God knows everything that will happen in the future.\nStatement 2: Tomorrow, something will happen that will completely surprise God.",
+    audioText: "Statement 1: God knows everything that will happen in the future. Statement 2: Tomorrow, something will happen that will completely surprise God.",
+    options: [
+      { text: "Both can be true", feedback: "If God knows *everything*, can He be surprised?", isCorrect: false },
+      { text: "They conflict (Contradiction)", feedback: "Correct. A being who knows all things cannot be caught by surprise.", isCorrect: true },
+      { text: "One is too vague", feedback: "The statements are absolute and direct.", isCorrect: false }
+    ]
+  },
+  {
+    type: "spot-flaw",
+    scenario: "Sam says, 'I didn't steal the cookie from the jar! A giant bird flew through the window, opened the jar, took out one cookie, and closed it again!'",
+    audioText: "Sam says, 'I didn't steal the cookie from the jar! A giant bird flew through the window, opened the jar, took out one cookie, and closed it again!'",
+    options: [
+      { text: "His reason is highly unlikely and avoids the most obvious truth.", feedback: "Spot on! Often, the simplest explanation is the true one.", isCorrect: true },
+      { text: "Good reasoning", feedback: "Does a bird opening a cookie jar sound realistic?", isCorrect: false },
+      { text: "circular reasoning", feedback: "He's not repeating himself; he's telling an outlandish lie.", isCorrect: false }
+    ],
+    explainBack: {
+      question: "In logic, what principle says 'the simplest explanation is usually best'?",
+      options: [
+        { text: "Occam's Razor", isCorrect: true },
+        { text: "Newton's Law", isCorrect: false }
+      ]
+    }
+  },
+  {
+    type: "fair-unfair",
+    scenario: "A friend says she can't come to your birthday because she is sick. You think to yourself, 'She's not really sick, she just doesn't like me anymore.'",
+    audioText: "A friend says she can't come to your birthday because she is sick. You think to yourself, 'She's not really sick, she just doesn't like me anymore.'",
+    options: [
+      { text: "Careful response", feedback: "Assuming the worst about a friend is not careful or kind.", isCorrect: false },
+      { text: "Emotional and distorted response", feedback: "Right. You are assuming your friend is lying without any reason to think so.", isCorrect: true }
+    ]
+  },
+  {
+    type: "missing-piece",
+    scenario: "A baker says, 'I have flour, water, and an oven. I am ready to bake a delicious chocolate cake!'",
+    audioText: "A baker says, 'I have flour, water, and an oven. I am ready to bake a delicious chocolate cake!'",
+    question: "What is the baker obviously missing?",
+    options: [
+      { text: "He forgot chocolate and sugar!", feedback: "Correct! A chocolate cake needs chocolate.", isCorrect: true },
+      { text: "He forgot a wooden spoon.", feedback: "A spoon is helpful, but the ingredients are essential.", isCorrect: false }
+    ]
+  },
+  {
+    type: "contradiction-hunt",
+    scenario: "Statement A: The sun rises in the east every single morning.\nStatement B: Tomorrow morning, the sun will rise in the west.",
+    audioText: "Statement A: The sun rises in the east every single morning. Statement B: Tomorrow morning, the sun will rise in the west.",
+    options: [
+      { text: "Both can be true", feedback: "Can 'every single morning' have an exception tomorrow?", isCorrect: false },
+      { text: "They conflict (Contradiction)", feedback: "Exactly right. The laws of nature do not randomly reverse overnight.", isCorrect: true },
+      { text: "One is too vague", feedback: "Both statements are very specific.", isCorrect: false }
+    ]
+  },
+  {
+    type: "spot-flaw",
+    scenario: "Lucas says, 'I don't need to wear my seatbelt on short drives to the grocery store. Crashes only happen on long road trips.'",
+    audioText: "Lucas says, 'I don't need to wear my seatbelt on short drives to the grocery store. Crashes only happen on long road trips.'",
+    options: [
+      { text: "He assumes accidents only happen far from home.", feedback: "Correct! Most accidents actually happen close to home. He is reasoning poorly.", isCorrect: true },
+      { text: "Good reasoning", feedback: "Can't a crash happen immediately after backing out of a driveway?", isCorrect: false },
+      { text: "He used emotional blackmail.", feedback: "He is not demanding anything emotionally; he just has bad logic.", isCorrect: false }
+    ],
+    explainBack: {
+      question: "Why is his logic dangerous?",
+      options: [
+        { text: "It could result in him getting hurt.", isCorrect: true },
+        { text: "It will make the car use more gas.", isCorrect: false }
+      ]
+    }
+  },
+  {
+    type: "fair-unfair",
+    scenario: "A boy accidentally bumps into a girl in the hall and drops his books. The girl says, 'You did that on purpose just to annoy me!'",
+    audioText: "A boy accidentally bumps into a girl in the hall and drops his books. The girl says, 'You did that on purpose just to annoy me!'",
+    options: [
+      { text: "Careful response", feedback: "Is it careful to assume someone dropped all their books just to annoy you?", isCorrect: false },
+      { text: "Emotional and distorted response", feedback: "Exactly. The girl assumed the worst motive for an honest mistake.", isCorrect: true }
+    ]
+  },
+  {
+    type: "missing-piece",
+    scenario: "A pilot says, 'The engine is broken and the weather is terrible, but I'm an excellent pilot, so everything will be perfectly safe.'",
+    audioText: "A pilot says, 'The engine is broken and the weather is terrible, but I'm an excellent pilot, so everything will be perfectly safe.'",
+    question: "What is the pilot missing in his reasoning?",
+    options: [
+      { text: "Even the best pilot cannot fly a broken plane in terrible weather.", feedback: "Correct! His skill cannot override a broken engine.", isCorrect: true },
+      { text: "He needs a better uniform.", feedback: "A uniform does not make a plane safe.", isCorrect: false }
+    ]
+  },
+  {
+    type: "contradiction-hunt",
+    scenario: "Statement 1: God is invisible and everywhere at once (Omnipresent).\nStatement 2: God is hiding inside a small wooden box in the closet.",
+    audioText: "Statement 1: God is invisible and everywhere at once. Statement 2: God is hiding inside a small wooden box in the closet.",
+    options: [
+      { text: "Both can be true", feedback: "Can someone who is everywhere be locked inside a single box?", isCorrect: false },
+      { text: "They conflict (Contradiction)", feedback: "Right! An omnipresent God cannot be confined to a physical box.", isCorrect: true },
+      { text: "One is too vague", feedback: "These statements are clear opposites.", isCorrect: false }
+    ]
   }
 ];
