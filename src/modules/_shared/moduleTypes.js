@@ -151,6 +151,19 @@ export const MODULE_REGISTRY = {
     timeLimitSeconds: null,
     component: () => import("@/modules/reward/RewardModule"),
   },
+
+  Bible: {
+    id: "Bible",
+    label: "Bible Memory",
+    description: "Interactive course to memorize the sequence of the 66 books",
+    color: "text-amber-700 bg-amber-100",
+    iconCode: "ScrollText",
+    supportedGrades: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+    estimatedMinutes: 10,
+    minimumPassScore: null,
+    timeLimitSeconds: null,
+    component: () => import("@/modules/bible/BibleModule"),
+  },
 };
 
 /**
