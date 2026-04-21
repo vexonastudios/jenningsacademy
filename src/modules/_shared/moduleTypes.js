@@ -164,6 +164,19 @@ export const MODULE_REGISTRY = {
     timeLimitSeconds: null,
     component: () => import("@/modules/bible/BibleModule"),
   },
+
+  Science: {
+    id: "Science",
+    label: "Science Lab",
+    description: "Interactive science experiments and lab simulations",
+    color: "text-teal-600 bg-teal-100",
+    iconCode: "FlaskConical",
+    supportedGrades: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+    estimatedMinutes: 15,
+    minimumPassScore: null, // Custom lab-based completion
+    timeLimitSeconds: null,
+    component: () => import("@/modules/science/ScienceModule"),
+  },
 };
 
 /**

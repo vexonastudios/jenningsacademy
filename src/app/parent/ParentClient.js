@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import { UserButton } from "@clerk/nextjs";
-import { PlusCircle, CalendarSync, Settings, TrendingUp, GripVertical, Settings2, Sparkles, BookOpen, Calculator, Type, Gamepad2, Keyboard, Star, Map, X, Link, Clock, Medal, ChevronRight, ChevronLeft, Play, Volume2, Lock, Pencil, Trash2, FileDown, Save, Flame, Camera } from "lucide-react";
+import { PlusCircle, CalendarSync, Settings, TrendingUp, GripVertical, Settings2, Sparkles, BookOpen, Calculator, Type, Gamepad2, Keyboard, Star, Map, X, Link, Clock, Medal, ChevronRight, ChevronLeft, Play, Volume2, Lock, Pencil, Trash2, FileDown, Save, Flame, Camera, FlaskConical } from "lucide-react";
 import { addChild, updateChild, deleteChild, publishPlan, savePlanAsTemplate } from "../actions";
 import { getModulesForGrade, REWARD_GAMES } from "@/modules/_shared/moduleTypes";
 import Avatar from "@/components/Avatar";
@@ -26,6 +26,7 @@ const ICON_MAP = {
   Keyboard: Keyboard,
   Star: Star,
   Map: Map,
+  FlaskConical: FlaskConical,
 };
 
 // ── Sortable module row ───────────────────────────────────────────────────────
