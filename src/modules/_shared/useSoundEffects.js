@@ -51,5 +51,16 @@ export function useSoundEffects() {
     setTimeout(() => playTone(783.99, 0.4, "sine", 0.4), 320);
   };
 
-  return { playCorrect, playWrong, playChime, playComplete };
+  // Aliases used by BibleModule and other callers
+  const playSwoosh  = () => playTone(600, 0.15, "sine", 0.2);      // soft whoosh
+  const playTap     = () => playTone(1000, 0.07, "sine", 0.15);    // quick tap
+  const playSuccess = playComplete;                                  // reuse fanfare
+  const playError   = playWrong;                                     // reuse wrong buzz
+
+  return { playCorrect, playWrong, playChime, playComplete, playSwoosh, playTap, playSuccess, playError };
 }
+
+// Default export so callers can use either:
+//   import useSoundEffects from '...'   (default)
+//   import { useSoundEffects } from '...'  (named)
+export default useSoundEffects;
