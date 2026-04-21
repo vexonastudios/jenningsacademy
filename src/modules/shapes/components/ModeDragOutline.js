@@ -1,9 +1,31 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import ShapesPhaseBar from "./ShapesPhaseBar";
-import { Check } from "lucide-react";
+import { Check, XCircle } from "lucide-react";
+import { SHAPES_CURRICULUM } from "../content/shapesCurriculum";
+
+// Fisher-Yates shuffle
+function shuffle(array) {
+  let currentIndex = array.length, randomIndex;
+  while (currentIndex !== 0) {
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex--;
+    [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+  }
+  return array;
+}
 
 export default function ModeDragOutline({ shape, onNext, onSpeak, isSpeaking }) {
   const [placed, setPlaced] = useState(false);
+  const [wrongTaps, setWrongTaps] = useState(new Set());
+  
+  // Memoize the inventory options so they don't shuffle on every render
+  const options = useMemo(() => {
+    const wrongPool = SHAPES_CURRICULUM.filter(s => s.id !== shape.id);
+    shuffle(wrongPool);
+    const chosenWrong = wrongPool.slice(0, 3); // 3 decoys + 1 correct = 4 inventory items
+    return shuffle([...chosenWrong, shape]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shape.id]);
   
   useEffect(() => {
     setTimeout(() => {
@@ -12,13 +34,21 @@ export default function ModeDragOutline({ shape, onNext, onSpeak, isSpeaking }) 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleTap = () => {
+  const handleTap = (selectedShape) => {
     if (placed) return;
-    setPlaced(true);
-    if (!isSpeaking) onSpeak(`Perfect! You matched the ${shape.name}!`);
-    setTimeout(() => {
-      onNext();
-    }, 2500);
+    
+    if (selectedShape.id === shape.id) {
+      setPlaced(true);
+      if (!isSpeaking) onSpeak(`Perfect! You matched the ${shape.name}!`);
+      setTimeout(() => {
+        onNext();
+      }, 2500);
+    } else {
+      const s = new Set(wrongTaps);
+      s.add(selectedShape.id);
+      setWrongTaps(s);
+      if (!isSpeaking) onSpeak(`Oops! That's a ${selectedShape.name}. Find the ${shape.name} to complete the puzzle!`);
+    }
   };
 
   return (
@@ -67,17 +97,31 @@ export default function ModeDragOutline({ shape, onNext, onSpeak, isSpeaking }) 
 
 
         {/* The Draggable / Touchable Shape Inventory */}
-        <div className="h-32 flex items-center justify-center">
-            {!placed && (
-              <button 
-                onClick={handleTap}
-                className={`w-32 h-32 p-4 rounded-2xl shadow-xl border-[6px] border-transparent hover:-translate-y-2 hover:scale-105 active:scale-95 transition-all text-white ${shape.bgClass}`}
-              >
-                <div className="w-full h-full drop-shadow-md">
-                   {shape.svg}
-                </div>
-              </button>
-            )}
+        <div className="flex items-center justify-center gap-4 flex-wrap w-full max-w-2xl mx-auto min-h-[140px]">
+            {!placed && options.map((opt) => {
+              const isWrong = wrongTaps.has(opt.id);
+              
+              return (
+                <button 
+                  key={opt.id}
+                  onClick={() => handleTap(opt)}
+                  disabled={isWrong}
+                  className={`relative w-24 h-24 sm:w-32 sm:h-32 p-4 rounded-2xl shadow-xl transition-all border-4 text-white
+                    ${isWrong 
+                      ? "bg-slate-800/80 border-rose-500/30 opacity-40 grayscale cursor-not-allowed" 
+                      : `border-transparent hover:-translate-y-2 hover:scale-105 active:scale-95 ${opt.bgClass}`}`}
+                >
+                  <div className="w-full h-full drop-shadow-md">
+                     {opt.svg}
+                  </div>
+                  {isWrong && (
+                    <div className="absolute -top-2 -right-2 text-rose-500 bg-slate-900 rounded-full">
+                      <XCircle className="w-6 h-6" />
+                    </div>
+                  )}
+                </button>
+              );
+            })}
         </div>
 
       </div>

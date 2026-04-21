@@ -15,18 +15,28 @@ function shuffle(array) {
 }
 
 export default function ModeTapShape({ shape, onNext, onSpeak, isSpeaking }) {
-  const ROUNDS = 3;
+  const ROUNDS = 5;
   const [currentRound, setCurrentRound] = useState(0);
   const [options, setOptions] = useState([]);
   const [feedbackState, setFeedbackState] = useState(null); // 'correct' | 'wrong'
   const [wrongTaps, setWrongTaps] = useState(new Set()); // keep track of which wrong ones were tapped
 
+  const getNumWrongOptions = (roundIdx) => {
+    switch (roundIdx) {
+      case 0: return 2; // total 3
+      case 1: return 3; // total 4
+      case 2: return 4; // total 5
+      case 3: return 5; // total 6
+      default: return 7; // total 8
+    }
+  };
+
   // Generate options for this round
   useEffect(() => {
-    // Pick 2 random wrong shapes
+    // Pick random wrong shapes based on progressive difficulty
     const wrongPool = SHAPES_CURRICULUM.filter(s => s.id !== shape.id);
     shuffle(wrongPool);
-    const chosenWrong = wrongPool.slice(0, 2);
+    const chosenWrong = wrongPool.slice(0, getNumWrongOptions(currentRound));
 
     // Mix them with the correct shape
     const newlyShuffled = shuffle([...chosenWrong, shape]);
