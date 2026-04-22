@@ -206,12 +206,22 @@ export default function AudiobookModule({ grade, voiceId, onRoundComplete }) {
     if (saved) setFontSizeClass(saved);
   }, []);
 
-  const cycleFontSize = () => {
-    const sizes = ["text-base", "text-lg", "text-xl", "text-2xl", "text-3xl"];
-    const nextIdx = (sizes.indexOf(fontSizeClass) + 1) % sizes.length;
-    const next = sizes[nextIdx];
-    setFontSizeClass(next);
-    localStorage.setItem("audiobook_font_size", next);
+  const FONT_SIZES = ["text-sm", "text-base", "text-lg", "text-xl", "text-2xl", "text-3xl"];
+  const decreaseFontSize = () => {
+    const idx = FONT_SIZES.indexOf(fontSizeClass);
+    if (idx > 0) {
+      const next = FONT_SIZES[idx - 1];
+      setFontSizeClass(next);
+      localStorage.setItem("audiobook_font_size", next);
+    }
+  };
+  const increaseFontSize = () => {
+    const idx = FONT_SIZES.indexOf(fontSizeClass);
+    if (idx < FONT_SIZES.length - 1) {
+      const next = FONT_SIZES[idx + 1];
+      setFontSizeClass(next);
+      localStorage.setItem("audiobook_font_size", next);
+    }
   };
 
   const cyclePlaybackRate = () => {
@@ -262,7 +272,19 @@ export default function AudiobookModule({ grade, voiceId, onRoundComplete }) {
   }, [chapterIdx]);
 
   // ── Sync highlighted cue with audio time ──────────────────────────────────
-  const chapterCues = allCues ? getCuesForChapter(allCues, chapter) : [];
+  const chapterCuesRaw = allCues ? getCuesForChapter(allCues, chapter) : [];
+  const chapterCues = chapterCuesRaw.filter(c => {
+    // Strip chapter headers if they appear within the first 15 seconds
+    if (c.startSec < chapter.startSec + 15) {
+      const lower = c.text.toLowerCase().replace(/[^a-z0-9]/gi, '');
+      const t1 = `chapter${chapter.id}`;
+      const t2 = chapter.title.toLowerCase().replace(/[^a-z0-9]/gi, '');
+      if (lower.includes(t1) || lower.includes(t2) || lower === t1 + t2) {
+        return false;
+      }
+    }
+    return true;
+  });
 
   useEffect(() => {
     if (!chapterCues.length) return;
@@ -302,6 +324,19 @@ export default function AudiobookModule({ grade, voiceId, onRoundComplete }) {
       setPlaying(true);
     }
   }, [playing, chapter]);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Ignore if typing in an input/textarea
+      if (['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON'].includes(e.target.tagName)) return;
+      if (e.code === 'Space') {
+        e.preventDefault(); // prevent page scroll
+        togglePlay();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [togglePlay]);
 
   const seekTo = (sec) => {
     if (audioRef.current) audioRef.current.currentTime = sec;
@@ -384,11 +419,18 @@ export default function AudiobookModule({ grade, voiceId, onRoundComplete }) {
             Ch. {chapter.id}: {chapter.title}
           </h2>
         </div>
-        <div className="flex items-center gap-2">
-          <button onClick={cycleFontSize} title="Text Size"
-            className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-700 hover:bg-slate-600 text-slate-300 transition-colors">
-            <Type className="w-5 h-5" />
-          </button>
+        <div className="flex items-center gap-3">
+          <div className="flex bg-slate-700 rounded-xl overflow-hidden shadow-sm">
+            <button onClick={decreaseFontSize} title="Decrease Text Size" 
+              className="w-10 h-10 flex items-center justify-center hover:bg-slate-600 text-slate-300 transition-colors font-bold text-sm">
+              A-
+            </button>
+            <div className="w-px bg-slate-600"></div>
+            <button onClick={increaseFontSize} title="Increase Text Size" 
+              className="w-10 h-10 flex items-center justify-center hover:bg-slate-600 text-slate-300 transition-colors font-bold text-lg">
+              A+
+            </button>
+          </div>
           <button onClick={cyclePlaybackRate} title="Play Speed"
             className="w-10 h-10 flex flex-col items-center justify-center rounded-xl bg-slate-700 hover:bg-slate-600 text-slate-300 transition-colors font-black text-[10px]">
             <Gauge className="w-4 h-4 mb-0.5" />
