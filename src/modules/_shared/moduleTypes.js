@@ -237,3 +237,18 @@ export function getRewardGameById(id) {
   return REWARD_GAMES.find(g => g.id === id) ?? REWARD_GAMES[0];
 }
 
+/**
+ * AUDIOBOOKS — Available audiobooks for the Audiobook module.
+ */
+export const AUDIOBOOKS = [
+  {
+    id: "this-country-of-ours",
+    title: "This Country of Ours",
+    author: "H. E. Marshall"
+  }
+];
+
+export function getAudiobookById(id) {
+  return AUDIOBOOKS.find(b => b.id === id) ?? AUDIOBOOKS[0];
+}
+
