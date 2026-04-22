@@ -13,9 +13,9 @@ export default function LandingPage() {
 
       {/* Navigation */}
       <nav className="relative z-10 max-w-7xl mx-auto px-6 py-6 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <img src="/logo.png" alt="Jennings Academy Logo" className="w-10 h-10 drop-shadow-lg" />
-          <span className="text-xl font-black tracking-tight text-white">Jennings Academy</span>
+        <div className="flex items-center gap-6">
+          <img src="/logo.png" alt="Jennings Academy Logo" className="h-16 w-auto scale-125 origin-right drop-shadow-lg object-contain" />
+          <span className="text-3xl font-black tracking-tight text-white">Jennings Academy</span>
         </div>
         <div className="flex items-center gap-4">
           <Link href="/sign-in" className="text-sm font-semibold text-slate-300 hover:text-white transition-colors">
