@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, BookOpen, Brain, Sparkles, Gamepad2, Shield } from "lucide-react";
+import { ArrowRight, BookOpen, Brain, Sparkles, Gamepad2, Shield, Calculator, Type, Shapes, PenTool, Map, FlaskConical, ScrollText, Star, Keyboard } from "lucide-react";
 
 export default function LandingPage() {
   return (
@@ -91,6 +91,36 @@ export default function LandingPage() {
               <p className="text-slate-500 font-medium leading-relaxed">{f.desc}</p>
             </div>
           ))}
+        </div>
+
+        {/* Full Curriculum Grid */}
+        <div className="mt-40 w-full max-w-6xl text-center">
+          <h2 className="text-4xl font-black text-slate-800 tracking-tight mb-4">Comprehensive Curriculum Library</h2>
+          <p className="text-lg text-slate-500 mb-16 max-w-2xl mx-auto">Everything you need for a robust, gamified homeschool experience across all grade levels.</p>
+          
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[
+              { label: "MathFlow", icon: Calculator, color: "text-blue-600", bg: "bg-blue-50 border-blue-100" },
+              { label: "GrammarFlow", icon: PenTool, color: "text-orange-600", bg: "bg-orange-50 border-orange-100" },
+              { label: "Audiobooks", icon: BookOpen, color: "text-amber-600", bg: "bg-amber-50 border-amber-100" },
+              { label: "Spelling", icon: Type, color: "text-purple-600", bg: "bg-purple-50 border-purple-100" },
+              { label: "Logic", icon: Brain, color: "text-rose-600", bg: "bg-rose-50 border-rose-100" },
+              { label: "Bible Memory", icon: ScrollText, color: "text-amber-700", bg: "bg-amber-100 border-amber-200" },
+              { label: "Typing Mastery", icon: Keyboard, color: "text-sky-600", bg: "bg-sky-50 border-sky-100" },
+              { label: "Science Lab", icon: FlaskConical, color: "text-teal-600", bg: "bg-teal-50 border-teal-100" },
+              { label: "Geography", icon: Map, color: "text-emerald-600", bg: "bg-emerald-50 border-emerald-100" },
+              { label: "Shapes Adventure", icon: Shapes, color: "text-emerald-600", bg: "bg-emerald-50 border-emerald-100" },
+              { label: "Feed the Animals", icon: Star, color: "text-pink-600", bg: "bg-pink-50 border-pink-100" },
+              { label: "Arcade Rewards", icon: Gamepad2, color: "text-emerald-600", bg: "bg-emerald-50 border-emerald-100" },
+            ].map((mod, i) => (
+              <div key={i} className="flex flex-col items-center p-6 bg-white border border-slate-200 rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all cursor-default">
+                <div className={`p-3 rounded-xl border ${mod.bg} mb-4`}>
+                  <mod.icon className={`w-6 h-6 ${mod.color}`} />
+                </div>
+                <span className="font-bold text-slate-700">{mod.label}</span>
+              </div>
+            ))}
+          </div>
         </div>
 
       </main>
