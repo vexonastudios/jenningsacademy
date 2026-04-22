@@ -8,9 +8,9 @@ const SAMPLES = [
     id: "leaf",
     title: "Plant Leaf Cell",
     targets: [
-      { id: "nucleus", label: "Nucleus", top: "30%", left: "45%" },
-      { id: "chloroplast", label: "Chloroplast", top: "60%", left: "70%" },
-      { id: "cellwall", label: "Cell Wall", top: "10%", left: "10%" }
+      { id: "nucleus",     label: "Nucleus",     top: "35%", left: "50%", color: "text-amber-300",   ring: "ring-amber-400" },
+      { id: "chloroplast", label: "Chloroplast", top: "60%", left: "65%", color: "text-emerald-300", ring: "ring-emerald-400" },
+      { id: "cellwall",   label: "Cell Wall",   top: "20%", left: "30%", color: "text-sky-300",     ring: "ring-sky-400" }
     ],
     bgClass: "bg-emerald-900" // We'll simulate a zoom with CSS
   }
@@ -138,13 +138,20 @@ export default function MicroscopeLab({ speak, onComplete }) {
                   <button
                     key={t.id}
                     onClick={() => handleTargetClick(t.id)}
-                    className="absolute w-12 h-12 -ml-6 -mt-6 group"
+                    className="absolute flex flex-col items-center -translate-x-1/2 -translate-y-1/2 group"
                     style={{ top: t.top, left: t.left }}
                   >
                     {!isFound ? (
-                       <CircleDashed className="w-8 h-8 text-white/40 group-hover:text-amber-300 group-hover:scale-125 transition-all animate-[spin_10s_linear_infinite]" />
+                      <>
+                        <div className={`w-8 h-8 rounded-full border-2 ring-2 ${t.ring} ring-offset-2 ring-offset-transparent animate-ping opacity-50 absolute`} />
+                        <div className={`w-8 h-8 rounded-full border-2 ${t.ring} bg-black/40 group-hover:scale-125 transition-all`} />
+                        <span className={`mt-1 text-[10px] font-black uppercase tracking-widest ${t.color} drop-shadow-lg whitespace-nowrap`}>{t.label}</span>
+                      </>
                     ) : (
-                       <CheckCircle className="w-8 h-8 text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
+                      <>
+                        <CheckCircle className="w-8 h-8 text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
+                        <span className="mt-1 text-[10px] font-black uppercase tracking-widest text-emerald-400 whitespace-nowrap">{t.label}</span>
+                      </>
                     )}
                   </button>
                 );

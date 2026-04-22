@@ -416,7 +416,7 @@ export default function SpellingModule({ grade, attempt, onRoundComplete, voiceI
                 <input ref={inputRef} type="text" value={answer}
                   onChange={e => setAnswer(e.target.value)} onKeyDown={handleKeyDown}
                   autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false}
-                  className="w-full text-center text-3xl font-black bg-slate-800 border-2 border-slate-600 focus:border-amber-400 text-white rounded-2xl px-6 py-4 outline-none transition-colors tracking-widest placeholder:text-slate-600 placeholder:font-normal placeholder:text-lg"
+                  className="w-full text-center text-2xl sm:text-3xl font-black bg-slate-800 border-2 border-slate-600 focus:border-amber-400 text-white rounded-2xl px-4 py-4 outline-none transition-colors tracking-wide break-all placeholder:text-slate-600 placeholder:font-normal placeholder:text-lg"
                   placeholder="Type the missing word…" />
                 <button onClick={handleSubmit} disabled={!answer.trim()}
                   className="w-full py-3.5 bg-amber-500 hover:bg-amber-400 disabled:bg-slate-700 disabled:text-slate-500 text-white font-bold rounded-xl transition-all text-sm">
@@ -499,7 +499,7 @@ export default function SpellingModule({ grade, attempt, onRoundComplete, voiceI
                 <input ref={inputRef} type="text" value={answer}
                   onChange={e => setAnswer(e.target.value)} onKeyDown={handleKeyDown}
                   autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false}
-                  className="w-full text-center text-3xl font-black bg-slate-800 border-2 border-slate-600 focus:border-indigo-500 text-white rounded-2xl px-6 py-4 outline-none transition-colors tracking-widest placeholder:text-slate-600 placeholder:font-normal placeholder:text-lg placeholder:tracking-normal"
+                  className="w-full text-center text-2xl sm:text-3xl font-black bg-slate-800 border-2 border-slate-600 focus:border-indigo-500 text-white rounded-2xl px-4 py-4 outline-none transition-colors tracking-wide break-all placeholder:text-slate-600 placeholder:font-normal placeholder:text-lg placeholder:tracking-normal"
                   placeholder="Type your answer…" />
                 <button onClick={handleSubmit} disabled={!answer.trim()}
                   className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-700 disabled:text-slate-500 text-white font-bold rounded-xl transition-all text-sm">
