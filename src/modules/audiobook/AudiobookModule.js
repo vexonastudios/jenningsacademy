@@ -46,25 +46,37 @@ function getCuesForChapter(allCues, chapter) {
 // ─── QuizEngine component ──────────────────────────────────────────────────
 function QuizEngine({ chapter, cues, onComplete }) {
   const [qIdx, setQIdx] = useState(0);
-  const [userAnswer, setUserAnswer] = useState("");
+  const [userAnswer, setUserAnswer] = useState(null);
   const [submitted, setSubmitted] = useState(false);
   const [showHint, setShowHint] = useState(false);
   const [results, setResults] = useState([]);
-  const inputRef = useRef(null);
+  const [shuffledOptions, setShuffledOptions] = useState([]);
 
   const q = chapter.questions[qIdx];
   const total = chapter.questions.length;
 
+  useEffect(() => {
+    if (q.options) {
+      const arr = [...q.options];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      setShuffledOptions(arr);
+    }
+  }, [qIdx, q]);
+
   const handleSubmit = () => {
-    if (!userAnswer.trim()) return;
-    setResults(r => [...r, { question: q.q, answer: userAnswer, correct: null }]);
+    if (!userAnswer) return;
+    const isCorrect = userAnswer === q.a;
+    setResults(r => [...r, { question: q.q, answer: userAnswer, correct: isCorrect }]);
     setSubmitted(true);
   };
 
   const handleNext = () => {
     if (qIdx < total - 1) {
       setQIdx(i => i + 1);
-      setUserAnswer("");
+      setUserAnswer(null);
       setSubmitted(false);
       setShowHint(false);
     } else {
@@ -72,26 +84,34 @@ function QuizEngine({ chapter, cues, onComplete }) {
     }
   };
 
-  // find hint paragraph from cues
   const hintCue = cues.find(c => Math.abs(c.startSec - q.hintSec) < 30);
 
-  useEffect(() => {
-    if (!submitted) setTimeout(() => inputRef.current?.focus(), 100);
-  }, [qIdx, submitted]);
-
   if (submitted) {
+    const isCorrect = userAnswer === q.a;
     return (
       <div className="flex flex-col items-center gap-6 px-6 py-10 max-w-xl mx-auto w-full animate-[fadeIn_0.3s_ease-out]">
-        <div className="w-full bg-emerald-50 border border-emerald-200 rounded-2xl p-6">
-          <p className="text-xs text-emerald-600 font-bold uppercase tracking-widest mb-2">Sample Answer</p>
-          <p className="text-slate-700 font-medium leading-relaxed">{q.a}</p>
+        <div className={`w-24 h-24 rounded-full flex items-center justify-center border-4 ${isCorrect ? "bg-emerald-100 border-emerald-400" : "bg-rose-100 border-rose-400"}`}>
+          {isCorrect ? <Check className={`w-12 h-12 text-emerald-500`} /> : <X className={`w-12 h-12 text-rose-500`} />}
         </div>
-        <div className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-5">
-          <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mb-2">Your Answer</p>
-          <p className="text-slate-600 italic">"{userAnswer}"</p>
+        <h3 className={`text-2xl font-black ${isCorrect ? "text-emerald-600" : "text-rose-600"}`}>
+          {isCorrect ? "Correct!" : "Not quite."}
+        </h3>
+        
+        <div className="w-full space-y-3">
+          <div className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-5">
+            <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mb-2">Your Answer</p>
+            <p className="text-slate-600 font-medium">{userAnswer}</p>
+          </div>
+          {!isCorrect && (
+            <div className="w-full bg-emerald-50 border border-emerald-200 rounded-2xl p-6">
+              <p className="text-xs text-emerald-600 font-bold uppercase tracking-widest mb-2">Correct Answer</p>
+              <p className="text-slate-700 font-bold leading-relaxed">{q.a}</p>
+            </div>
+          )}
         </div>
+
         <button onClick={handleNext}
-          className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-black rounded-2xl transition-all flex items-center justify-center gap-2">
+          className="w-full mt-4 py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-black rounded-2xl transition-all flex items-center justify-center gap-2">
           {qIdx < total - 1 ? <><ChevronRight className="w-5 h-5" /> Next Question</> : <><Trophy className="w-5 h-5" /> Finish Chapter</>}
         </button>
       </div>
@@ -107,7 +127,7 @@ function QuizEngine({ chapter, cues, onComplete }) {
         ))}
       </div>
 
-      <div className="text-center">
+      <div className="text-center mb-2">
         <p className="text-xs font-bold text-indigo-500 uppercase tracking-widest mb-3">Question {qIdx + 1} of {total}</p>
         <h3 className="text-xl font-black text-slate-800 leading-snug">{q.q}</h3>
       </div>
@@ -120,14 +140,25 @@ function QuizEngine({ chapter, cues, onComplete }) {
         </div>
       )}
 
-      <textarea
-        ref={inputRef}
-        value={userAnswer}
-        onChange={e => setUserAnswer(e.target.value)}
-        placeholder="Write your answer here…"
-        rows={4}
-        className="w-full bg-white border-2 border-slate-200 focus:border-indigo-400 rounded-2xl p-4 text-slate-800 font-medium text-base outline-none resize-none transition-colors"
-      />
+      {/* Options */}
+      <div className="flex flex-col gap-3 mb-4">
+        {shuffledOptions.map((opt, i) => {
+          const isSelected = userAnswer === opt;
+          return (
+            <button
+              key={i}
+              onClick={() => setUserAnswer(opt)}
+              className={`w-full text-left p-4 rounded-2xl border-2 transition-all font-semibold ${
+                isSelected 
+                  ? "bg-indigo-50 border-indigo-400 text-indigo-900 shadow-sm"
+                  : "bg-white border-slate-200 text-slate-600 hover:border-indigo-300 hover:bg-slate-50"
+              }`}
+            >
+              {opt}
+            </button>
+          )
+        })}
+      </div>
 
       <div className="flex gap-3">
         {!showHint && (
@@ -136,7 +167,7 @@ function QuizEngine({ chapter, cues, onComplete }) {
             <Lightbulb className="w-4 h-4" /> Hint
           </button>
         )}
-        <button onClick={handleSubmit} disabled={!userAnswer.trim()}
+        <button onClick={handleSubmit} disabled={!userAnswer}
           className="flex-1 py-3.5 bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-200 disabled:text-slate-400 text-white font-black rounded-xl transition-all">
           Submit Answer
         </button>
