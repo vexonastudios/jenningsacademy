@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import {
   Play, Pause, Volume2, BookOpen, ChevronRight, Lightbulb,
-  Check, X, Trophy, ChevronLeft, SkipForward, Loader2
+  Check, X, Trophy, ChevronLeft, SkipForward, Loader2, Gauge, Type
 } from "lucide-react";
 import { BOOK_META, CHAPTERS } from "./content/thisCountryOfOurs";
 
@@ -165,6 +165,34 @@ export default function AudiobookModule({ grade, voiceId, onRoundComplete }) {
   const [activeCueIdx, setActiveCueIdx] = useState(0);
   const activeCueRef = useRef(null);
 
+  // User preferences
+  const [fontSizeClass, setFontSizeClass] = useState("text-base");
+  const [playbackRate, setPlaybackRate] = useState(1);
+  const [hasFinishedListening, setHasFinishedListening] = useState(false);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("audiobook_font_size");
+    if (saved) setFontSizeClass(saved);
+  }, []);
+
+  const cycleFontSize = () => {
+    const sizes = ["text-base", "text-lg", "text-xl", "text-2xl", "text-3xl"];
+    const nextIdx = (sizes.indexOf(fontSizeClass) + 1) % sizes.length;
+    const next = sizes[nextIdx];
+    setFontSizeClass(next);
+    localStorage.setItem("audiobook_font_size", next);
+  };
+
+  const cyclePlaybackRate = () => {
+    const rates = [1, 1.25, 1.5, 2];
+    const nextIdx = (rates.indexOf(playbackRate) + 1) % rates.length;
+    const next = rates[nextIdx];
+    setPlaybackRate(next);
+    if (audioRef.current) {
+      audioRef.current.playbackRate = next;
+    }
+  };
+
   const chapter = CHAPTERS[chapterIdx];
 
   // ── Load SRT ──────────────────────────────────────────────────────────────
@@ -189,6 +217,7 @@ export default function AudiobookModule({ grade, voiceId, onRoundComplete }) {
   useEffect(() => {
     const audio = new Audio(BOOK_META.mp3Url);
     audioRef.current = audio;
+    audio.playbackRate = playbackRate;
     audio.addEventListener("loadedmetadata", () => setDuration(audio.duration));
     audio.addEventListener("timeupdate", () => setCurrentSec(audio.currentTime));
     audio.addEventListener("ended", () => setPlaying(false));
@@ -209,6 +238,10 @@ export default function AudiobookModule({ grade, voiceId, onRoundComplete }) {
     const idx = chapterCues.findIndex(c => currentSec >= c.startSec && currentSec < c.endSec);
     if (idx >= 0 && idx !== activeCueIdx) {
       setActiveCueIdx(idx);
+    }
+    // Check if finished listening
+    if (currentSec >= chapter.endSec - 2) {
+      setHasFinishedListening(true);
     }
     // Auto-stop at chapter end
     if (currentSec >= chapter.endSec && playing) {
@@ -310,14 +343,27 @@ export default function AudiobookModule({ grade, voiceId, onRoundComplete }) {
     <div className="flex flex-col h-full min-h-full bg-white">
 
       {/* Header */}
-      <div className="bg-slate-800 text-white px-6 py-4 shrink-0">
-        <div className="flex items-center gap-3 mb-1">
-          <BookOpen className="w-4 h-4 text-indigo-400" />
-          <p className="text-xs font-bold uppercase tracking-widest text-slate-400">{BOOK_META.title}</p>
+      <div className="bg-slate-800 text-white px-6 py-4 shrink-0 flex justify-between items-center">
+        <div>
+          <div className="flex items-center gap-3 mb-1">
+            <BookOpen className="w-4 h-4 text-indigo-400" />
+            <p className="text-xs font-bold uppercase tracking-widest text-slate-400">{BOOK_META.title}</p>
+          </div>
+          <h2 className="text-lg font-black leading-tight text-white">
+            Ch. {chapter.id}: {chapter.title}
+          </h2>
         </div>
-        <h2 className="text-lg font-black leading-tight text-white">
-          Ch. {chapter.id}: {chapter.title}
-        </h2>
+        <div className="flex items-center gap-2">
+          <button onClick={cycleFontSize} title="Text Size"
+            className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-700 hover:bg-slate-600 text-slate-300 transition-colors">
+            <Type className="w-5 h-5" />
+          </button>
+          <button onClick={cyclePlaybackRate} title="Play Speed"
+            className="w-10 h-10 flex flex-col items-center justify-center rounded-xl bg-slate-700 hover:bg-slate-600 text-slate-300 transition-colors font-black text-[10px]">
+            <Gauge className="w-4 h-4 mb-0.5" />
+            {playbackRate}x
+          </button>
+        </div>
       </div>
 
       {/* Chapter progress bar */}
@@ -326,30 +372,43 @@ export default function AudiobookModule({ grade, voiceId, onRoundComplete }) {
       </div>
 
       {/* Scrollable text */}
-      <div className="flex-1 overflow-y-auto px-5 py-6 space-y-2">
-        {chapterCues.map((cue, i) => (
-          <span
-            key={i}
-            ref={i === activeCueIdx ? activeCueRef : null}
-            onClick={() => handleCueTap(cue)}
-            className={`inline cursor-pointer rounded px-0.5 transition-all leading-8 text-base font-medium
-              ${i === activeCueIdx
-                ? "bg-indigo-100 text-indigo-800 font-bold"
-                : "text-slate-700 hover:text-indigo-600"
-              }`}
-          >
-            {cue.text}{" "}
-          </span>
-        ))}
+      <div className="flex-1 overflow-y-auto px-6 py-8 space-y-4">
+        <div className="mb-10 pb-8 border-b border-slate-100 text-center">
+          <h1 className="text-4xl font-black text-slate-800 tracking-tight mb-3">Chapter {chapter.id}</h1>
+          <h2 className="text-2xl font-bold text-slate-500">{chapter.title}</h2>
+        </div>
+
+        <div className="space-y-2 max-w-4xl mx-auto">
+          {chapterCues.map((cue, i) => (
+            <span
+              key={i}
+              ref={i === activeCueIdx ? activeCueRef : null}
+              onClick={() => handleCueTap(cue)}
+              className={`inline cursor-pointer rounded px-0.5 transition-all leading-relaxed font-medium ${fontSizeClass}
+                ${i === activeCueIdx
+                  ? "bg-indigo-100 text-indigo-800 font-bold"
+                  : "text-slate-700 hover:text-indigo-600"
+                }`}
+            >
+              {cue.text}{" "}
+            </span>
+          ))}
+        </div>
 
         {/* After all text: invite to quiz */}
-        <div className="pt-10 pb-4 text-center">
-          <div className="inline-block bg-indigo-50 border border-indigo-200 rounded-2xl px-6 py-5">
-            <p className="text-indigo-800 font-bold mb-3">Finished reading? Take the chapter quiz!</p>
-            <button onClick={() => { audioRef.current?.pause(); setPlaying(false); setPhase("quiz"); }}
-              className="flex items-center gap-2 mx-auto bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-6 py-3 rounded-xl transition-all">
-              <ChevronRight className="w-5 h-5" /> Start Quiz
-            </button>
+        <div className="pt-16 pb-8 text-center">
+          <div className="inline-block bg-indigo-50 border border-indigo-200 rounded-2xl px-8 py-6">
+            <p className="text-indigo-800 font-bold mb-4">Finished reading? Take the chapter quiz!</p>
+            {hasFinishedListening ? (
+              <button onClick={() => { audioRef.current?.pause(); setPlaying(false); setPhase("quiz"); }}
+                className="flex items-center gap-2 mx-auto bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-8 py-4 rounded-xl transition-all shadow-lg shadow-indigo-600/20 hover:-translate-y-1">
+                <ChevronRight className="w-5 h-5" /> Start Quiz
+              </button>
+            ) : (
+              <div className="text-slate-500 font-semibold bg-slate-200/50 rounded-xl px-6 py-3 border border-slate-200 text-sm">
+                Finish listening to unlock the quiz...
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -373,10 +432,16 @@ export default function AudiobookModule({ grade, voiceId, onRoundComplete }) {
               {formatTime(currentSec - chapter.startSec)} / {formatTime(chapter.endSec - chapter.startSec)}
             </p>
           </div>
-          <button onClick={() => { audioRef.current?.pause(); setPlaying(false); setPhase("quiz"); }}
-            className="flex items-center gap-1.5 px-4 py-2 bg-emerald-50 border border-emerald-200 text-emerald-700 font-bold text-sm rounded-xl hover:bg-emerald-100 transition-all">
-            <SkipForward className="w-4 h-4" /> Take Quiz
-          </button>
+          {hasFinishedListening ? (
+            <button onClick={() => { audioRef.current?.pause(); setPlaying(false); setPhase("quiz"); }}
+              className="flex items-center gap-1.5 px-4 py-2 bg-emerald-50 border border-emerald-200 text-emerald-700 font-bold text-sm rounded-xl hover:bg-emerald-100 transition-all shadow-sm">
+              <SkipForward className="w-4 h-4" /> Take Quiz
+            </button>
+          ) : (
+            <div className="flex items-center gap-1.5 px-4 py-2 bg-slate-100 border border-slate-200 text-slate-400 font-bold text-sm rounded-xl cursor-not-allowed">
+              <SkipForward className="w-4 h-4 opacity-50" /> Take Quiz
+            </div>
+          )}
         </div>
       </div>
     </div>
