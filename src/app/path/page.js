@@ -53,7 +53,7 @@ function ParentExitPad({ onUnlock, error }) {
 }
 
 export default function ChildPath() {
-  const [profileId, setProfileId] = useState(null);
+  const [profileId, setProfileId] = useState(undefined); // undefined = checking, null = not found
   const [profile, setProfile] = useState(null);
   
   const [plan, setPlan] = useState(null);
@@ -174,7 +174,14 @@ export default function ChildPath() {
 
   // ── PIN Gate ──────────────────────────────────────────────────────────────────
   if (!profile) {
-    if (!profileId) {
+    if (profileId === undefined) {
+      return (
+        <div className="min-h-screen flex items-center justify-center text-indigo-400 bg-sky-50">
+          <Loader2 className="w-12 h-12 animate-spin" />
+        </div>
+      );
+    }
+    if (profileId === null) {
       return (
         <div className="min-h-screen flex items-center justify-center text-slate-400 bg-sky-50">
           <p className="text-lg font-semibold">No student profile found in URL.<br />Ask a parent to share the correct link.</p>

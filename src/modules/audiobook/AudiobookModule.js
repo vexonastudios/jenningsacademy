@@ -170,8 +170,11 @@ export default function AudiobookModule({ grade, voiceId, onRoundComplete }) {
   // ── Load SRT ──────────────────────────────────────────────────────────────
   useEffect(() => {
     setLoading(true);
-    fetch(BOOK_META.srtUrl)
-      .then(r => r.text())
+    fetch(`/api/proxy?url=${encodeURIComponent(BOOK_META.srtUrl)}`)
+      .then(r => {
+        if (!r.ok) throw new Error("Failed to fetch SRT");
+        return r.text();
+      })
       .then(raw => {
         setAllCues(parseSRT(raw));
         setLoading(false);
