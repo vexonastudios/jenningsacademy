@@ -2,9 +2,7 @@
 
 import { useMemo } from "react";
 import LogicEngine from "./components/LogicEngine";
-import { TRUTH_AND_WISDOM_CONTENT } from "./content/truthAndWisdom";
-import { FALLACY_DETECTIVE_CONTENT } from "./content/fallacyDetective";
-import { DEDUCTION_STUDIO_CONTENT } from "./content/deductionStudio";
+import { LOGIC_CONTENT } from "./content";
 
 export default function LogicModule({ grade, attempt, voiceId, profileId, onRoundComplete }) {
   
@@ -12,19 +10,18 @@ export default function LogicModule({ grade, attempt, voiceId, profileId, onRoun
 
   // Select curriculum based on grade tier
   const { content, title, subtitle } = useMemo(() => {
-    let source = TRUTH_AND_WISDOM_CONTENT;
+    let source = LOGIC_CONTENT[grade] || LOGIC_CONTENT[5];
     let t = "Truth & Wisdom";
     let s = "Foundations of Reasoning";
     
     if (grade >= 1 && grade <= 5) {
-      source = TRUTH_AND_WISDOM_CONTENT;
+      t = "Truth & Wisdom";
+      s = "Foundations of Reasoning";
     } else if (grade >= 6 && grade <= 8) {
-      source = FALLACY_DETECTIVE_CONTENT;
       t = "Fallacy Detective";
       s = "Argument Lab";
     } else {
       // Grades 9-12 (and fallback)
-      source = DEDUCTION_STUDIO_CONTENT;
       t = "Build the Argument";
       s = "Deduction Studio";
     }

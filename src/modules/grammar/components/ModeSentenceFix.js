@@ -6,9 +6,11 @@ export default function ModeSentenceFix({ item, onNext, onMiss, onSpeak, isSpeak
   const [hasFixedCap, setHasFixedCap] = useState(false);
   const [hasFixedPunc, setHasFixedPunc] = useState(false);
 
+  const promptText = "What word needs a capital letter, and what punctuation is the right one?";
+
   useEffect(() => {
     setTimeout(() => {
-      onSpeak(item.prompt);
+      onSpeak(promptText);
     }, 400);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [item.id]);
@@ -33,16 +35,16 @@ export default function ModeSentenceFix({ item, onNext, onMiss, onSpeak, isSpeak
   const currentSentence = hasFixedCap ? item.correctCap : item.broken;
 
   return (
-    <div className="flex flex-col h-full min-h-full bg-slate-900 overflow-hidden">
+    <div className="flex flex-col h-full min-h-full bg-slate-900 overflow-hidden" spellCheck={false}>
       <GrammarPhaseBar phase="practice" title="Sentence Fixer" />
 
       <div className="px-6 pt-10 pb-4 text-center max-w-2xl mx-auto w-full">
         <p className="text-2xl text-slate-200 font-bold leading-relaxed mb-6">
-          {item.prompt}
+          {promptText}
         </p>
 
         <button 
-           onClick={() => onSpeak(item.prompt)}
+           onClick={() => onSpeak(promptText)}
            disabled={isSpeaking}
            className="mx-auto w-16 h-16 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-rose-400 hover:text-rose-300 transition-all border border-slate-700"
         >
@@ -53,14 +55,14 @@ export default function ModeSentenceFix({ item, onNext, onMiss, onSpeak, isSpeak
       <div className="flex-1 w-full flex flex-col items-center justify-center px-6 gap-10">
         
         {/* The Sentence Display */}
-        <div className="relative bg-slate-800 border-4 border-slate-600 rounded-3xl px-10 py-8 flex items-center gap-2 shadow-2xl">
+        <div className="relative bg-slate-800 border-4 border-slate-600 rounded-3xl px-10 py-8 flex items-center gap-0 shadow-2xl">
            
            {/* Capitalization UI */}
            <button 
              onClick={handleCapTap}
              disabled={hasFixedCap}
              className={`text-5xl font-black transition-all ${
-                hasFixedCap ? "text-emerald-400" : "text-rose-400 border-b-4 border-dashed border-rose-400 hover:scale-110 active:scale-95 cursor-pointer pb-1"
+                hasFixedCap ? "text-emerald-400" : "text-white hover:text-slate-300 active:scale-95 cursor-pointer"
              }`}
            >
              {hasFixedCap ? item.correctCap.charAt(0) : item.broken.charAt(0)}

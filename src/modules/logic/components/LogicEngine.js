@@ -6,6 +6,7 @@ import { Volume2, CheckCircle2, XCircle, ArrowRight } from "lucide-react";
 function useSpeechAsync(voiceId) {
   const audioRef = useRef(null);
   const mountedRef = useRef(true);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -18,19 +19,27 @@ function useSpeechAsync(voiceId) {
   const speakAsync = useCallback((text) => new Promise((resolve) => {
     if (!voiceId || !text || !mountedRef.current) { resolve(); return; }
     audioRef.current?.pause();
+    setIsPlaying(true);
     const audio = new Audio(`/api/tts?voiceId=${encodeURIComponent(voiceId)}&text=${encodeURIComponent(text)}`);
     audioRef.current = audio;
-    audio.onended = resolve;
-    audio.onerror = resolve;
-    audio.play().catch(resolve);
+    
+    const finish = () => {
+      if (mountedRef.current) setIsPlaying(false);
+      resolve();
+    };
+    
+    audio.onended = finish;
+    audio.onerror = finish;
+    audio.play().catch(finish);
   }), [voiceId]);
 
   const stop = useCallback(() => {
     audioRef.current?.pause();
     audioRef.current = null;
+    if (mountedRef.current) setIsPlaying(false);
   }, []);
 
-  return { speakAsync, stop };
+  return { speakAsync, stop, isPlaying };
 }
 
 // Custom Draggable List for "Build Chain"
@@ -102,11 +111,11 @@ function buildOptionsAudio(q, isExplain) {
 }
 
 export default function LogicEngine({ content, voiceId, isTestMode, onComplete }) {
-  const { speakAsync, stop } = useSpeechAsync(voiceId);
+  const { speakAsync, stop, isPlaying } = useSpeechAsync(voiceId);
 
   // Flow State
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [phase, setPhase] = useState("intro"); // intro -> interaction -> feedback -> (explain-back) -> feedback -> test-transition -> complete
+  const [phase, setPhase] = useState(() => content[0]?.concept ? "concept-intro" : "intro");
   const [selectedOpt, setSelectedOpt] = useState(null);
   const [showingExplain, setShowingExplain] = useState(false);
   const [reorderedList, setReorderedList] = useState(null);
@@ -120,7 +129,11 @@ export default function LogicEngine({ content, voiceId, isTestMode, onComplete }
   // Intro Audio Sequence
   useEffect(() => {
     let isActive = true;
-    if (phase === "intro") {
+    if (phase === "concept-intro") {
+      speakAsync(`${q.concept.title}. ${q.concept.description}`).then(() => {
+        // Wait for user to click "Got it!"
+      });
+    } else if (phase === "intro") {
       speakAsync(q.audioText).then(() => {
         if (!isActive) return;
         setPhase("interaction");
@@ -204,8 +217,9 @@ export default function LogicEngine({ content, voiceId, isTestMode, onComplete }
 
     // Go to next question or complete
     if (currentIndex + 1 < content.length) {
+      const nextQ = content[currentIndex + 1];
       setCurrentIndex(c => c + 1);
-      setPhase("intro");
+      setPhase(nextQ.concept ? "concept-intro" : "intro");
       setSelectedOpt(null);
       setShowingExplain(false);
       setReorderedList(null);
@@ -263,17 +277,46 @@ export default function LogicEngine({ content, voiceId, isTestMode, onComplete }
   return (
     <div className="flex flex-col flex-1 w-full max-w-2xl mx-auto px-6 py-8">
       
-      {/* Progress Bar */}
-      <div className="w-full bg-slate-200 h-2 rounded-full mb-8 overflow-hidden">
-        <div 
-          className="bg-indigo-500 h-full transition-all duration-500" 
-          style={{ width: `${((currentIndex + (isFeedback ? 1 : 0)) / content.length) * 100}%` }}
-        />
+      {/* Timeline Tracker */}
+      <div className="flex justify-center gap-1.5 mb-8 w-full">
+        {content.map((_, i) => {
+          const isPast = i < currentIndex || (i === currentIndex && isFeedback);
+          const isCurrent = i === currentIndex && !isFeedback;
+          return (
+            <div key={i} className={`h-2 flex-1 rounded-full transition-all duration-500
+              ${isCurrent ? "bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.4)] scale-y-110" 
+                : isPast ? "bg-emerald-400" : "bg-slate-200"}`} 
+            />
+          );
+        })}
       </div>
 
       <div className="flex-1 flex flex-col items-center justify-center">
+        {phase === "concept-intro" && q.concept && (
+          <div className="bg-indigo-50 border-4 border-indigo-100 rounded-3xl p-8 w-full mb-8 text-center animate-[slideUp_0.3s_ease-out]">
+            <h3 className="text-sm font-bold text-indigo-400 uppercase tracking-widest mb-2">New Logic Concept</h3>
+            <h2 className="text-4xl font-black text-indigo-900 mb-6">{q.concept.title}</h2>
+            <p className="text-xl text-indigo-800 font-medium leading-relaxed mb-8">
+              {q.concept.description}
+            </p>
+            <button
+              onClick={() => {
+                stop();
+                setPhase("intro");
+              }}
+              disabled={isPlaying}
+              className={`px-8 py-4 rounded-full font-bold text-xl shadow-md transition-all mx-auto flex items-center justify-center gap-2
+                ${isPlaying 
+                  ? "bg-indigo-200 text-indigo-400 cursor-not-allowed shadow-none"
+                  : "bg-indigo-600 text-white hover:bg-indigo-700 active:scale-95"}`}
+            >
+              {isPlaying ? "Listen..." : "Got it!"} <ArrowRight className="w-5 h-5" />
+            </button>
+          </div>
+        )}
+
         {/* Scenario Box */}
-        {(!showingExplain || phase === "explain-back" || phase === "explain-feedback") && (
+        {phase !== "concept-intro" && (!showingExplain || phase === "explain-back" || phase === "explain-feedback") && (
           <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8 w-full mb-8 relative">
             <button 
               onClick={() => {
@@ -351,9 +394,13 @@ export default function LogicEngine({ content, voiceId, isTestMode, onComplete }
               
               <button
                 onClick={nextQuestion}
-                className="flex items-center gap-2 px-8 py-4 bg-slate-900 text-white rounded-full font-bold text-lg hover:bg-slate-800 transition-colors shadow-lg"
+                disabled={isPlaying}
+                className={`flex items-center gap-2 px-8 py-4 rounded-full font-bold text-lg transition-all shadow-lg
+                  ${isPlaying 
+                    ? "bg-slate-300 text-slate-500 cursor-not-allowed shadow-none"
+                    : "bg-slate-900 text-white hover:bg-slate-800"}`}
               >
-                Continue <ArrowRight className="w-5 h-5" />
+                {isPlaying ? "Listen..." : "Continue"} <ArrowRight className="w-5 h-5" />
               </button>
             </div>
           )}

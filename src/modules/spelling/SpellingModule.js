@@ -146,6 +146,8 @@ export default function SpellingModule({ grade, attempt, onRoundComplete, voiceI
     } catch { setIsPlaying(false); }
   }, [voiceId]);
 
+  const isFirstLoad = useRef(true);
+
   // ── Auto-play when word/phase changes ─────────────────────────────────────
   useEffect(() => {
     const w = sessionWords[cardIdx];
@@ -156,7 +158,12 @@ export default function SpellingModule({ grade, attempt, onRoundComplete, voiceI
     if (phase === "practice") text = `Please spell... ${w.word}. ... ${w.hint}.`;
     if (phase === "final")    text = `Please spell... ${w.word}. ... ${w.hint}.`;
     if (phase === "sentence") text = `Fill in the missing word. ${w.sentence ?? w.hint}.`;
-    if (text) { const t = setTimeout(() => speak(text), 400); return () => clearTimeout(t); }
+    if (text) {
+      const delay = isFirstLoad.current ? 3500 : 400;
+      isFirstLoad.current = false;
+      const t = setTimeout(() => speak(text), delay); 
+      return () => clearTimeout(t); 
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cardIdx, phase, sessionWords]);
 
@@ -206,7 +213,7 @@ export default function SpellingModule({ grade, attempt, onRoundComplete, voiceI
         }
         return next;
       });
-      speak(`Correct! ${w.word}.`);
+      speak("Correct!");
       // Auto-advance after 1.5s on correct answers
       setTimeout(() => handleNext(), 1500);
     } else {
@@ -214,7 +221,22 @@ export default function SpellingModule({ grade, attempt, onRoundComplete, voiceI
     }
   };
 
-  const handleRetry = () => { clearInput(); setTimeout(() => inputRef.current?.focus(), 50); };
+  const handleRetry = () => { 
+    setSubmitted(false); 
+    setLetterResult(null); 
+    
+    const w = sessionWords[cardIdx];
+    const attempts = phase === "practice" ? (practiceAttempts[cardIdx] || 0) : phase === "sentence" ? (sentenceAttempts[cardIdx] || 0) : 0;
+    
+    if (attempts >= 2 && w && (phase === "practice" || phase === "sentence")) {
+      const half = Math.ceil(w.word.length / 2);
+      setAnswer(w.word.substring(0, half));
+    } else {
+      setAnswer("");
+    }
+    
+    setTimeout(() => inputRef.current?.focus(), 50); 
+  };
 
   const handleNext = () => {
     clearInput();

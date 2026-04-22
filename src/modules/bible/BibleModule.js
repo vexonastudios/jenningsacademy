@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Loader2 } from "lucide-react";
 import ModuleShell from "@/modules/_shared/ModuleShell";
-import useModuleSession from "@/modules/_shared/useModuleSession";
-import useSoundEffects from "@/modules/_shared/useSoundEffects";
+import { useSoundEffects } from "@/modules/_shared/useSoundEffects";
 import { getCurriculumForGrade } from "./content/bibleCurriculum";
 
 import ModeLearnSequence from "./components/ModeLearnSequence";
@@ -21,7 +20,7 @@ function shuffle(array) {
   return array;
 }
 
-export default function BibleModule({ profileId, grade, onRoundComplete }) {
+export default function BibleModule({ profileId, grade, voiceId, onRoundComplete }) {
   const [loading, setLoading] = useState(true);
   const [sessionItems, setSessionItems] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -29,30 +28,46 @@ export default function BibleModule({ profileId, grade, onRoundComplete }) {
   // Phase track: 'learn' -> 'play'
   const [phase, setPhase] = useState('learn');
   const [totalTimeMs, setTotalTimeMs] = useState(0);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const audioRef = useRef(null);
 
   const { playComplete, playSwoosh, playTap, playSuccess, playError } = useSoundEffects();
+
+  // Inline TTS — uses the child's voiceId prop
+  const speakPhase = useCallback((text) => {
+    if (!voiceId || !text) return;
+    if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
+    setIsSpeaking(true);
+    const audio = new Audio(`/api/tts?voiceId=${encodeURIComponent(voiceId)}&text=${encodeURIComponent(text)}`);
+    audioRef.current = audio;
+    audio.play().catch(() => {});
+    audio.onended = () => setIsSpeaking(false);
+    audio.onerror = () => setIsSpeaking(false);
+  }, [voiceId]);
+
+  const stopSpeaking = useCallback(() => {
+    if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
+    setIsSpeaking(false);
+  }, []);
 
   useEffect(() => {
     const available = getCurriculumForGrade(grade);
     if (!available || available.length === 0) {
-        onRoundComplete(true); // Exit safely if nothing maps (should never happen)
+        onRoundComplete(true);
         return;
     }
 
-    // Clone and shuffle to pick 2 random sections for today's session
     const clone = [...available];
-    shuffle(clone);
+    // Simple shuffle
+    for (let i = clone.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [clone[i], clone[j]] = [clone[j], clone[i]];
+    }
     const selected = clone.slice(0, 2);
 
     setSessionItems(selected);
     setLoading(false);
   }, [profileId, grade, onRoundComplete]);
-
-  const {
-      isSpeaking,
-      speakPhase,
-      stopSpeaking
-  } = useModuleSession();
 
   // Clean utterance handler wrapper
   const handleSpeak = (text) => {

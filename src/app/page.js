@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { CalendarSync, Settings2, TrendingUp, Flame, ChevronRight, BookOpen, Calculator, Type, Gamepad2 } from "lucide-react";
 import Link from "next/link";
 import HubClient from "./HubClient";
+import LandingPage from "./LandingPage";
 
 // Map module type → colour ring for mini plan chips
 const MODULE_COLORS = {
@@ -26,7 +27,7 @@ function StatChip({ label, value, accent }) {
 
 export default async function Home() {
   const { userId } = await auth();
-  if (!userId) redirect("/sign-in");
+  if (!userId) return <LandingPage />;
 
   const todayStr = new Date().toISOString().split("T")[0];
 
