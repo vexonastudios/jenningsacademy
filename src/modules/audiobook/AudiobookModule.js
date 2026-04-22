@@ -5,6 +5,7 @@ import {
   Play, Pause, Volume2, BookOpen, ChevronRight, Lightbulb,
   Check, X, Trophy, ChevronLeft, SkipForward, Loader2, Gauge, Type
 } from "lucide-react";
+import { useSoundEffects } from "@/modules/_shared/useSoundEffects";
 import { BOOK_META, CHAPTERS } from "./content/thisCountryOfOurs";
 
 // ─── SRT Parser ────────────────────────────────────────────────────────────────
@@ -44,13 +45,16 @@ function getCuesForChapter(allCues, chapter) {
 }
 
 // ─── QuizEngine component ──────────────────────────────────────────────────
-function QuizEngine({ chapter, cues, onComplete }) {
+function QuizEngine({ chapter, cues, voiceId, onComplete }) {
   const [qIdx, setQIdx] = useState(0);
   const [userAnswer, setUserAnswer] = useState(null);
   const [submitted, setSubmitted] = useState(false);
   const [showHint, setShowHint] = useState(false);
   const [results, setResults] = useState([]);
   const [shuffledOptions, setShuffledOptions] = useState([]);
+  
+  const { playCorrect, playWrong, playComplete } = useSoundEffects();
+  const ttsAudioRef = useRef(null);
 
   const q = chapter.questions[qIdx];
   const total = chapter.questions.length;
@@ -66,11 +70,42 @@ function QuizEngine({ chapter, cues, onComplete }) {
     }
   }, [qIdx, q]);
 
+  useEffect(() => {
+    // Stop any existing TTS when unmounting or switching questions
+    return () => {
+      if (ttsAudioRef.current) {
+        ttsAudioRef.current.pause();
+        ttsAudioRef.current.src = "";
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    // Only play TTS when a new question starts (not submitted yet)
+    if (q.q && voiceId && !submitted) {
+      if (ttsAudioRef.current) {
+        ttsAudioRef.current.pause();
+      }
+      const url = `/api/tts?voiceId=${encodeURIComponent(voiceId)}&text=${encodeURIComponent(q.q)}`;
+      const a = new Audio(url);
+      ttsAudioRef.current = a;
+      // Slight delay to let UI render before speaking
+      const t = setTimeout(() => a.play().catch(() => {}), 400);
+      return () => clearTimeout(t);
+    }
+  }, [qIdx, q.q, voiceId, submitted]);
+
   const handleSubmit = () => {
     if (!userAnswer) return;
     const isCorrect = userAnswer === q.a;
     setResults(r => [...r, { question: q.q, answer: userAnswer, correct: isCorrect }]);
     setSubmitted(true);
+    
+    // Stop TTS if still playing
+    if (ttsAudioRef.current) ttsAudioRef.current.pause();
+    
+    if (isCorrect) playCorrect();
+    else playWrong();
   };
 
   const handleNext = () => {
@@ -80,6 +115,7 @@ function QuizEngine({ chapter, cues, onComplete }) {
       setSubmitted(false);
       setShowHint(false);
     } else {
+      playComplete();
       onComplete(results);
     }
   };
@@ -395,7 +431,7 @@ export default function AudiobookModule({ grade, voiceId, onRoundComplete }) {
           <p className="text-indigo-200 text-sm mt-1">Answer the comprehension questions below.</p>
         </div>
         <div className="flex-1 overflow-y-auto">
-          <QuizEngine chapter={chapter} cues={chapterCues} onComplete={handleQuizDone} />
+          <QuizEngine chapter={chapter} cues={chapterCues} voiceId={voiceId} onComplete={handleQuizDone} />
         </div>
       </div>
     );
